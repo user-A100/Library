@@ -14,7 +14,7 @@ LibraryAISlashCommands = class LibraryAISlashCommands {
 			{ id: "builtin:clear", name: "clear", aliases: ["new", "reset"], kind: "action", description: "开始新会话；可选参数为上一会话命名", argumentHint: "[上一会话名]", source: "builtin" },
 			{ id: "builtin:help", name: "help", aliases: ["commands"], kind: "action", description: "查看全部斜杠命令", source: "builtin" },
 			{ id: "builtin:compact", name: "compact", kind: "action", description: "压缩当前会话上下文为摘要", argumentHint: "[压缩重点]", source: "builtin" },
-			{ id: "builtin:model", name: "model", kind: "action", description: "切换模型；无参数时打开模型设置", argumentHint: "[模型ID]", source: "builtin" },
+			{ id: "builtin:model", name: "model", kind: "action", description: "切换模型；无参数弹出模型选择器，refresh 重新抓取", argumentHint: "[模型ID/refresh]", source: "builtin" },
 			{ id: "builtin:copy", name: "copy", kind: "action", description: "复制最近一条 AI 回答到剪贴板", argumentHint: "[N]", source: "builtin" },
 			{ id: "builtin:export", name: "export", kind: "action", description: "导出当前会话为 Markdown 文件", argumentHint: "[文件名]", source: "builtin" },
 			{ id: "builtin:rename", name: "rename", kind: "action", description: "重命名当前会话；无参数时自动命名", argumentHint: "[会话名]", source: "builtin" },

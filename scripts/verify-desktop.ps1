@@ -96,6 +96,12 @@ $checks["AI slash commands (Claudian-style)"] = $bootstrap -match 'ai-commands\.
 	-and $aiViewSource -match 'copyLastAnswer' `
 	-and $aiViewSource -match 'data-role="slash"' `
 	-and $aiStyleSource -match 'library-ai-slash-item'
+$checks["AI model auto-discovery"] = $aiProviderSource -match 'listModels' `
+	-and $aiProviderSource -match 'aiModelCache' `
+	-and $aiProviderSource -match 'fetchModels' `
+	-and $aiViewSource -match 'showModelPicker' `
+	-and $aiViewSource -match 'fillModelDatalist' `
+	-and $aiViewSource -match 'data-action="models"'
 $sectionSource = Get-Content -Raw (Join-Path $source "chrome\content\zotero\elements\itemPaneSection.js")
 $checks["ItemPane compatibility fix"] = $sectionSource -match "if \(!this\.initialized\)"
 

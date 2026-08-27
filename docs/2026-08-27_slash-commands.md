@@ -1,8 +1,17 @@
 # 斜杠命令（Claudian 移植）实现记录
 
 > 日期：2026-08-27
-> 模块版本：`0.12.0` → `0.14.0`
-> 方法：按 reverse 工作流对 `tmp/reference-claudian`（yishentu/claudian，Obsidian 插件）做静态逆向，提炼其斜杠命令子系统的触发、下拉、分发与扩展机制后移植到 Library 桌面插件；随后对照 Claude Code 官方命令参考（`tmp/reference-claude-commands.md`）扩充内置命令目录。
+> 模块版本：`0.12.0` → `0.15.0`
+> 方法：按 reverse 工作流对 `tmp/reference-claudian`（yishentu/claudian，Obsidian 插件）做静态逆向，提炼其斜杠命令子系统的触发、下拉、分发与扩展机制后移植到 Library 桌面插件；随后对照 Claude Code 官方命令参考（`tmp/reference-claude-commands.md`）扩充内置命令目录，并按 Claudian 模型发现服务的快照缓存模式实现模型列表自动抓取。
+
+## 模型列表自动抓取（0.15.0）
+
+逆向要点：Claudian 把模型发现做成**独立于会话运行时的元数据服务**（`PiModelDiscoveryService` 独立子进程、`extractModels` 宽松归一化、目录快照缓存 + 过期重探）。Library 面向 OpenAI 兼容接口，对应标准是「URL + Key → `GET /models`」：
+
+- `ai-provider.js`：`listModels()` 宽松解析 `{data:[{id}]}` / `{models:[...]}` / 裸数组三种形态，去重排序；结果按 baseURL 缓存进 `aiModelCache` 偏好（10 分钟过期）；
+- 设置页「保存并测试」成功后**自动抓取**模型列表，模型 ID 输入框获得 datalist 自动补全；
+- 顶部模型名变为按钮，点击弹出**模型选择器**（复用斜杠面板的键盘导航/选中逻辑），缓存过期时后台重抓并热更新列表，当前模型带「使用中」徽章；
+- `/model` 无参数打开选择器，`/model refresh` 强制重抓，`/model <id>` 仍直接切换。
 
 ## 逆向结论：Claudian 斜杠命令的四个机制
 
@@ -23,7 +32,7 @@ Claude Code 的内置命令逐一评估，按「Library 有对应设施则移植
 | --- | --- | --- |
 | `/clear [name]`（别名 `/new` `/reset`） | ✅ 完整移植 | 可选参数为上一会话命名，便于 `/resume` 找回 |
 | `/compact [instructions]` | ✅ 完整移植 | 调用模型把会话压缩为一条「上下文摘要」消息（虚线卡片样式），后续对话仅携带摘要；可选压缩重点 |
-| `/model [model]` | ✅ 完整移植 | 无参数打开模型设置面板；有参数直接切换（沿用已保存接口与密钥） |
+| `/model [model]` | ✅ 完整移植 | 无参数弹出模型选择器（自动抓取 + 缓存）；`/model refresh` 重抓；`/model <id>` 直接切换 |
 | `/copy [N]` | ✅ 完整移植 | 复制第 N 近的回答；同时对齐剪贴板监测基线，避免被自动挂回参考片段 |
 | `/export [filename]` | ✅ 移植 | 导出会话为 Markdown 至 `library-ai/exports/` |
 | `/rename [name]` | ✅ 完整移植 | 无参数时按首条提问重新自动命名 |
@@ -65,7 +74,8 @@ argument-hint: [段落]
 
 ## 验证证据
 
-- `node --check`：`ai-commands.js`、`ai-view.js`、`bootstrap.js` 通过；
+- `node --check`：`ai-commands.js`、`ai-view.js`、`ai-provider.js`、`bootstrap.js` 通过；
 - 行为级测试 `tmp/slash-commands-test.mjs`（stub Zotero/IOUtils）：30/30 PASS，覆盖触发匹配 5 例、过滤排序 4 例、detect 与别名 16 例、用户命令解析 3 例、`$ARGUMENTS` 展开 2 例；
-- 桌面验收 `npm run desktop:verify` 新增「AI slash commands (Claudian-style)」静态检查（bootstrap 加载、注册中心、compact/model/copy 动作、下拉交互、样式）。
+- 模型抓取测试 `tmp/model-fetch-test.mjs`（stub prefs/fetch）：8/8 PASS，覆盖三种返回形态解析、去重排序、错误抛出、按 baseURL 缓存隔离与损坏回退；
+- 桌面验收 `npm run desktop:verify` 新增「AI slash commands (Claudian-style)」「AI model auto-discovery」静态检查（bootstrap 加载、注册中心、compact/model/copy 动作、模型抓取与缓存、选择器与 datalist 回填）。
 

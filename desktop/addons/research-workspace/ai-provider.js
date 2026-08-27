@@ -58,6 +58,41 @@ LibraryAIProviderAdapter = class LibraryAIProviderAdapter {
 		if (!response.ok) throw new Error(`连接失败（${response.status}）`);
 		return true;
 	}
+
+	// —— 模型列表自动抓取（OpenAI 兼容标准：URL + Key → GET /models）——
+	// 归一化策略对齐 Claudian extractModels 的宽松风格：兼容 {data:[{id}]}、
+	// {models:[...]} 与裸数组三种返回形态，去重排序后按 baseURL 缓存。
+	async listModels() {
+		let response = await this.request("/models", { method: "GET" });
+		if (!response.ok) throw new Error(`模型列表抓取失败（${response.status}）`);
+		let data = await response.json();
+		let raw = Array.isArray(data) ? data : (data.data || data.models || data.available_models || []);
+		let ids = [...new Set(raw.map(item => typeof item === "string" ? item : item?.id).filter(Boolean))];
+		ids.sort((a, b) => a.localeCompare(b));
+		return ids;
+	}
+
+	get modelCache() {
+		try { return JSON.parse(Services.prefs.getStringPref(this.prefRoot + "aiModelCache", "{}")); }
+		catch (_) { return {}; }
+	}
+
+	getCachedModels() {
+		return this.modelCache[this.config.baseURL]?.models || [];
+	}
+
+	cacheStale(maxAgeMs = 10 * 60 * 1000) {
+		let entry = this.modelCache[this.config.baseURL];
+		return !entry || Date.now() - entry.fetchedAt > maxAgeMs;
+	}
+
+	async fetchModels() {
+		let models = await this.listModels();
+		let cache = this.modelCache;
+		cache[this.config.baseURL] = { models, fetchedAt: Date.now() };
+		Services.prefs.setStringPref(this.prefRoot + "aiModelCache", JSON.stringify(cache));
+		return models;
+	}
 	async stream(messages, { signal, onDelta, onReasoning, window }) {
 		let { model } = this.config;
 		let response = await this.request("/chat/completions", {

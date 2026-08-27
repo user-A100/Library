@@ -446,6 +446,8 @@
 
 .library-ai-model-strip { display:flex; align-items:center; gap:7px; min-height:28px; padding:0 12px; border-bottom:1px solid var(--library-ai-border); color:var(--fill-secondary); font-size:10px; }
 .library-ai-model-strip button { margin-inline-start:auto; border:0; background:transparent; color:color-mix(in srgb,var(--library-ai-accent) 80%,var(--fill-primary)); }
+.library-ai-model-strip [data-role="model-name"] { flex:1; min-width:0; margin-inline-start:0; padding:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; text-align:left; color:var(--fill-primary); cursor:pointer; }
+.library-ai-model-strip [data-role="model-name"]:hover { color:var(--library-ai-accent); }
 .library-ai-model-dot { width:7px; height:7px; border-radius:50%; background:var(--fill-secondary); opacity:.5; }
 .library-ai-model-dot.configured { background:var(--library-ai-accent); opacity:1; box-shadow:0 0 0 3px var(--library-ai-accent-soft); }
 

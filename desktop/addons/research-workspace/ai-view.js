@@ -196,13 +196,14 @@ LibraryAIViewHost = class LibraryAIViewHost {
 					<button type="button" data-action="close" title="收起">×</button>
 				</div>
 			</header>
-			<div class="library-ai-model-strip"><span class="library-ai-model-dot"></span><span data-role="model-name">尚未配置模型</span><button type="button" data-action="settings">配置</button></div>
+			<div class="library-ai-model-strip"><span class="library-ai-model-dot"></span><button type="button" data-action="models" data-role="model-name" title="点击切换模型">尚未配置模型</button><button type="button" data-action="settings">配置</button></div>
 			<section class="library-ai-history" hidden><header><strong>会话历史</strong><button type="button" data-action="history">完成</button></header><div data-role="history-list"></div></section>
 			<section class="library-ai-settings" hidden>
 				<header><div><strong>模型设置</strong><small>OpenAI 兼容接口</small></div><button type="button" data-action="settings">×</button></header>
 				<label>提供商<select data-field="preset"></select></label>
 				<label>接口地址<input data-field="baseURL" type="url" spellcheck="false"></label>
-				<label>模型 ID<input data-field="model" type="text" spellcheck="false"></label>
+				<label>模型 ID<input data-field="model" type="text" spellcheck="false" list="library-ai-model-list" placeholder="保存并测试后自动抓取列表"></label>
+				<datalist id="library-ai-model-list"></datalist>
 				<label>API 密钥<input data-field="apiKey" type="password" autocomplete="off" placeholder="保存在系统凭据存储"></label>
 				<div class="library-ai-settings-actions"><button type="button" data-action="save-settings">保存并测试</button><span data-role="settings-status"></span></div>
 			</section>
@@ -253,6 +254,7 @@ LibraryAIViewHost = class LibraryAIViewHost {
 		else if (action === "send") this.send(window);
 		else if (action === "stop") this.abortController?.abort();
 		else if (action === "add-source") await this.chooseSources(window);
+		else if (action === "models") await this.showModelPicker(window);
 		else if (action === "save-settings") this.saveSettings(window);
 		else if (action === "save-note") this.saveAsNote(window);
 	}
@@ -274,6 +276,19 @@ LibraryAIViewHost = class LibraryAIViewHost {
 		view.querySelector('[data-field="model"]').value = config.model;
 		view.querySelector('[data-field="apiKey"]').value = "";
 		view.querySelector('[data-role="settings-status"]').textContent = "";
+		this.fillModelDatalist(window);
+	}
+
+	// 把当前 baseURL 缓存的模型列表回填到设置页的 datalist（输入即自动补全）
+	fillModelDatalist(window) {
+		let datalist = this.windows.get(window)?.view.querySelector("#library-ai-model-list");
+		if (!datalist) return;
+		datalist.textContent = "";
+		for (let model of this.provider.getCachedModels()) {
+			let option = datalist.ownerDocument.createElement("option");
+			option.value = model;
+			datalist.append(option);
+		}
 	}
 
 	async saveSettings(window) {
@@ -291,7 +306,16 @@ LibraryAIViewHost = class LibraryAIViewHost {
 			status.textContent = "设置已保存，正在测试连接…";
 			try {
 				await this.provider.test();
-				status.textContent = "设置已保存，连接成功";
+				// 连接成功后自动抓取模型列表（OpenAI 兼容：GET /models），回填 datalist 与模型选择器
+				status.textContent = "设置已保存，连接成功，正在抓取模型列表…";
+				try {
+					let models = await this.provider.fetchModels();
+					this.fillModelDatalist(window);
+					status.textContent = `设置已保存，连接成功，抓取到 ${models.length} 个模型`;
+				}
+				catch (fetchError) {
+					status.textContent = `设置已保存，连接成功；模型列表抓取失败：${fetchError.message || fetchError}`;
+				}
 			}
 			catch (testError) {
 				status.textContent = `设置已保存；连接测试失败：${testError.message || testError}`;
@@ -671,6 +695,41 @@ LibraryAIViewHost = class LibraryAIViewHost {
 			panel.hidden = false;
 			return;
 		}
+		// 模型选择器模式（/model 或点击顶部模型名）
+		if (state.slash.mode === "models") {
+			let current = this.provider.config.model;
+			let header = doc.createElement("div"); header.className = "library-ai-slash-header";
+			let title = doc.createElement("strong"); title.textContent = "选择模型";
+			let hint = doc.createElement("span"); hint.textContent = "/model refresh 重新抓取";
+			header.append(title, hint); panel.append(header);
+			if (!state.slash.items.length) {
+				let empty = doc.createElement("div"); empty.className = "library-ai-slash-empty";
+				empty.textContent = "暂无模型列表：先在设置中保存并测试，或 /model refresh 抓取";
+				panel.append(empty);
+			}
+			state.slash.items.forEach((modelId, index) => {
+				let item = doc.createElement("div");
+				item.className = "library-ai-slash-item";
+				item.classList.toggle("selected", index === state.slash.selected);
+				item.setAttribute("role", "option");
+				let name = doc.createElement("span"); name.className = "library-ai-slash-name"; name.textContent = modelId;
+				item.append(name);
+				if (modelId === current) {
+					let badge = doc.createElement("span"); badge.className = "library-ai-slash-badge builtin"; badge.textContent = "使用中";
+					item.append(badge);
+				}
+				item.addEventListener("mousedown", event => { event.preventDefault(); this.selectSlashCommand(window, index); });
+				item.addEventListener("mousemove", () => {
+					if (state.slash && state.slash.selected !== index) { state.slash.selected = index; this.renderSlashDropdown(window); }
+				});
+				panel.append(item);
+			});
+			panel.hidden = false;
+			if (scrollToSelected && state.slash.selected >= 0) {
+				panel.children[state.slash.selected + 1]?.scrollIntoView?.({ block: "nearest" });
+			}
+			return;
+		}
 		let offset = 0;
 		if (state.slash.help) {
 			let header = doc.createElement("div"); header.className = "library-ai-slash-header";
@@ -735,8 +794,15 @@ LibraryAIViewHost = class LibraryAIViewHost {
 	}
 
 	// Claudian select/replaceRange：替换触发区间为 "/name "，尾部空白去重
-	selectSlashCommand(window, index) {
+	async selectSlashCommand(window, index) {
 		let state = this.windows.get(window); if (!state?.slash) return;
+		// 模型选择器：选中即切换模型
+		if (state.slash.mode === "models") {
+			let modelId = state.slash.items[index];
+			this.hideSlashDropdown(window);
+			if (modelId) await this.applyModel(window, modelId);
+			return;
+		}
 		let command = state.slash.items[index]; if (!command) return;
 		let input = state.view.querySelector("textarea");
 		let replacement = `/${command.name} `;
@@ -819,18 +885,48 @@ LibraryAIViewHost = class LibraryAIViewHost {
 		finally { this.abortController = null; this.renderAll(); }
 	}
 
-	// /model [模型ID]：无参数打开设置面板；有参数直接切换（沿用已保存的接口与密钥）
+	// /model：无参数弹出模型选择器（自动抓取）；/model refresh 强制重新抓取；/model <id> 直接切换
 	async switchModel(window, args) {
-		if (!args) {
-			this.togglePanel(window, "settings", true);
-			this.setStatus(window, "在设置中选择模型，或直接 /model <模型ID>");
-			return;
+		if (!args) { await this.showModelPicker(window); return; }
+		if (args === "refresh") { await this.refreshModels(window, true); await this.showModelPicker(window); return; }
+		await this.applyModel(window, args);
+	}
+
+	// 模型选择器：复用斜杠面板（Claudian 快照缓存 + 过期重抓模式）
+	async showModelPicker(window) {
+		let state = this.windows.get(window); if (!state) return;
+		let current = this.provider.config.model;
+		let models = [...new Set([current, ...this.provider.getCachedModels()].filter(Boolean))];
+		state.slash = { match: null, mode: "models", items: models, selected: Math.max(0, models.indexOf(current)) };
+		this.renderSlashDropdown(window, true);
+		if (this.provider.cacheStale()) await this.refreshModels(window);
+	}
+
+	async refreshModels(window, manual = false) {
+		let state = this.windows.get(window); if (!state) return;
+		this.setStatus(window, "正在抓取模型列表…");
+		try {
+			let fresh = await this.provider.fetchModels();
+			this.setStatus(window, `抓取到 ${fresh.length} 个模型`);
+			this.fillModelDatalist(window);
+			if (state.slash?.mode === "models") {
+				let current = this.provider.config.model;
+				state.slash.items = [...new Set([current, ...fresh].filter(Boolean))];
+				state.slash.selected = Math.max(0, state.slash.items.indexOf(current));
+				this.renderSlashDropdown(window, true);
+			}
 		}
+		catch (error) {
+			this.setStatus(window, `${manual ? "" : "后台"}模型列表抓取失败：${error.message || error}`);
+		}
+	}
+
+	async applyModel(window, modelId) {
 		try {
 			let config = this.provider.config;
-			await this.provider.save({ preset: config.preset, baseURL: config.baseURL, model: args, apiKey: "" });
+			await this.provider.save({ preset: config.preset, baseURL: config.baseURL, model: modelId, apiKey: "" });
 			this.renderAll();
-			this.setStatus(window, `模型已切换为 ${args}`);
+			this.setStatus(window, `模型已切换为 ${modelId}`);
 		}
 		catch (error) { this.setStatus(window, `切换模型失败：${error.message || error}`); }
 	}
