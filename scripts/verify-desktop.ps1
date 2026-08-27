@@ -80,6 +80,17 @@ $checks["AI reference chips + clipboard monitor"] = $aiViewSource -match 'data-r
 	-and $aiViewSource -match 'startClipboardMonitor' `
 	-and $aiViewSource -match 'nsIClipboard' `
 	-and $aiRepositorySource -match 'references'
+$aiCommandsSource = Get-Content -Raw (Join-Path $workspace "desktop\addons\research-workspace\ai-commands.js")
+$aiStyleSource = Get-Content -Raw (Join-Path $workspace "desktop\addons\research-workspace\style.css")
+$checks["AI slash commands (Claudian-style)"] = $bootstrap -match 'ai-commands\.js' `
+	-and $aiCommandsSource -match 'class LibraryAISlashCommands' `
+	-and $aiCommandsSource -match 'matchTrigger' `
+	-and $aiCommandsSource -match '\$ARGUMENTS' `
+	-and $aiCommandsSource -match 'loadUserCommands' `
+	-and $aiViewSource -match 'updateSlashDropdown' `
+	-and $aiViewSource -match 'handleSlashKeydown' `
+	-and $aiViewSource -match 'data-role="slash"' `
+	-and $aiStyleSource -match 'library-ai-slash-item'
 $sectionSource = Get-Content -Raw (Join-Path $source "chrome\content\zotero\elements\itemPaneSection.js")
 $checks["ItemPane compatibility fix"] = $sectionSource -match "if \(!this\.initialized\)"
 

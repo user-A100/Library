@@ -4,6 +4,7 @@ LibraryAIViewHost = class LibraryAIViewHost {
 		this.repository = new LibraryAIConversationRepository();
 		this.provider = new LibraryAIProviderAdapter(workspace.aiPrefRoot);
 		this.context = new LibraryAIPaperContextService();
+		this.commands = new LibraryAISlashCommands();
 		this.windows = new Map();
 		this.abortController = null;
 		this.notifierID = null;
@@ -13,6 +14,8 @@ LibraryAIViewHost = class LibraryAIViewHost {
 
 	async init() {
 		await this.repository.init();
+		try { await this.commands.init(); }
+		catch (error) { Zotero.debug(`Library AI slash commands init: ${error}`); }
 		this.notifierID = Zotero.Notifier.registerObserver({
 			notify: (event, type) => {
 				if (type !== "tab" || !["select", "add", "close"].includes(event)) return;
@@ -205,9 +208,10 @@ LibraryAIViewHost = class LibraryAIViewHost {
 			</section>
 			<main class="library-ai-messages" aria-live="polite"></main>
 			<footer class="library-ai-composer-shell">
+				<div class="library-ai-slash" data-role="slash" hidden></div>
 				<div class="library-ai-source-row"><div data-role="sources"></div><button type="button" data-action="add-source" title="从文库选择其他论文">＋来源</button></div>
 				<div class="library-ai-references" data-role="references" hidden></div>
-				<div class="library-ai-composer"><textarea rows="3" placeholder="向论文提问…"></textarea><div class="library-ai-send-stack"><button type="button" data-action="stop" hidden title="停止生成">■</button><button type="button" data-action="send" title="发送">↑</button></div></div>
+				<div class="library-ai-composer"><textarea rows="3" placeholder="向论文提问…（输入 / 唤起命令）"></textarea><div class="library-ai-send-stack"><button type="button" data-action="stop" hidden title="停止生成">■</button><button type="button" data-action="send" title="发送">↑</button></div></div>
 				<div class="library-ai-composer-foot"><span data-role="status">准备就绪</span><button type="button" data-action="save-note">保存为笔记</button></div>
 			</footer>`;
 		let view = state.view;
@@ -215,7 +219,10 @@ LibraryAIViewHost = class LibraryAIViewHost {
 		for (let child of [...parsed.body.children]) view.append(view.ownerDocument.importNode(child, true));
 		for (let button of view.querySelectorAll("[data-action]")) button.addEventListener("click", () => this.handleAction(window, button.dataset.action));
 		let textarea = view.querySelector("textarea");
+		textarea.addEventListener("input", () => this.updateSlashDropdown(window));
+		textarea.addEventListener("click", () => this.updateSlashDropdown(window));
 		textarea.addEventListener("keydown", event => {
+			if (this.handleSlashKeydown(window, event)) return;
 			if (event.key === "Enter" && !event.shiftKey) { event.preventDefault(); this.send(window); }
 		});
 		view.addEventListener("click", event => {
@@ -225,7 +232,7 @@ LibraryAIViewHost = class LibraryAIViewHost {
 			let tab = event.target.closest?.("[data-conversation-id]"); if (tab && !event.target.closest("[data-close-tab]")) { this.repository.activate(tab.dataset.conversationId); this.render(window); }
 			let closeTab = event.target.closest?.("[data-close-tab]"); if (closeTab) { this.repository.close(closeTab.dataset.closeTab); this.renderAll(); }
 			let history = event.target.closest?.("[data-open-history]"); if (history) { this.repository.activate(history.dataset.openHistory); this.renderAll(); this.togglePanel(window, "history", false); }
-			let retry = event.target.closest?.("[data-retry-message]"); if (retry) { let active = this.repository.active; let index = active.messages.findIndex(message => message.id === retry.dataset.retryMessage); let question = [...active.messages.slice(0, index)].reverse().find(message => message.role === "user")?.content; if (question) this.send(window, question); }
+			let retry = event.target.closest?.("[data-retry-message]"); if (retry) { let active = this.repository.active; let index = active.messages.findIndex(message => message.id === retry.dataset.retryMessage); let previous = [...active.messages.slice(0, index)].reverse().find(message => message.role === "user"); if (previous) this.send(window, previous.prompt || previous.content, previous.prompt ? previous.content : null); }
 		});
 		let select = view.querySelector('[data-field="preset"]');
 		for (let [id, [name]] of Object.entries(this.provider.presets)) {
@@ -351,11 +358,28 @@ LibraryAIViewHost = class LibraryAIViewHost {
 		this.repository.update(conversation); this.renderAll();
 	}
 
-	async send(window, retryQuestion = null) {
+	async send(window, retryQuestion = null, displayOverride = null) {
 		let state = this.windows.get(window), conversation = this.repository.active;
 		let input = state.view.querySelector("textarea"), question = (retryQuestion || input.value).trim();
 		if (!question || this.abortController) return;
-		if (!retryQuestion) { conversation.messages.push({ id: Zotero.Utilities.randomString(8), role: "user", content: question, createdAt: new Date().toISOString() }); input.value = ""; }
+		// 斜杠命令（Claudian 式）：消息以 / 开头时先查注册中心；
+		// 动作命令直接执行，提示词命令展开 $ARGUMENTS 后作为真实提问发送
+		if (!retryQuestion) {
+			let detected = this.commands.detect(question);
+			if (detected?.unknown) this.setStatus(window, `未知命令 /${detected.unknown}，已按普通问题发送`);
+			else if (detected) {
+				input.value = "";
+				this.hideSlashDropdown(window);
+				if (detected.command.kind === "action") { await this.executeSlashAction(window, detected.command, detected.args); return; }
+				return this.send(window, this.commands.expand(detected.command, detected.args), question);
+			}
+		}
+		if (!retryQuestion) {
+			let outgoing = { id: Zotero.Utilities.randomString(8), role: "user", content: displayOverride || question, createdAt: new Date().toISOString() };
+			if (displayOverride) { outgoing.command = displayOverride.split(/\s+/)[0]; outgoing.prompt = question; }
+			conversation.messages.push(outgoing);
+			input.value = "";
+		}
 		let assistant = { id: Zotero.Utilities.randomString(8), role: "assistant", content: "", citations: {}, state: "streaming", createdAt: new Date().toISOString() };
 		conversation.messages.push(assistant); this.repository.update(conversation); this.abortController = new window.AbortController(); this.renderAll();
 		try {
@@ -375,7 +399,7 @@ LibraryAIViewHost = class LibraryAIViewHost {
 				? `\n\n用户选中的参考片段（这些内容来自用户主动复制或在阅读器中框选，请优先围绕它们理解与作答）：\n${references.map((ref, index) => `[参考${index + 1}] ${ref.label}\n${ref.text}`).join("\n\n")}`
 				: "";
 			assistant.references = references.map(ref => ref.label);
-			let messages = [{ role: "system", content: "你是 Library 的论文阅读助手。优先依据提供的论文片段回答；每个可核验结论后使用形如 [[S1-C1]] 的引用标记。只能使用给定 citation ID；没有可靠页码时不要猜测页码。使用清晰的中文 Markdown。" }, ...conversation.messages.filter(message => message !== assistant).slice(-12).map(({ role, content }) => ({ role, content })), { role: "user", content: `问题：${question}\n\n可用论文片段：\n${snippets.join("\n\n") || "当前未添加论文来源，请按普通对话回答，并说明没有论文来源。"}${referenceBlock}` }];
+			let messages = [{ role: "system", content: "你是 Library 的论文阅读助手。优先依据提供的论文片段回答；每个可核验结论后使用形如 [[S1-C1]] 的引用标记。只能使用给定 citation ID；没有可靠页码时不要猜测页码。使用清晰的中文 Markdown。" }, ...conversation.messages.filter(message => message !== assistant).slice(-12).map(message => ({ role: message.role, content: message.role === "user" && message.prompt ? message.prompt : message.content })), { role: "user", content: `问题：${question}\n\n可用论文片段：\n${snippets.join("\n\n") || "当前未添加论文来源，请按普通对话回答，并说明没有论文来源。"}${referenceBlock}` }];
 			await this.provider.stream(messages, {
 				signal: this.abortController.signal,
 				window,
@@ -433,7 +457,7 @@ LibraryAIViewHost = class LibraryAIViewHost {
 		let streamingMessage = conversation.messages.find(message => message.state === "streaming");
 		let statusText = this.abortController
 			? (streamingMessage?.reasoning && !streamingMessage?.content ? "正在思考（推理阶段）…" : "正在生成…")
-			: "Enter 发送 · Shift+Enter 换行";
+			: "Enter 发送 · Shift+Enter 换行 · / 命令";
 		view.querySelector('[data-role="status"]').textContent = statusText;
 		messages.scrollTop = messages.scrollHeight;
 	}
@@ -452,6 +476,12 @@ LibraryAIViewHost = class LibraryAIViewHost {
 		let article = doc.createElement("article"); article.className = `library-ai-message ${message.role}`; article.dataset.messageId = message.id;
 		let role = doc.createElement("div"); role.className = "library-ai-message-role"; role.textContent = message.role === "user" ? "你" : "Library AI";
 		article.append(role);
+		let content = message.content;
+		if (message.command) {
+			let chip = doc.createElement("span"); chip.className = "library-ai-command-chip"; chip.textContent = message.command;
+			article.append(chip);
+			if (content.startsWith(message.command)) content = content.slice(message.command.length).trim();
+		}
 		if (message.references?.length) {
 			let refs = doc.createElement("div"); refs.className = "library-ai-message-refs";
 			refs.textContent = `参考：${message.references.join("、")}`; article.append(refs);
@@ -465,7 +495,7 @@ LibraryAIViewHost = class LibraryAIViewHost {
 			thinking.append(summary, thinkingBody);
 			article.append(thinking);
 		}
-		let body = doc.createElement("div"); body.className = "library-ai-message-body"; body.innerHTML = this.renderMarkdown(message.content, message.citations || {});
+		let body = doc.createElement("div"); body.className = "library-ai-message-body"; body.innerHTML = this.renderMarkdown(content, message.citations || {});
 		article.append(body);
 		if (message.state === "streaming") { let cursor = doc.createElement("span"); cursor.className = "library-ai-cursor"; cursor.textContent = ""; body.append(cursor); }
 		if (message.error) { let error = doc.createElement("div"); error.className = "library-ai-error"; error.innerHTML = `<span>${this.escape(message.error)}</span>${message.state === "error" ? `<button type="button" data-retry-message="${message.id}">重试</button>` : ""}`; article.append(error); }
@@ -605,6 +635,137 @@ LibraryAIViewHost = class LibraryAIViewHost {
 		let conversation = this.repository.active;
 		if ((conversation?.references || []).some(ref => ref.text === text)) return;
 		this.addReference(window, { kind: "clipboard", label: `剪贴板 · ${text.length} 字`, text });
+	}
+
+	// ---- 斜杠命令（Claudian 式 composer dropdown）----
+
+	// 输入/点击时重匹配：/ 在词首则唤起下拉框，并按需节流重载用户命令
+	async updateSlashDropdown(window) {
+		let state = this.windows.get(window);
+		if (!state) return;
+		let input = state.view.querySelector("textarea");
+		let match = this.commands.matchTrigger(input.value, input.selectionStart ?? 0);
+		if (!match) { this.hideSlashDropdown(window); return; }
+		try { await this.commands.refresh(); } catch (_) {}
+		// 重载期间输入可能已变化，以最新值重新匹配
+		match = this.commands.matchTrigger(input.value, input.selectionStart ?? 0);
+		if (!match) { this.hideSlashDropdown(window); return; }
+		let items = this.commands.list(match.query);
+		state.slash = { match, items, selected: items.length ? 0 : -1, help: false };
+		this.renderSlashDropdown(window);
+	}
+
+	renderSlashDropdown(window, scrollToSelected = false) {
+		let state = this.windows.get(window); if (!state?.slash) return;
+		let doc = state.view.ownerDocument, panel = state.view.querySelector('[data-role="slash"]');
+		panel.textContent = "";
+		let offset = 0;
+		if (state.slash.help) {
+			let header = doc.createElement("div"); header.className = "library-ai-slash-header";
+			let title = doc.createElement("strong"); title.textContent = "斜杠命令";
+			let hint = doc.createElement("span"); hint.textContent = "自定义：library-ai/commands/*.md";
+			header.append(title, hint); panel.append(header); offset = 1;
+		}
+		if (!state.slash.items.length) {
+			let empty = doc.createElement("div"); empty.className = "library-ai-slash-empty";
+			empty.textContent = "无匹配命令，输入 /help 查看全部"; panel.append(empty);
+		}
+		state.slash.items.forEach((command, index) => {
+			let item = doc.createElement("div");
+			item.className = "library-ai-slash-item";
+			item.classList.toggle("selected", index === state.slash.selected);
+			item.setAttribute("role", "option");
+			let name = doc.createElement("span"); name.className = "library-ai-slash-name"; name.textContent = `/${command.name}`;
+			let badge = doc.createElement("span");
+			badge.className = `library-ai-slash-badge ${command.source}`;
+			badge.textContent = command.source === "user" ? "自定义" : (command.kind === "action" ? "动作" : "内置");
+			let desc = doc.createElement("span"); desc.className = "library-ai-slash-desc";
+			desc.textContent = command.argumentHint ? `${command.description} · ${command.argumentHint}` : command.description || "";
+			item.append(name, badge, desc);
+			item.addEventListener("mousedown", event => { event.preventDefault(); this.selectSlashCommand(window, index); });
+			item.addEventListener("mousemove", () => {
+				if (state.slash && state.slash.selected !== index) { state.slash.selected = index; this.renderSlashDropdown(window); }
+			});
+			panel.append(item);
+		});
+		panel.hidden = false;
+		if (scrollToSelected && state.slash.selected >= 0) {
+			panel.children[state.slash.selected + offset]?.scrollIntoView?.({ block: "nearest" });
+		}
+	}
+
+	// 下拉框可见时接管导航键；返回 true 表示事件已消费（Claudian handleKeydown 同款语义）
+	handleSlashKeydown(window, event) {
+		let state = this.windows.get(window);
+		let panel = state?.view.querySelector('[data-role="slash"]');
+		if (!state?.slash || panel?.hidden || event.isComposing) return false;
+		let count = state.slash.items.length;
+		if (event.key === "ArrowDown" || event.key === "ArrowUp") {
+			event.preventDefault();
+			if (!count) return true;
+			let delta = event.key === "ArrowDown" ? 1 : -1;
+			state.slash.selected = ((state.slash.selected + delta) % count + count) % count;
+			this.renderSlashDropdown(window, true);
+			return true;
+		}
+		if (event.key === "Enter" || event.key === "Tab") {
+			if (state.slash.selected < 0) return false;
+			event.preventDefault();
+			this.selectSlashCommand(window, state.slash.selected);
+			return true;
+		}
+		if (event.key === "Escape") {
+			event.preventDefault();
+			this.hideSlashDropdown(window);
+			return true;
+		}
+		return false;
+	}
+
+	// Claudian select/replaceRange：替换触发区间为 "/name "，尾部空白去重
+	selectSlashCommand(window, index) {
+		let state = this.windows.get(window); if (!state?.slash) return;
+		let command = state.slash.items[index]; if (!command) return;
+		let input = state.view.querySelector("textarea");
+		let replacement = `/${command.name} `;
+		if (state.slash.match) {
+			let { start, end } = state.slash.match;
+			let after = input.value.slice(end);
+			if (/^\s/.test(after)) after = after.slice(1);
+			input.value = input.value.slice(0, start) + replacement + after;
+			input.selectionStart = input.selectionEnd = start + replacement.length;
+		}
+		else {
+			input.setRangeText(replacement, input.selectionStart, input.selectionEnd, "end");
+		}
+		this.hideSlashDropdown(window);
+		input.focus();
+	}
+
+	hideSlashDropdown(window) {
+		let state = this.windows.get(window); if (!state) return;
+		state.slash = null;
+		let panel = state.view.querySelector('[data-role="slash"]');
+		if (panel) panel.hidden = true;
+	}
+
+	async executeSlashAction(window, command) {
+		if (command.name === "clear") {
+			this.repository.create();
+			await this.syncCurrentSource(window);
+			this.renderAll();
+			this.setStatus(window, "已开始新会话");
+		}
+		else if (command.name === "help") {
+			this.showSlashHelp(window);
+		}
+	}
+
+	async showSlashHelp(window) {
+		let state = this.windows.get(window); if (!state) return;
+		try { await this.commands.refresh(true); } catch (_) {}
+		state.slash = { match: null, items: this.commands.list(""), selected: 0, help: true };
+		this.renderSlashDropdown(window);
 	}
 
 	setStatus(window, text) { let status = this.windows.get(window)?.view.querySelector('[data-role="status"]'); if (status) status.textContent = text; }

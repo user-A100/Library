@@ -56,7 +56,7 @@
 | --- | --- | --- |
 | <img src="docs/assets/readme/icons/library-big.svg" width="18" alt="" /> Evidence Library | 本地文库、集合、条目、附件、标签与 SQLite 数据层 | <img src="https://img.shields.io/badge/-已具备-23865f?style=flat-square" alt="已具备" /> |
 | <img src="docs/assets/readme/icons/book-open-text.svg" width="18" alt="" /> Grounded Reader | PDF 阅读、选区提问、Markdown 回答与研究笔记 | <img src="https://img.shields.io/badge/-原型已具备-2f9e76?style=flat-square" alt="原型已具备" /> |
-| <img src="docs/assets/readme/icons/bot.svg" width="18" alt="" /> Hy3 Research Copilot | 长上下文理解、主张拆解、跨文献综合 | <img src="https://img.shields.io/badge/-接入中-d97706?style=flat-square" alt="接入中" /> |
+| <img src="docs/assets/readme/icons/bot.svg" width="18" alt="" /> Hy3 Research Copilot | 长上下文理解、主张拆解、跨文献综合、`/` 斜杠命令 | <img src="https://img.shields.io/badge/-接入中-d97706?style=flat-square" alt="接入中" /> |
 | <img src="docs/assets/readme/icons/link.svg" width="18" alt="" /> Claim-level Evidence | `itemKey + page + quote + offsets` 证据锚点 | <img src="https://img.shields.io/badge/-接入中-d97706?style=flat-square" alt="接入中" /> |
 | <img src="docs/assets/readme/icons/flask-conical.svg" width="18" alt="" /> TRACE-Eval | 规则 + Hy3 Judge + 人工复核的 8 维评测 | <img src="https://img.shields.io/badge/-方案已完成-0284c7?style=flat-square" alt="方案已完成" /> |
 | <img src="docs/assets/readme/icons/palette.svg" width="18" alt="" /> Focus Workspace | 侧栏优先、分屏研究、浅色/深色与动态主题 | <img src="https://img.shields.io/badge/-已具备-23865f?style=flat-square" alt="已具备" /> |
