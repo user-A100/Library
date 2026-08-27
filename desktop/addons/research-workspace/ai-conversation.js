@@ -20,7 +20,10 @@ LibraryAIConversationRepository = class LibraryAIConversationRepository {
 		// 上次运行中断时，流式消息会停留在 streaming 状态并永远显示转圈光标，
 		// 启动时统一标记为已中断，允许用户重试。
 		for (let conversation of this.state.conversations) {
-			for (let message of conversation.messages || []) {
+			if (!Array.isArray(conversation.messages)) conversation.messages = [];
+			if (!Array.isArray(conversation.sources)) conversation.sources = [];
+			if (!Array.isArray(conversation.references)) conversation.references = [];
+			for (let message of conversation.messages) {
 				if (message.state === "streaming") {
 					message.state = "error";
 					message.error = message.content || message.reasoning ? "回答中断，可点击重试" : "上次生成未完成（应用已退出），可点击重试";
@@ -36,7 +39,7 @@ LibraryAIConversationRepository = class LibraryAIConversationRepository {
 		let now = new Date().toISOString();
 		let conversation = {
 			id: Zotero.Utilities.randomString(12), title: "新对话", createdAt: now, updatedAt: now,
-			providerID: "openai-compatible", model: "", messages: [], sources: source ? [source] : [],
+			providerID: "openai-compatible", model: "", messages: [], sources: source ? [source] : [], references: [],
 		};
 		this.state.conversations.unshift(conversation);
 		this.state.openIDs = [...this.state.openIDs, conversation.id].slice(-6);

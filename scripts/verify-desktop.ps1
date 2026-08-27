@@ -69,13 +69,17 @@ $checks["AI source picker"] = $aiViewSource -match 'selectItemsDialog\.xhtml' `
 	-and $aiViewSource -match 'onlyRegularItems:\s*true' `
 	-and $aiViewSource -match 'multiSelect:\s*true' `
 	-and $aiViewSource -match 'conversation\.sources\.push'
-$checks["Reader annotation mode switch"] = $appearanceSource -match 'renderToolbar' `
-	-and $appearanceSource -match 'renderTextSelectionPopup' `
-	-and $appearanceSource -match 'createAnnotationContextMenu' `
-	-and $appearanceSource -match 'annotationDisplayMode' `
-	-and $appearanceSource -match 'renderSidenoteSidebar' `
-	-and $appearanceSource -match 'getReaderAnnotationItems' `
-	-and $appearanceSource -notmatch 'setSidebarView\("annotations"\)'
+$checks["Native annotations preserved (sidenotes removed)"] = $appearanceSource -notmatch 'renderSidenoteSidebar' `
+	-and $appearanceSource -notmatch 'annotationDisplayMode' `
+	-and $appearanceSource -notmatch 'library-sidenotes' `
+	-and $appearanceSource -notmatch 'renderToolbar'
+$checks["Reader AI selection hooks"] = $appearanceSource -match 'renderTextSelectionPopup' `
+	-and $appearanceSource -match 'addReaderSelection' `
+	-and $appearanceSource -match 'addAreaReference'
+$checks["AI reference chips + clipboard monitor"] = $aiViewSource -match 'data-role="references"' `
+	-and $aiViewSource -match 'startClipboardMonitor' `
+	-and $aiViewSource -match 'nsIClipboard' `
+	-and $aiRepositorySource -match 'references'
 $sectionSource = Get-Content -Raw (Join-Path $source "chrome\content\zotero\elements\itemPaneSection.js")
 $checks["ItemPane compatibility fix"] = $sectionSource -match "if \(!this\.initialized\)"
 

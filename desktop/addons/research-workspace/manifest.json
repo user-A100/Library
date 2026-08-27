@@ -1,7 +1,7 @@
 {
 	"manifest_version": 2,
 	"name": "Library AI",
-	"version": "0.11.2",
+	"version": "0.12.0",
 	"description": "在 Library 文献、附件和阅读器中提供来源驱动的 AI、笔记与 MinerU 工作流。",
 	"author": "Library",
 	"homepage_url": "https://github.com/zhaoxuya520/tencent-fight",

@@ -68,6 +68,28 @@ Zotero 9 的 `Item.prototype.getAnnotations(includeTrashed, asIDs)` **默认返�
 - `item.getAttachments()` → **number[]**（itemID）
 - `item.getAnnotations()` → **Zotero.Item[]**（默认）；`getAnnotations(false, true)` → number[]
 
+## 端到端验收（0.11.3，`work/ai-debug/e2e-run.log`）
+
+真实内核、真实来源、真实 API 的完整闭环（一次性探针模拟用户提问，跑完即删）：
+
+- 新会话 + 空来源提问「请用三句话概括当前论文的主要内容」→ 发送时自动同步当前论文（`sources=1`）；
+- `state=done`，6.5 秒完成，正文 183 字，思考过程 87 字，10 条引用记录；
+- 回答含 `[[S1-C1]]` / `[[S1-C3]]` / `[[S1-C5]]` 引用标记，DOM 中用户消息、思考块、正文全部正确渲染；
+- 回答正文（证据样本）：「本文系统综述了大语言模型对信息检索领域的影响，指出以LLM为代表的生成式AI推动信息检索从性能改进走向模式颠覆 [[S1-C1]]。…」
+
+至此「提问 → 自动来源 → 思考过程 → 流式回答 → 结构化引用」全链路在真实环境中验证通过。探针会话已从 `conversations.json` 清除，仅保留用户真实会话。
+
+## 遗留
+
+### 0.12.0（2026-08-26）：参考片段 + 阅读器联动 + 拆除侧边批注 + 主题统一
+
+1. **拆除侧边批注系统**：按需求放弃「弹窗/侧边」批注模式，删除 `research-workspace.js` 约 560 行（模式切换器、侧边栏渲染、视口锚定布局、批注右键扩展、样式注册），只保留原生 Zotero 批注。`renderTextSelectionPopup` 钩子保留但改作 AI 用途。
+2. **参考片段（references）**：会话新增 `references` 数组（持久化于 conversations.json），composer 中以芯片展示、可单独移除；发送时作为「用户选中的参考片段」块进入 prompt，优先围绕其作答；消息记录本次使用的参考标签。
+3. **剪贴板实时监测**（Claudian 式）：AI 面板打开时每 1.5s 读一次系统剪贴板（nsIClipboard），新文本（8–8000 字）自动挂为参考芯片；面板打开时先对齐基线避免误挂旧内容；用户移除的片段不再自动加回。
+4. **阅读器精准制导**：划词弹窗新增「✦ 发给 Library AI 作为参考」按钮（选中文本 + 页码）；「选择区域」工具产生的图片批注自动挂为选区参考（仅当该文档正在阅读器中打开，避免批量导入误触发）。
+5. **主题统一**：AI 面板全部颜色/圆角/阴影改用产品皮肤 token（`--accent-blue`、`--material-*`、`--fill-*`、`--research-radius-*`、`--research-shadow`），跟随「皮肤」设置的主色；默认主色从薄荷 #72e3a6 改为产品玉色 #1b7f5c。
+6. **验收同步**：移除 "Reader annotation mode switch" 检查，新增 "Native annotations preserved"、"Reader AI selection hooks"、"AI reference chips + clipboard monitor" 三项，共 19 项全 PASS。
+
 ## 遗留
 
 - 开发文库 `desktop/data/library-ai/conversations.json` 中含两条自检产生的测试会话，属开发数据，可忽略或手动删除。

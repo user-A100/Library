@@ -7,13 +7,9 @@ ResearchWorkspace = {
 	menuIDs: [],
 	prefObserver: null,
 	shellStates: new Map(),
-	readerDocuments: new Set(),
-	readerInitialModes: new Set(),
-	sidenoteLayouts: new Map(),
 	readerSurfacesRegistered: false,
 	annotationNotifierID: null,
 	aiViewHost: null,
-	annotationModePref: "extensions.zotero.researchWorkspace.annotationDisplayMode",
 	aiPrefRoot: "extensions.zotero.researchWorkspace.",
 
 	init({ id, version, rootURI }) {
@@ -79,8 +75,8 @@ ResearchWorkspace = {
 			opacity: 72,
 			texture: 18,
 			points: [
-				{ id: "mint", color: "#72e3a6", x: 20, y: 20, isPrimary: true },
-				{ id: "aqua", color: "#83d9d4", x: 76, y: 34 },
+				{ id: "mint", color: "#1b7f5c", x: 20, y: 20, isPrimary: true },
+				{ id: "aqua", color: "#6ed6a4", x: 76, y: 34 },
 				{ id: "cream", color: "#f1e9c9", x: 48, y: 82 },
 			],
 		};
@@ -127,18 +123,11 @@ ResearchWorkspace = {
 		let primary = config.points.find(point => point.isPrimary) || config.points[0];
 		root.dataset.researchTheme = "custom";
 		root.style.setProperty("--research-custom-gradient", this.buildGradient(config));
-		root.style.setProperty("--research-custom-accent", primary?.color || "#72e3a6");
-		root.style.setProperty("--research-glow", `color-mix(in srgb, ${primary?.color || "#72e3a6"} 22%, transparent)`);
+		root.style.setProperty("--research-custom-accent", primary?.color || "#1b7f5c");
+		root.style.setProperty("--research-glow", `color-mix(in srgb, ${primary?.color || "#1b7f5c"} 22%, transparent)`);
 		root.style.setProperty("--research-grain-opacity", String((Number(config.texture) || 0) / 100));
-		for (let doc of this.readerDocuments) this.applyReaderAppearance(doc, config);
 	},
 
-	applyReaderAppearance(doc, providedConfig = null) {
-		if (!doc?.documentElement) return;
-		let config = providedConfig || this.getThemeConfig();
-		let primary = config.points.find(point => point.isPrimary) || config.points[0];
-		doc.documentElement.style.setProperty("--library-reader-accent", primary?.color || "#72e3a6");
-	},
 
 	applyAppearanceToAllWindows() {
 		for (let window of Zotero.getMainWindows()) {
@@ -326,630 +315,46 @@ ResearchWorkspace = {
 	registerReaderSurfaces() {
 		if (this.readerSurfacesRegistered) return;
 
-		Zotero.Reader.registerEventListener(
-			"renderToolbar",
-			event => this.renderAnnotationModeSwitch(event),
-			this.id,
-		);
+		// 阅读器划词弹窗：追加「发给 Library AI」按钮，把选中文字精准挂为 AI 参考
 		Zotero.Reader.registerEventListener(
 			"renderTextSelectionPopup",
 			event => this.handleTextSelectionPopup(event),
 			this.id,
 		);
-		Zotero.Reader.registerEventListener(
-			"createAnnotationContextMenu",
-			event => this.extendAnnotationContextMenu(event),
-			this.id,
-		);
+
+		// 「选择区域」工具产生的图片批注：自动挂为 AI 参考（仅当该文档正在阅读器中打开，避免导入时误触发）
 		this.annotationNotifierID = Zotero.Notifier.registerObserver({
 			notify: (event, type, ids) => {
-				if (type !== "item" || !["add", "modify", "trash", "delete"].includes(event)) return;
-				for (let reader of Zotero.Reader._readers || []) {
-					if (reader?.itemID && this.readerDocuments.has(reader._iframeWindow?.document)) {
-						this.refreshSidenotes(reader, ids);
-					}
+				if (type !== "item" || event !== "add") return;
+				for (let id of ids) {
+					let item = Zotero.Items.get(id);
+					if (!item?.isAnnotation?.() || item.annotationType !== "image") continue;
+					let readerOpen = (Zotero.Reader._readers || []).some(reader => reader?.itemID === item.parentID);
+					if (readerOpen) this.aiViewHost?.addAreaReference(item);
 				}
 			},
 		}, ["item"], "research-workspace-annotations");
 		this.readerSurfacesRegistered = true;
 	},
 
-	getAnnotationMode() {
-		let mode = Services.prefs.getStringPref(this.annotationModePref, "sidenotes");
-		if (mode === "sidebar") {
-			mode = "sidenotes";
-			Services.prefs.setStringPref(this.annotationModePref, mode);
-		}
-		return mode === "popup" ? "popup" : "sidenotes";
-	},
-
-	setAnnotationMode(mode, reader = null) {
-		mode = mode === "popup" ? "popup" : "sidenotes";
-		Services.prefs.setStringPref(this.annotationModePref, mode);
-		this.updateReaderDocuments(mode);
-		if (reader) {
-			if (mode === "sidenotes") this.openAnnotationSidebar(reader);
-			else this.closeAnnotationSidebar(reader);
-		}
-	},
-
-	ensureReaderStyle(doc) {
-		if (!doc?.documentElement) return;
-		this.readerDocuments.add(doc);
-		this.applyReaderAppearance(doc);
-		if (doc.getElementById("library-annotation-mode-style")) return;
-
-		let style = doc.createElement("style");
-		style.id = "library-annotation-mode-style";
-		style.textContent = `
-			.library-annotation-mode {
-				display: inline-flex;
-				align-items: center;
-				gap: 2px;
-				margin-inline-end: 6px;
-				padding: 2px;
-				border: 1px solid color-mix(in srgb, currentColor 16%, transparent);
-				border-radius: 9px;
-				background: color-mix(in srgb, Canvas 88%, transparent);
-				box-shadow: 0 1px 2px rgba(0, 0, 0, .06);
-			}
-			.library-annotation-mode-label {
-				padding-inline: 6px 4px;
-				font-size: 11px;
-				font-weight: 600;
-				opacity: .64;
-				white-space: nowrap;
-			}
-			.library-annotation-mode-button {
-				min-width: 42px;
-				height: 26px;
-				padding: 0 8px;
-				border: 0;
-				border-radius: 7px;
-				background: transparent;
-				color: inherit;
-				font: inherit;
-				font-size: 12px;
-				cursor: pointer;
-			}
-			.library-annotation-mode-button:hover {
-				background: color-mix(in srgb, currentColor 8%, transparent);
-			}
-			.library-annotation-mode-button[aria-pressed="true"] {
-				background: color-mix(in srgb, var(--library-reader-accent, #72e3a6) 22%, Canvas);
-				color: color-mix(in srgb, var(--library-reader-accent, #23865f) 76%, CanvasText);
-				box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--library-reader-accent, #72e3a6) 32%, transparent);
-				font-weight: 600;
-			}
-			html[data-library-sidenotes-open="true"] .split-view {
-				inset-inline-end: var(--library-sidenotes-width, 340px) !important;
-				transition: inset-inline-end 180ms cubic-bezier(.2,.82,.2,1);
-			}
-			html[data-library-annotation-mode="sidenotes"] .annotation-popup {
-				display: none !important;
-			}
-			.library-sidenotes {
-				position: fixed; z-index: 40; top: 41px; inset-inline-end: 0; bottom: var(--bottom-placeholder-height, 0);
-				box-sizing: border-box; width: var(--library-sidenotes-width, 340px); display: grid;
-				grid-template-rows: auto minmax(0, 1fr); overflow: hidden;
-				border-inline-start: 1px solid color-mix(in srgb, CanvasText 14%, transparent);
-				background: color-mix(in srgb, Canvas 88%, var(--library-reader-accent, #72e3a6) 12%);
-				color: CanvasText; box-shadow: -12px 0 34px color-mix(in srgb, CanvasText 8%, transparent);
-			}
-			.library-sidenotes-header { display:flex; align-items:center; justify-content:space-between; gap:10px; padding:12px 12px 10px 15px; border-bottom:1px solid color-mix(in srgb,CanvasText 10%,transparent); }
-			.library-sidenotes-heading { display:grid; gap:2px; }
-			.library-sidenotes-heading strong { font-size:15px; font-weight:700; }
-			.library-sidenotes-heading small,.library-sidenote-card>small { color:color-mix(in srgb,CanvasText 58%,transparent); font-size:10px; }
-			.library-sidenotes-close,.library-sidenote-delete { border:0; background:transparent; color:color-mix(in srgb,CanvasText 62%,transparent); cursor:pointer; }
-			.library-sidenotes-close { width:28px; height:28px; border-radius:9px; font-size:22px; }
-			.library-sidenotes-close:hover,.library-sidenote-delete:hover { background:color-mix(in srgb,CanvasText 8%,transparent); color:CanvasText; }
-			.library-sidenotes-list { position:relative; min-height:0; overflow:hidden; padding:0; isolation:isolate; }
-			.library-sidenotes-empty { margin:8px; padding:18px 12px; border:1px dashed color-mix(in srgb,CanvasText 18%,transparent); border-radius:12px; color:color-mix(in srgb,CanvasText 58%,transparent); font-size:12px; line-height:1.55; }
-			.library-sidenotes-viewport-hint { position:absolute; z-index:2; inset-inline:18px; top:50%; translate:0 -50%; padding:14px 16px; border:1px dashed color-mix(in srgb,CanvasText 18%,transparent); border-radius:12px; color:color-mix(in srgb,CanvasText 52%,transparent); background:color-mix(in srgb,Canvas 72%,transparent); font-size:12px; line-height:1.55; text-align:center; pointer-events:none; }
-			.library-sidenotes-viewport-hint[hidden] { display:none; }
-			.library-sidenotes-leaders { position:absolute; z-index:0; inset:0; width:100%; height:100%; overflow:visible; pointer-events:none; }
-			.library-sidenote-leader { fill:none; stroke:var(--annotation-color,#f4c542); stroke-width:1.35; stroke-linecap:round; opacity:.72; }
-			.library-sidenote-anchor { fill:var(--annotation-color,#f4c542); stroke:Canvas; stroke-width:1.5; }
-			.library-sidenote-card { position:absolute; z-index:1; inset-inline:12px 10px; top:0; box-sizing:border-box; display:grid; gap:8px; margin:0; padding:10px; border:1px solid color-mix(in srgb,var(--annotation-color,#f4c542) 48%,CanvasText); border-radius:13px; background:color-mix(in srgb,var(--annotation-color,#f4c542) 14%,Canvas); box-shadow:0 8px 22px color-mix(in srgb,CanvasText 7%,transparent); transform:translateY(var(--library-sidenote-y,0px)); transform-origin:top; opacity:0; pointer-events:none; transition:opacity 100ms ease, transform 130ms cubic-bezier(.2,.82,.2,1); }
-			.library-sidenote-card[data-anchor-visible="true"] { opacity:1; pointer-events:auto; }
-			.library-sidenote-card>header { display:flex; align-items:center; gap:6px; }
-			.library-sidenote-locate { display:inline-flex; align-items:center; gap:7px; min-width:0; flex:1; padding:0; border:0; background:transparent; color:CanvasText; font:inherit; text-align:start; cursor:pointer; }
-			.library-sidenote-locate b { display:grid; place-items:center; width:23px; height:23px; flex:0 0 23px; border-radius:50%; background:var(--annotation-color,#f4c542); color:#222; font-size:12px; }
-			.library-sidenote-locate span { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:12px; font-weight:680; }
-			.library-sidenote-delete { padding:3px 5px; border-radius:6px; font-size:10px; }
-			.library-sidenote-card blockquote { margin:0; color:CanvasText; font-size:12px; line-height:1.5; }
-			.library-sidenote-card textarea { box-sizing:border-box; width:100%; min-height:46px; resize:vertical; padding:8px; border:1px solid color-mix(in srgb,CanvasText 18%,transparent); border-radius:9px; background:color-mix(in srgb,Canvas 82%,transparent); color:CanvasText; font:12px/1.45 inherit; }
-			.library-sidenote-card textarea:focus { outline:2px solid color-mix(in srgb,var(--library-reader-accent,#72e3a6) 46%,transparent); outline-offset:1px; }
-			@media (max-width: 920px) { html { --library-sidenotes-width: 300px; } }
-			@media (prefers-reduced-motion: no-preference) {
-				.library-annotation-mode-button {
-					transition: background-color 120ms ease, color 120ms ease, box-shadow 120ms ease;
-				}
-			}
-		`;
-		doc.head?.append(style);
-	},
-
-	updateReaderDocuments(mode = this.getAnnotationMode()) {
-		for (let doc of [...this.readerDocuments]) {
-			try {
-				if (!doc?.documentElement?.isConnected) {
-					this.readerDocuments.delete(doc);
-					continue;
-				}
-				doc.documentElement.dataset.libraryAnnotationMode = mode;
-				for (let button of doc.querySelectorAll(".library-annotation-mode-button")) {
-					button.setAttribute("aria-pressed", String(button.dataset.mode === mode));
-				}
-			}
-			catch (error) {
-				this.readerDocuments.delete(doc);
-			}
-		}
-	},
-
-	renderAnnotationModeSwitch({ reader, doc, append }) {
-		this.ensureReaderStyle(doc);
-
-		let group = doc.createElement("div");
-		group.className = "library-annotation-mode";
-		group.setAttribute("role", "group");
-		group.setAttribute("aria-label", "批注显示模式");
-
-		let label = doc.createElement("span");
-		label.className = "library-annotation-mode-label";
-		label.textContent = "批注";
-		group.append(label);
-
-		for (let [mode, text, title] of [
-			["popup", "弹窗", "在文档旁弹出批注编辑框"],
-			["sidenotes", "侧边", "在页面侧边显示批注卡片"],
-		]) {
-			let button = doc.createElement("button");
-			button.className = "library-annotation-mode-button";
-			button.dataset.mode = mode;
-			button.textContent = text;
-			button.title = title;
-			button.setAttribute("aria-pressed", String(this.getAnnotationMode() === mode));
-			button.addEventListener("click", () => this.setAnnotationMode(mode, reader));
-			group.append(button);
-		}
-
-		append(group);
-		doc.documentElement.dataset.libraryAnnotationMode = this.getAnnotationMode();
-		let readerKey = reader?._instanceID || reader?.itemID;
-		if (this.getAnnotationMode() === "sidenotes" && readerKey && !this.readerInitialModes.has(readerKey)) {
-			this.readerInitialModes.add(readerKey);
-			doc.defaultView.setTimeout(() => this.openAnnotationSidebar(reader));
-		}
-	},
-
-	handleTextSelectionPopup({ reader, doc }) {
-		this.ensureReaderStyle(doc);
-		doc.documentElement.dataset.libraryAnnotationMode = this.getAnnotationMode();
-		if (this.getAnnotationMode() === "sidenotes") {
-			this.openAnnotationSidebar(reader);
-		}
-	},
-
-	extendAnnotationContextMenu({ reader, append }) {
-		append({
-			label: "在侧边栏编辑",
-			onCommand: () => {
-				this.setAnnotationMode("sidenotes", reader);
-			},
-		});
-	},
-
-	openAnnotationSidebar(reader) {
-		try {
-			let doc = reader?._iframeWindow?.document;
-			if (!doc) return;
-			this.readerDocuments.add(doc);
-			this.renderSidenoteSidebar(reader, doc);
-		}
-		catch (error) {
-			this.log(`Unable to open side notes: ${error}`);
-		}
-	},
-
-	closeAnnotationSidebar(reader) {
-		let doc = reader?._iframeWindow?.document;
-		if (!doc) return;
-		this.disposeSidenoteLayout(reader);
-		doc.getElementById("library-sidenotes")?.remove();
-		delete doc.documentElement.dataset.librarySidenotesOpen;
-	},
-
-	getReaderAnnotationItems(reader) {
-		try {
-			let item = Zotero.Items.get(reader?.itemID);
-			if (!item?.isFileAttachment?.()) return [];
-			return item.getAnnotations().filter(annotation => !annotation.deleted);
-		}
-		catch (error) {
-			this.log(`Unable to read annotations: ${error}`);
-			return [];
-		}
-	},
-
-	annotationPageIndex(annotation) {
-		try {
-			return Number(JSON.parse(annotation.annotationPosition || "{}").pageIndex) || 0;
-		}
-		catch {
-			return 0;
-		}
-	},
-
-	annotationPosition(annotation) {
-		try {
-			let position = JSON.parse(annotation.annotationPosition || "{}");
-			return position && Number.isFinite(Number(position.pageIndex)) ? position : null;
-		}
-		catch {
-			return null;
-		}
-	},
-
-	annotationLabel(annotation) {
-		return {
-			highlight: "高亮",
-			underline: "下划线",
-			note: "便签",
-			image: "区域",
-			ink: "手写",
-		}[annotation.annotationType] || "批注";
-	},
-
-	renderSidenoteSidebar(reader, doc) {
-		if (!doc?.documentElement) return;
-		this.disposeSidenoteLayout(reader);
-		let host = doc.getElementById("library-sidenotes");
-		if (!host) {
-			host = doc.createElement("aside");
-			host.id = "library-sidenotes";
-			host.className = "library-sidenotes";
-			host.setAttribute("aria-label", "侧边批注");
-			doc.documentElement.append(host);
-		}
-		doc.documentElement.dataset.librarySidenotesOpen = "true";
-		doc.documentElement.dataset.libraryAnnotationMode = "sidenotes";
-		host.replaceChildren();
-
-		let annotations = this.getReaderAnnotationItems(reader).sort((a, b) => {
-			let page = this.annotationPageIndex(a) - this.annotationPageIndex(b);
-			return page || String(a.annotationSortIndex || "").localeCompare(String(b.annotationSortIndex || ""));
-		});
-		let header = doc.createElement("header");
-		header.className = "library-sidenotes-header";
-		let heading = doc.createElement("div");
-		heading.className = "library-sidenotes-heading";
-		heading.innerHTML = "<strong>侧边批注</strong><small>随划线位置同步移动</small>";
-		let close = doc.createElement("button");
-		close.className = "library-sidenotes-close";
-		close.textContent = "×";
-		close.title = "收起侧边批注";
-		close.addEventListener("click", () => this.closeAnnotationSidebar(reader));
-		header.append(heading, close);
-		host.append(header);
-
-		let list = doc.createElement("div");
-		list.className = "library-sidenotes-list";
-		let leaders = doc.createElementNS("http://www.w3.org/2000/svg", "svg");
-		leaders.classList.add("library-sidenotes-leaders");
-		leaders.setAttribute("aria-hidden", "true");
-		list.append(leaders);
-		let viewportHint = null;
-		if (annotations.length) {
-			viewportHint = doc.createElement("div");
-			viewportHint.className = "library-sidenotes-viewport-hint";
-			viewportHint.textContent = "滚动到划线位置，批注会贴着对应原文出现。";
-			list.append(viewportHint);
-		}
-		if (!annotations.length) {
-			let empty = doc.createElement("div");
-			empty.className = "library-sidenotes-empty";
-			empty.textContent = "选中文字并使用高亮或下划线，批注会显示在这里。";
-			list.append(empty);
-		}
-		for (let [index, annotation] of annotations.entries()) {
-			let card = doc.createElement("article");
-			card.className = "library-sidenote-card";
-			card.style.setProperty("--annotation-color", annotation.annotationColor || "#f4c542");
-			card.dataset.annotationID = annotation.key;
-			card.dataset.pageIndex = String(this.annotationPageIndex(annotation));
-			card._libraryAnnotationPosition = this.annotationPosition(annotation);
-			let cardHeader = doc.createElement("header");
-			let locate = doc.createElement("button");
-			locate.className = "library-sidenote-locate";
-			locate.innerHTML = `<b>${index + 1}</b><span>${this.annotationLabel(annotation)} · p. ${annotation.annotationPageLabel || this.annotationPageIndex(annotation) + 1}</span>`;
-			locate.addEventListener("click", () => {
-				reader.navigate({ annotationID: annotation.key });
+	handleTextSelectionPopup({ reader, doc, params, append }) {
+		let text = (params?.annotation?.text || "").trim();
+		if (!text) return;
+		let button = doc.createElement("button");
+		button.type = "button";
+		button.style.cssText = "display:flex;align-items:center;justify-content:center;gap:6px;width:100%;margin-top:6px;padding:6px 10px;border:0;border-radius:6px;background:#1b7f5c;color:#fff;font-size:12px;cursor:pointer;";
+		button.textContent = "✦ 发给 Library AI 作为参考";
+		button.addEventListener("click", () => {
+			this.aiViewHost?.addReaderSelection({
+				reader,
+				text,
+				pageLabel: params?.annotation?.pageLabel || "",
 			});
-			let remove = doc.createElement("button");
-			remove.className = "library-sidenote-delete";
-			remove.textContent = "删除";
-			remove.title = "删除批注（可撤销）";
-			remove.disabled = !annotation.isEditable?.();
-			remove.addEventListener("click", () => this.deleteAnnotation(annotation, reader));
-			cardHeader.append(locate, remove);
-			card.append(cardHeader);
-			if (annotation.annotationText) {
-				let quote = doc.createElement("blockquote");
-				quote.textContent = annotation.annotationText;
-				card.append(quote);
-			}
-			let comment = doc.createElement("textarea");
-			comment.rows = 2;
-			comment.placeholder = "补充你的批注…";
-			comment.value = annotation.annotationComment || "";
-			comment.addEventListener("focus", () => reader.navigate({ annotationID: annotation.key }));
-			comment.addEventListener("change", () => this.updateAnnotationComment(annotation, comment.value, reader));
-			card.append(comment);
-			let meta = doc.createElement("small");
-			meta.textContent = annotation.dateModified ? `更新于 ${annotation.dateModified}` : "已同步到当前文库";
-			card.append(meta);
-			list.append(card);
-		}
-			host.append(list);
-		this.installSidenoteLayout(reader, doc, host, list, leaders, viewportHint);
-	},
-
-	disposeSidenoteLayout(reader) {
-		let key = reader?._instanceID || reader?.itemID || reader;
-		let state = this.sidenoteLayouts.get(key);
-		if (!state) return;
-		try {
-			if (state.raf) state.window.cancelAnimationFrame(state.raf);
-			if (state.trailingTimer) state.window.clearTimeout(state.trailingTimer);
-			for (let cleanup of state.cleanups) cleanup();
-			state.resizeObserver?.disconnect();
-		}
-		catch (error) {
-			this.log(`Unable to dispose side-note layout: ${error}`);
-		}
-		this.sidenoteLayouts.delete(key);
-	},
-
-	installSidenoteLayout(reader, doc, host, list, leaders, viewportHint) {
-		let key = reader?._instanceID || reader?.itemID || reader;
-		let win = doc.defaultView;
-		let primaryView = reader?._internalReader?._primaryView;
-		let pdfWindow = primaryView?._iframeWindow;
-		let viewer = pdfWindow?.PDFViewerApplication?.pdfViewer;
-		let scrollElement = pdfWindow?.document?.getElementById("viewerContainer");
-		if (!win || !primaryView?._iframe || !viewer || !scrollElement) {
-			for (let card of list.querySelectorAll(".library-sidenote-card")) {
-				card.dataset.anchorVisible = "false";
-			}
-			let unavailable = doc.createElement("div");
-			unavailable.className = "library-sidenotes-empty";
-			unavailable.textContent = "正在连接原文位置…";
-			list.append(unavailable);
-			let attempts = Number(host.dataset.layoutAttempts || 0) + 1;
-			host.dataset.layoutAttempts = String(attempts);
-			if (win && attempts < 40) {
-				win.setTimeout(() => {
-					if (host.isConnected && this.getAnnotationMode() === "sidenotes") {
-						this.renderSidenoteSidebar(reader, doc);
-					}
-				}, attempts < 8 ? 140 : 300);
-			}
-			return;
-		}
-		delete host.dataset.layoutAttempts;
-
-		let state = {
-			reader,
-			window: win,
-			primaryView,
-			pdfWindow,
-			viewer,
-			host,
-			list,
-			leaders,
-			viewportHint,
-			raf: 0,
-			trailingTimer: 0,
-			cleanups: [],
-			resizeObserver: null,
-			didLogPosition: false,
-			lastAnchorDiagnostic: null,
-		};
-		this.sidenoteLayouts.set(key, state);
-
-		let schedule = () => this.scheduleSidenoteLayout(reader);
-		let scheduleTrailing = () => {
-			schedule();
-			if (state.trailingTimer) win.clearTimeout(state.trailingTimer);
-			state.trailingTimer = win.setTimeout(schedule, 140);
-		};
-		scrollElement.addEventListener("scroll", schedule, { passive: true });
-		pdfWindow.addEventListener("resize", scheduleTrailing, { passive: true });
-		win.addEventListener("resize", scheduleTrailing, { passive: true });
-		state.cleanups.push(
-			() => scrollElement.removeEventListener("scroll", schedule),
-			() => pdfWindow.removeEventListener("resize", scheduleTrailing),
-			() => win.removeEventListener("resize", scheduleTrailing),
-		);
-
-		let eventBus = pdfWindow.PDFViewerApplication?.eventBus;
-		for (let eventName of ["pagerendered", "updateviewarea", "scalechanging", "rotationchanging"]) {
-			eventBus?.on?.(eventName, scheduleTrailing);
-			state.cleanups.push(() => eventBus?.off?.(eventName, scheduleTrailing));
-		}
-
-		if (win.ResizeObserver) {
-			state.resizeObserver = new win.ResizeObserver(scheduleTrailing);
-			state.resizeObserver.observe(host);
-			state.resizeObserver.observe(list);
-			state.resizeObserver.observe(primaryView._iframe);
-			for (let card of list.querySelectorAll(".library-sidenote-card")) {
-				state.resizeObserver.observe(card);
-			}
-		}
-		win.setTimeout(schedule);
-		win.setTimeout(schedule, 220);
-	},
-
-	scheduleSidenoteLayout(reader) {
-		let key = reader?._instanceID || reader?.itemID || reader;
-		let state = this.sidenoteLayouts.get(key);
-		if (!state || state.raf) return;
-		state.raf = state.window.requestAnimationFrame(() => {
-			state.raf = 0;
-			this.positionSidenotes(state);
 		});
-	},
-
-	getSidenoteAnchor(state, position) {
-		if (!position || !Array.isArray(position.rects) || !position.rects.length) return null;
-		let pageIndex = Number(position.pageIndex);
-		let pageView = state.viewer.getPageView?.(pageIndex);
-		let pageElement = pageView?.div;
-		let viewport = pageView?.viewport;
-		if (!pageElement?.isConnected || !viewport?.convertToViewportPoint) return null;
-
-		let pageRect = pageElement.getBoundingClientRect();
-		let iframeRect = state.primaryView._iframe.getBoundingClientRect();
-		let firstLineTop = Infinity;
-		let firstLineHeight = 0;
-		for (let rect of position.rects) {
-			if (!Array.isArray(rect) || rect.length < 4) continue;
-			let pointA = viewport.convertToViewportPoint(rect[0], rect[1]);
-			let pointB = viewport.convertToViewportPoint(rect[2], rect[3]);
-			let top = Math.min(pointA[1], pointB[1]);
-			let height = Math.abs(pointB[1] - pointA[1]);
-			if (top < firstLineTop) {
-				firstLineTop = top;
-				firstLineHeight = height;
-			}
-		}
-		if (!Number.isFinite(firstLineTop)) return null;
-
-		let scale = pageRect.height / Math.max(1, viewport.height);
-		let outerY = iframeRect.top + pageRect.top + (firstLineTop + firstLineHeight / 2) * scale;
-		let listRect = state.list.getBoundingClientRect();
-		state.lastAnchorDiagnostic = {
-			pageIndex,
-			pageTop: Math.round(pageRect.top),
-			pageHeight: Math.round(pageRect.height),
-			iframeTop: Math.round(iframeRect.top),
-			lineTop: Math.round(firstLineTop),
-			listTop: Math.round(listRect.top),
-			listHeight: Math.round(listRect.height),
-			anchorY: Math.round(outerY - listRect.top),
-		};
-		return outerY - listRect.top;
-	},
-
-	resolveSidenoteCollisions(items, height, gap = 9) {
-		let nextFreeY = 4;
-		for (let item of items) {
-			item.y = Math.max(4, item.anchorY - 18, nextFreeY);
-			nextFreeY = item.y + item.height + gap;
-		}
-		let ceiling = Math.max(4, height - 4);
-		for (let index = items.length - 1; index >= 0; index--) {
-			let item = items[index];
-			let maxY = index === items.length - 1
-				? ceiling - item.height
-				: items[index + 1].y - gap - item.height;
-			item.y = Math.max(4, Math.min(item.y, maxY));
-		}
-		return items;
-	},
-
-	positionSidenotes(state) {
-		if (!state.list?.isConnected || !state.primaryView?._iframe?.isConnected) return;
-		let listRect = state.list.getBoundingClientRect();
-		let cards = [];
-		for (let card of state.list.querySelectorAll(".library-sidenote-card")) {
-			let anchorY = this.getSidenoteAnchor(state, card._libraryAnnotationPosition);
-			let visible = Number.isFinite(anchorY) && anchorY >= -12 && anchorY <= listRect.height + 12;
-			card.dataset.anchorVisible = String(visible);
-			if (visible) {
-				cards.push({
-					card,
-					anchorY: Math.max(0, Math.min(listRect.height, anchorY)),
-					height: card.getBoundingClientRect().height,
-				});
-			}
-		}
-		cards.sort((a, b) => a.anchorY - b.anchorY);
-		this.resolveSidenoteCollisions(cards, listRect.height);
-		if (state.viewportHint) state.viewportHint.hidden = cards.length > 0;
-		if (!state.didLogPosition) {
-			state.didLogPosition = true;
-			this.log(`Side-note anchor: ${JSON.stringify(state.lastAnchorDiagnostic)}; visible cards=${cards.length}`);
-		}
-
-		state.leaders.replaceChildren();
-		state.leaders.setAttribute("viewBox", `0 0 ${Math.max(1, listRect.width)} ${Math.max(1, listRect.height)}`);
-		for (let item of cards) {
-			item.card.style.setProperty("--library-sidenote-y", `${Math.round(item.y)}px`);
-			let color = item.card.style.getPropertyValue("--annotation-color") || "#f4c542";
-			let line = state.leaders.ownerDocument.createElementNS("http://www.w3.org/2000/svg", "path");
-			line.classList.add("library-sidenote-leader");
-			line.style.setProperty("--annotation-color", color);
-			let cardY = item.y + 18;
-			line.setAttribute("d", `M 0 ${item.anchorY.toFixed(1)} C 5 ${item.anchorY.toFixed(1)}, 7 ${cardY.toFixed(1)}, 12 ${cardY.toFixed(1)}`);
-			let dot = state.leaders.ownerDocument.createElementNS("http://www.w3.org/2000/svg", "circle");
-			dot.classList.add("library-sidenote-anchor");
-			dot.style.setProperty("--annotation-color", color);
-			dot.setAttribute("cx", "2.5");
-			dot.setAttribute("cy", item.anchorY.toFixed(1));
-			dot.setAttribute("r", "2.5");
-			state.leaders.append(line, dot);
-		}
-	},
-
-	refreshSidenotes(reader) {
-		if (this.getAnnotationMode() !== "sidenotes") return;
-		let doc = reader?._iframeWindow?.document;
-		if (doc?.getElementById("library-sidenotes")) this.renderSidenoteSidebar(reader, doc);
-	},
-
-	async updateAnnotationComment(annotation, comment, reader) {
-		try {
-			annotation.annotationComment = comment;
-			await annotation.saveTx();
-			this.refreshSidenotes(reader);
-		}
-		catch (error) {
-			this.log(`Unable to save annotation comment: ${error}`);
-		}
-	},
-
-	async deleteAnnotation(annotation, reader) {
-		try {
-			// Move the annotation to Zotero's trash instead of erasing it. This keeps
-			// accidental deletions recoverable through the native trash view.
-			await Zotero.Items.trashTx([annotation.id]);
-			this.refreshSidenotes(reader);
-		}
-		catch (error) {
-			this.log(`Unable to delete annotation: ${error}`);
-		}
+		append(button);
 	},
 
 	removeReaderSurfaces() {
-		for (let state of [...this.sidenoteLayouts.values()]) this.disposeSidenoteLayout(state.reader);
-		for (let doc of this.readerDocuments) {
-			try {
-				doc.getElementById("library-annotation-mode-style")?.remove();
-				doc.getElementById("library-sidenotes")?.remove();
-				delete doc.documentElement.dataset.libraryAnnotationMode;
-				delete doc.documentElement.dataset.librarySidenotesOpen;
-				for (let element of doc.querySelectorAll(".library-annotation-mode")) element.remove();
-			}
-			catch (error) {
-				// The reader document may already have been destroyed.
-			}
-		}
-		this.readerDocuments.clear();
-		this.readerInitialModes.clear();
 		if (this.annotationNotifierID) {
 			Zotero.Notifier.unregisterObserver(this.annotationNotifierID);
 			this.annotationNotifierID = null;

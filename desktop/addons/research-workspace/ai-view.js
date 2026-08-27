@@ -7,6 +7,8 @@ LibraryAIViewHost = class LibraryAIViewHost {
 		this.windows = new Map();
 		this.abortController = null;
 		this.notifierID = null;
+		this.lastClipboardText = "";
+		this.clipboardDismissed = new Set();
 	}
 
 	async init() {
@@ -64,6 +66,7 @@ LibraryAIViewHost = class LibraryAIViewHost {
 	removeFromWindow(window) {
 		let state = this.windows.get(window);
 		if (!state) return;
+		this.stopClipboardMonitor(window);
 		window.clearTimeout(state.buttonTimer);
 		for (let [target, type, listener, options] of state.listeners) target.removeEventListener(type, listener, options);
 		for (let button of state.buttons) { button.closest(".library-ai-nav-wrapper")?.remove(); if (button === state.launcher || button.classList.contains("library-ai-floating-launcher")) button.remove(); }
@@ -157,6 +160,7 @@ LibraryAIViewHost = class LibraryAIViewHost {
 		window.document.documentElement.style.setProperty("--library-ai-panel-width", `${boundedWidth}px`);
 		for (let button of state.buttons) button.classList.add("active");
 		if (syncSource) await this.syncCurrentSource(window);
+		this.startClipboardMonitor(window);
 		this.render(window);
 	}
 
@@ -165,6 +169,7 @@ LibraryAIViewHost = class LibraryAIViewHost {
 		if (!state) return;
 		state.open = false; state.view.hidden = true; if (state.nativeContent) state.nativeContent.hidden = false;
 		Services.prefs.setBoolPref(this.workspace.aiPrefRoot + "aiViewOpen", false);
+		this.stopClipboardMonitor(window);
 		for (let button of state.buttons) button.classList.remove("active");
 		try { window.ZoteroContextPane.collapsed = true; } catch (_) { state.contextPane.setAttribute("collapsed", "true"); }
 	}
@@ -201,6 +206,7 @@ LibraryAIViewHost = class LibraryAIViewHost {
 			<main class="library-ai-messages" aria-live="polite"></main>
 			<footer class="library-ai-composer-shell">
 				<div class="library-ai-source-row"><div data-role="sources"></div><button type="button" data-action="add-source" title="从文库选择其他论文">＋来源</button></div>
+				<div class="library-ai-references" data-role="references" hidden></div>
 				<div class="library-ai-composer"><textarea rows="3" placeholder="向论文提问…"></textarea><div class="library-ai-send-stack"><button type="button" data-action="stop" hidden title="停止生成">■</button><button type="button" data-action="send" title="发送">↑</button></div></div>
 				<div class="library-ai-composer-foot"><span data-role="status">准备就绪</span><button type="button" data-action="save-note">保存为笔记</button></div>
 			</footer>`;
@@ -215,6 +221,7 @@ LibraryAIViewHost = class LibraryAIViewHost {
 		view.addEventListener("click", event => {
 			let citation = event.target.closest?.("[data-citation-id]"); if (citation) this.openCitation(citation.dataset.citationId);
 			let sourceRemove = event.target.closest?.("[data-remove-source]"); if (sourceRemove) this.removeSource(window, sourceRemove.dataset.removeSource);
+			let referenceRemove = event.target.closest?.("[data-remove-reference]"); if (referenceRemove) this.removeReference(window, referenceRemove.dataset.removeReference);
 			let tab = event.target.closest?.("[data-conversation-id]"); if (tab && !event.target.closest("[data-close-tab]")) { this.repository.activate(tab.dataset.conversationId); this.render(window); }
 			let closeTab = event.target.closest?.("[data-close-tab]"); if (closeTab) { this.repository.close(closeTab.dataset.closeTab); this.renderAll(); }
 			let history = event.target.closest?.("[data-open-history]"); if (history) { this.repository.activate(history.dataset.openHistory); this.renderAll(); this.togglePanel(window, "history", false); }
@@ -362,7 +369,13 @@ LibraryAIViewHost = class LibraryAIViewHost {
 				for (let [index, record] of records.entries()) { let id = `S${sourceNumber}-C${index + 1}`; citations[id] = { ...record, title: source.title }; snippets.push(`[${id}] ${source.title}${record.page ? ` · 第 ${record.page} 页` : ""}\n${record.text}`); }
 			}
 			assistant.citations = citations;
-			let messages = [{ role: "system", content: "你是 Library 的论文阅读助手。优先依据提供的论文片段回答；每个可核验结论后使用形如 [[S1-C1]] 的引用标记。只能使用给定 citation ID；没有可靠页码时不要猜测页码。使用清晰的中文 Markdown。" }, ...conversation.messages.filter(message => message !== assistant).slice(-12).map(({ role, content }) => ({ role, content })), { role: "user", content: `问题：${question}\n\n可用论文片段：\n${snippets.join("\n\n") || "当前未添加论文来源，请按普通对话回答，并说明没有论文来源。"}` }];
+			// 用户选中的参考片段（复制监测 / 阅读器划词 / 选择区域）优先进入上下文
+			let references = conversation.references || [];
+			let referenceBlock = references.length
+				? `\n\n用户选中的参考片段（这些内容来自用户主动复制或在阅读器中框选，请优先围绕它们理解与作答）：\n${references.map((ref, index) => `[参考${index + 1}] ${ref.label}\n${ref.text}`).join("\n\n")}`
+				: "";
+			assistant.references = references.map(ref => ref.label);
+			let messages = [{ role: "system", content: "你是 Library 的论文阅读助手。优先依据提供的论文片段回答；每个可核验结论后使用形如 [[S1-C1]] 的引用标记。只能使用给定 citation ID；没有可靠页码时不要猜测页码。使用清晰的中文 Markdown。" }, ...conversation.messages.filter(message => message !== assistant).slice(-12).map(({ role, content }) => ({ role, content })), { role: "user", content: `问题：${question}\n\n可用论文片段：\n${snippets.join("\n\n") || "当前未添加论文来源，请按普通对话回答，并说明没有论文来源。"}${referenceBlock}` }];
 			await this.provider.stream(messages, {
 				signal: this.abortController.signal,
 				window,
@@ -401,6 +414,21 @@ LibraryAIViewHost = class LibraryAIViewHost {
 		let sourceHost = view.querySelector('[data-role="sources"]'); sourceHost.textContent = "";
 		for (let source of conversation.sources) { let chip = view.ownerDocument.createElement("span"); chip.className = "library-ai-source-chip"; chip.innerHTML = `<span>▤</span><span title="${this.escape(source.title)}">${this.escape(source.title)}</span><button type="button" data-remove-source="${source.itemID}" title="移除来源">×</button>`; sourceHost.append(chip); }
 		if (!conversation.sources.length) { let empty = view.ownerDocument.createElement("span"); empty.className = "library-ai-no-source"; empty.textContent = "未添加论文来源"; sourceHost.append(empty); }
+		let referenceHost = view.querySelector('[data-role="references"]');
+		referenceHost.textContent = "";
+		let references = conversation.references || [];
+		referenceHost.hidden = !references.length;
+		for (let reference of references) {
+			let chip = view.ownerDocument.createElement("span");
+			chip.className = `library-ai-reference-chip ${reference.kind || "text"}`;
+			chip.title = reference.text.slice(0, 300);
+			let label = view.ownerDocument.createElement("span");
+			label.textContent = `${reference.kind === "clipboard" ? "📋" : reference.kind === "area" ? "▣" : "❝"} ${reference.label}`;
+			let remove = view.ownerDocument.createElement("button");
+			remove.type = "button"; remove.dataset.removeReference = reference.id; remove.title = "移除参考"; remove.textContent = "×";
+			chip.append(label, remove);
+			referenceHost.append(chip);
+		}
 		view.querySelector('[data-action="stop"]').hidden = !this.abortController; view.querySelector('[data-action="send"]').hidden = Boolean(this.abortController);
 		let streamingMessage = conversation.messages.find(message => message.state === "streaming");
 		let statusText = this.abortController
@@ -424,6 +452,10 @@ LibraryAIViewHost = class LibraryAIViewHost {
 		let article = doc.createElement("article"); article.className = `library-ai-message ${message.role}`; article.dataset.messageId = message.id;
 		let role = doc.createElement("div"); role.className = "library-ai-message-role"; role.textContent = message.role === "user" ? "你" : "Library AI";
 		article.append(role);
+		if (message.references?.length) {
+			let refs = doc.createElement("div"); refs.className = "library-ai-message-refs";
+			refs.textContent = `参考：${message.references.join("、")}`; article.append(refs);
+		}
 		if (message.reasoning) {
 			let thinking = doc.createElement("details"); thinking.className = "library-ai-thinking";
 			let isThinking = message.state === "streaming" && !message.content;
@@ -474,6 +506,105 @@ LibraryAIViewHost = class LibraryAIViewHost {
 			let citations = Object.entries(answer.citations || {}).map(([id, citation]) => `${id}：${citation.title}${citation.page ? `，第 ${citation.page} 页` : ""}`).join("\n");
 			note.setNote(`<h1>${this.escape(conversation.title)}</h1>${this.renderMarkdown(answer.content, {})}<h2>引用</h2><pre>${this.escape(citations)}</pre>`); await note.saveTx(); this.setStatus(window, "已保存到当前文献的笔记");
 		} catch (error) { this.setStatus(window, `保存失败：${error.message || error}`); }
+	}
+
+	// ---- 参考片段（剪贴板监测 / 阅读器划词 / 选择区域）----
+
+	addReference(window, reference) {
+		let conversation = this.repository.active;
+		if (!conversation) return;
+		let text = (reference.text || "").trim();
+		if (!text) return;
+		conversation.references ??= [];
+		if (conversation.references.some(existing => existing.text === text)) return;
+		conversation.references.push({
+			id: Zotero.Utilities.randomString(8),
+			kind: reference.kind || "text",
+			label: (reference.label || "参考片段").slice(0, 80),
+			text: text.slice(0, 6000),
+			createdAt: new Date().toISOString(),
+		});
+		this.repository.update(conversation);
+		this.renderAll();
+		this.setStatus(window, `已添加参考：${reference.label || "参考片段"}`);
+	}
+
+	removeReference(window, id) {
+		let conversation = this.repository.active;
+		if (!conversation) return;
+		let removed = (conversation.references || []).find(ref => ref.id === id);
+		conversation.references = (conversation.references || []).filter(ref => ref.id !== id);
+		// 用户主动移除的剪贴板片段不再自动加回
+		if (removed?.kind === "clipboard") this.clipboardDismissed.add(removed.text);
+		this.repository.update(conversation);
+		this.renderAll();
+	}
+
+	// 阅读器划词 → 参考片段（renderTextSelectionPopup 事件回调调用）
+	async addReaderSelection({ reader, text, pageLabel }) {
+		let window = Zotero.getMainWindow();
+		if (!window || !text?.trim()) return;
+		let attachment = Zotero.Items.get(reader.itemID);
+		let parent = attachment?.parentItemID ? Zotero.Items.get(attachment.parentItemID) : null;
+		let label = `${parent?.getDisplayTitle?.() || "当前文档"} · p.${pageLabel || "?"}`;
+		await this.open(window, { syncSource: true });
+		this.addReference(window, { kind: "selection", label, text });
+		window.focus?.();
+	}
+
+	// 阅读器"选择区域"（图片批注）→ 参考片段
+	async addAreaReference(annotation) {
+		let window = Zotero.getMainWindow();
+		if (!window) return;
+		let attachment = annotation?.parentItem;
+		let parent = attachment?.parentItem;
+		let pageLabel = annotation.annotationPageLabel || "";
+		let label = `${parent?.getDisplayTitle?.() || "当前文档"} · p.${pageLabel || "?"} 选区`;
+		let text = `用户在文档第 ${pageLabel || "?"} 页框选了一个区域（图片/表格/段落）。请结合该页内容回答用户接下来关于此选区的问题。`;
+		await this.open(window, { syncSource: true });
+		this.addReference(window, { kind: "area", label, text });
+		window.focus?.();
+	}
+
+	// 剪贴板实时监测：仅当 AI 面板打开时运行，新复制的文本自动挂为参考
+	startClipboardMonitor(window) {
+		let state = this.windows.get(window);
+		if (!state) return;
+		this.stopClipboardMonitor(window);
+		// 先对齐当前剪贴板，避免把面板打开前的旧内容当成"新复制"
+		this.lastClipboardText = this.readClipboardText();
+		state.clipboardTimer = window.setInterval(() => this.pollClipboard(window), 1500);
+	}
+
+	stopClipboardMonitor(window) {
+		let state = this.windows.get(window);
+		if (state?.clipboardTimer) { window.clearInterval(state.clipboardTimer); state.clipboardTimer = null; }
+	}
+
+	readClipboardText() {
+		try {
+			let Ci = Components.interfaces;
+			let clipboard = Components.classes["@mozilla.org/widget/clipboard;1"].getService(Ci.nsIClipboard);
+			if (!clipboard.hasDataMatchingFlavors(["text/unicode"], Ci.nsIClipboard.kGlobalClipboard)) return "";
+			let transferable = Components.classes["@mozilla.org/widget/transferable;1"].createInstance(Ci.nsITransferable);
+			transferable.init(null);
+			transferable.addDataFlavor("text/unicode");
+			clipboard.getData(transferable, Ci.nsIClipboard.kGlobalClipboard);
+			let data = {};
+			transferable.getTransferData("text/unicode", data);
+			return data.value?.QueryInterface(Ci.nsISupportsString)?.data || "";
+		} catch (_) { return ""; }
+	}
+
+	pollClipboard(window) {
+		let text = this.readClipboardText().trim();
+		if (!text || text === this.lastClipboardText) return;
+		this.lastClipboardText = text;
+		if (text.length < 8 || text.length > 8000) return;
+		if (this.clipboardDismissed.has(text)) return;
+		let conversation = this.repository.active;
+		if ((conversation?.references || []).some(ref => ref.text === text)) return;
+		this.addReference(window, { kind: "clipboard", label: `剪贴板 · ${text.length} 字`, text });
 	}
 
 	setStatus(window, text) { let status = this.windows.get(window)?.view.querySelector('[data-role="status"]'); if (status) status.textContent = text; }
