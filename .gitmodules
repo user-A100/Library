@@ -1,0 +1,8 @@
+[submodule "desktop/zotero"]
+	path = desktop/zotero
+	url = https://github.com/zotero/zotero.git
+	branch = main
+[submodule "connector/library-connector"]
+	path = connector/library-connector
+	url = https://github.com/zotero/zotero-connectors.git
+	branch = main

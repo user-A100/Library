@@ -1,0 +1,12 @@
+{
+  "date": "2026-08-23",
+  "signals": {
+    "framework": "React 19 + TypeScript + Vite 8",
+    "fonts": "Geist, Geist Mono, Newsreader",
+    "palette": "deep pine shell, cool off-white text, restrained mint interaction accent, semantic annotation colors",
+    "motion": "120–420 ms tokenized motion with reduced-motion fallback",
+    "spacing": "4 px token scale"
+  },
+  "preserved": ["built-in library semantics", "evidence-first research workflow"],
+  "introduced": ["Index-First macrostructure", "Zen workspace rail", "Zotero-style annotation identity", "annotations-notes-tags inspector", "responsive compact mode"]
+}

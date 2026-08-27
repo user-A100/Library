@@ -1,0 +1,11 @@
+research-workspace-pane-header = AI 研究
+research-workspace-pane-sidenav =
+    .tooltiptext = AI 研究
+research-workspace-menu-open = 使用 AI 开始阅读
+    .label = 使用 AI 开始阅读
+research-workspace-menu-appearance = 皮肤…
+    .label = 皮肤…
+research-workspace-menu-focus = 切换专注布局
+    .label = 切换专注布局
+research-workspace-menu-read = 开始阅读
+    .label = 开始阅读

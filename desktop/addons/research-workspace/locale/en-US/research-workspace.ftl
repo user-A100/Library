@@ -1,0 +1,11 @@
+research-workspace-pane-header = AI Research
+research-workspace-pane-sidenav =
+    .tooltiptext = AI Research
+research-workspace-menu-open = Start reading with AI
+    .label = Start reading with AI
+research-workspace-menu-appearance = Themes…
+    .label = Themes…
+research-workspace-menu-focus = Toggle focus layout
+    .label = Toggle focus layout
+research-workspace-menu-read = Start reading
+    .label = Start reading

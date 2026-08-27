@@ -1,0 +1,23 @@
+[
+  {
+    "date": "2026-08-23",
+    "macrostructure": "Index-First",
+    "theme": "studied-DNA (Zen dark shell + Zotero annotation identity)",
+    "enrichment": "product interface",
+    "brief": "dark-mode remediation and Zotero-layer annotation, tag, collection and note interactions"
+  },
+  {
+    "date": "2026-08-23",
+    "macrostructure": "Index-First",
+    "theme": "studied-DNA (user screenshot + zen-browser/desktop)",
+    "enrichment": "product interface",
+    "brief": "standalone Zotero-derived paper research application with Zen workspace shell"
+  },
+  {
+    "date": "2026-08-23",
+    "macrostructure": "Workbench",
+    "theme": "Bloom",
+    "enrichment": "product interface",
+    "brief": "旁页 · Zotero-based, Zen-inspired evidence-grounded paper reader"
+  }
+]

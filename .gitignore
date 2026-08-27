@@ -1,0 +1,16 @@
+node_modules/
+dist/
+tmp/
+desktop/.tools/
+desktop/dist/
+desktop/profile/
+desktop/data/
+desktop/*.xpi
+.env
+.env.*
+!.env.example
+work/
+desktop/*.log
+connector/**/build.log
+wget-log*
+\357\201\234/

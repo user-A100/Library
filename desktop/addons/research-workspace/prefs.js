@@ -1,0 +1,6 @@
+pref("extensions.zotero.researchWorkspace.themeConfig", "{\"version\":1,\"algorithm\":\"free\",\"opacity\":72,\"texture\":18,\"points\":[{\"id\":\"mint\",\"color\":\"#72e3a6\",\"x\":20,\"y\":20,\"isPrimary\":true},{\"id\":\"aqua\",\"color\":\"#83d9d4\",\"x\":76,\"y\":34},{\"id\":\"cream\",\"color\":\"#f1e9c9\",\"x\":48,\"y\":82}]}" );
+pref("extensions.zotero.researchWorkspace.compactShell", true);
+pref("extensions.zotero.researchWorkspace.annotationDisplayMode", "sidenotes");
+pref("extensions.zotero.researchWorkspace.aiProvider", "custom");
+pref("extensions.zotero.researchWorkspace.aiBaseURL", "https://api.openai.com/v1");
+pref("extensions.zotero.researchWorkspace.aiModel", "gpt-4.1-mini");
