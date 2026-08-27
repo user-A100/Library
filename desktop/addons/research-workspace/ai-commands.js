@@ -11,8 +11,17 @@ LibraryAISlashCommands = class LibraryAISlashCommands {
 		this.lastLoad = 0;
 		this.reloadInterval = 5000;
 		this.builtIns = [
-			{ id: "builtin:clear", name: "clear", aliases: ["new"], kind: "action", description: "开始新会话", source: "builtin" },
+			{ id: "builtin:clear", name: "clear", aliases: ["new", "reset"], kind: "action", description: "开始新会话；可选参数为上一会话命名", argumentHint: "[上一会话名]", source: "builtin" },
 			{ id: "builtin:help", name: "help", aliases: ["commands"], kind: "action", description: "查看全部斜杠命令", source: "builtin" },
+			{ id: "builtin:compact", name: "compact", kind: "action", description: "压缩当前会话上下文为摘要", argumentHint: "[压缩重点]", source: "builtin" },
+			{ id: "builtin:model", name: "model", kind: "action", description: "切换模型；无参数时打开模型设置", argumentHint: "[模型ID]", source: "builtin" },
+			{ id: "builtin:copy", name: "copy", kind: "action", description: "复制最近一条 AI 回答到剪贴板", argumentHint: "[N]", source: "builtin" },
+			{ id: "builtin:export", name: "export", kind: "action", description: "导出当前会话为 Markdown 文件", argumentHint: "[文件名]", source: "builtin" },
+			{ id: "builtin:rename", name: "rename", kind: "action", description: "重命名当前会话；无参数时自动命名", argumentHint: "[会话名]", source: "builtin" },
+			{ id: "builtin:resume", name: "resume", aliases: ["continue"], kind: "action", description: "按关键词切换会话；无参数时打开历史", argumentHint: "[关键词]", source: "builtin" },
+			{ id: "builtin:usage", name: "usage", aliases: ["cost", "stats"], kind: "action", description: "查看当前会话用量统计", source: "builtin" },
+			{ id: "builtin:settings", name: "settings", aliases: ["config"], kind: "action", description: "打开模型设置", source: "builtin" },
+			{ id: "builtin:exit", name: "exit", aliases: ["quit"], kind: "action", description: "收起 AI 面板", source: "builtin" },
 			{
 				id: "builtin:summary", name: "summary", kind: "prompt", source: "builtin",
 				description: "结构化总结当前来源论文",

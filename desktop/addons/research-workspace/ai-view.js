@@ -473,8 +473,8 @@ LibraryAIViewHost = class LibraryAIViewHost {
 	}
 
 	messageNode(doc, message) {
-		let article = doc.createElement("article"); article.className = `library-ai-message ${message.role}`; article.dataset.messageId = message.id;
-		let role = doc.createElement("div"); role.className = "library-ai-message-role"; role.textContent = message.role === "user" ? "你" : "Library AI";
+		let article = doc.createElement("article"); article.className = `library-ai-message ${message.role}${message.compacted ? " compacted" : ""}`; article.dataset.messageId = message.id;
+		let role = doc.createElement("div"); role.className = "library-ai-message-role"; role.textContent = message.role === "user" ? "你" : (message.compacted ? "上下文摘要" : "Library AI");
 		article.append(role);
 		let content = message.content;
 		if (message.command) {
@@ -659,6 +659,18 @@ LibraryAIViewHost = class LibraryAIViewHost {
 		let state = this.windows.get(window); if (!state?.slash) return;
 		let doc = state.view.ownerDocument, panel = state.view.querySelector('[data-role="slash"]');
 		panel.textContent = "";
+		// 卡片模式（/usage 等）：只读信息展示，Esc 关闭
+		if (state.slash.card) {
+			let card = doc.createElement("div"); card.className = "library-ai-slash-card";
+			let title = doc.createElement("strong"); title.textContent = state.slash.card.title;
+			card.append(title);
+			for (let line of state.slash.card.lines) {
+				let row = doc.createElement("div"); row.textContent = line; card.append(row);
+			}
+			panel.append(card);
+			panel.hidden = false;
+			return;
+		}
 		let offset = 0;
 		if (state.slash.help) {
 			let header = doc.createElement("div"); header.className = "library-ai-slash-header";
@@ -749,16 +761,167 @@ LibraryAIViewHost = class LibraryAIViewHost {
 		if (panel) panel.hidden = true;
 	}
 
-	async executeSlashAction(window, command) {
-		if (command.name === "clear") {
-			this.repository.create();
-			await this.syncCurrentSource(window);
+	async executeSlashAction(window, command, args) {
+		switch (command.name) {
+			case "clear": {
+				// Claude Code 语义：/clear [name] 可为上一会话命名，便于 /resume 找回
+				let previous = this.repository.active;
+				if (args && previous?.messages.length) { previous.title = args.slice(0, 40); this.repository.update(previous); }
+				this.repository.create();
+				await this.syncCurrentSource(window);
+				this.renderAll();
+				this.setStatus(window, args ? `已开始新会话（上一会话标记为「${args}」）` : "已开始新会话");
+				break;
+			}
+			case "help": this.showSlashHelp(window); break;
+			case "compact": await this.compactConversation(window, args); break;
+			case "model": await this.switchModel(window, args); break;
+			case "copy": this.copyLastAnswer(window, args); break;
+			case "export": await this.exportConversation(window, args); break;
+			case "rename": this.renameConversation(window, args); break;
+			case "resume": this.resumeConversation(window, args); break;
+			case "usage": this.showUsage(window); break;
+			case "settings": this.togglePanel(window, "settings", true); break;
+			case "exit": this.close(window); break;
+		}
+	}
+
+	// /compact [压缩重点]：把当前会话压缩为一条摘要消息（Claude Code 同款语义），释放上下文
+	async compactConversation(window, args) {
+		let conversation = this.repository.active;
+		if (this.abortController) { this.setStatus(window, "正在生成回答，请稍后再压缩"); return; }
+		let history = conversation.messages.filter(message => message.content || message.reasoning);
+		if (!history.length) { this.setStatus(window, "当前会话为空，无需压缩"); return; }
+		let transcript = history
+			.map(message => `${message.role === "user" ? "用户" : "AI"}：${(message.prompt || message.content || "").slice(0, 4000)}`)
+			.join("\n\n");
+		let focus = args ? `\n压缩时特别关注：${args}` : "";
+		this.abortController = new window.AbortController();
+		this.setStatus(window, "正在压缩上下文…");
+		let summary = "";
+		try {
+			summary = await this.provider.stream([
+				{ role: "system", content: "你是对话压缩器。把研究对话压缩为结构化中文摘要，保留：已确认的结论、关键引用标记（形如 [[S1-C1]]）、论文事实与页码、悬而未决的问题。摘要将作为唯一历史上下文继续参与后续对话。直接输出摘要正文。" },
+				{ role: "user", content: `请压缩以下对话。${focus}\n\n${transcript}` },
+			], {
+				signal: this.abortController.signal, window,
+				onDelta: delta => { summary += delta; },
+				onReasoning: () => {},
+			});
+			conversation.messages = [{ id: Zotero.Utilities.randomString(8), role: "assistant", content: summary, citations: {}, compacted: true, createdAt: new Date().toISOString() }];
+			this.repository.update(conversation);
+			await this.repository.save();
+			this.setStatus(window, `上下文已压缩：${history.length} 条消息 → 1 条摘要`);
+		}
+		catch (error) {
+			this.setStatus(window, error.name === "AbortError" ? "已取消压缩" : `压缩失败：${error.message || error}`);
+		}
+		finally { this.abortController = null; this.renderAll(); }
+	}
+
+	// /model [模型ID]：无参数打开设置面板；有参数直接切换（沿用已保存的接口与密钥）
+	async switchModel(window, args) {
+		if (!args) {
+			this.togglePanel(window, "settings", true);
+			this.setStatus(window, "在设置中选择模型，或直接 /model <模型ID>");
+			return;
+		}
+		try {
+			let config = this.provider.config;
+			await this.provider.save({ preset: config.preset, baseURL: config.baseURL, model: args, apiKey: "" });
 			this.renderAll();
-			this.setStatus(window, "已开始新会话");
+			this.setStatus(window, `模型已切换为 ${args}`);
 		}
-		else if (command.name === "help") {
-			this.showSlashHelp(window);
+		catch (error) { this.setStatus(window, `切换模型失败：${error.message || error}`); }
+	}
+
+	// /copy [N]：复制第 N 近的 AI 回答（默认最近一条）
+	copyLastAnswer(window, args) {
+		let answers = this.repository.active.messages.filter(message => message.role === "assistant" && message.content);
+		let n = Math.max(1, parseInt(args, 10) || 1);
+		let target = answers[answers.length - n];
+		if (!target) { this.setStatus(window, "没有可复制的回答"); return; }
+		try {
+			let Ci = Components.interfaces;
+			let transferable = Components.classes["@mozilla.org/widget/transferable;1"].createInstance(Ci.nsITransferable);
+			transferable.init(null);
+			transferable.addDataFlavor("text/unicode");
+			let text = Components.classes["@mozilla.org/supports-string;1"].createInstance(Ci.nsISupportsString);
+			text.data = target.content;
+			transferable.setTransferData("text/unicode", text);
+			Components.classes["@mozilla.org/widget/clipboard;1"].getService(Ci.nsIClipboard)
+				.setData(transferable, null, Ci.nsIClipboard.kGlobalClipboard);
+			// 对齐剪贴板监测基线，避免刚复制的回答被自动挂为参考片段
+			this.lastClipboardText = target.content;
+			this.setStatus(window, `已复制最近第 ${n} 条回答（${target.content.length} 字）`);
 		}
+		catch (error) { this.setStatus(window, `复制失败：${error.message || error}`); }
+	}
+
+	// /export [文件名]：导出当前会话为 Markdown 到 library-ai/exports/
+	async exportConversation(window, args) {
+		let conversation = this.repository.active;
+		if (!conversation.messages.length) { this.setStatus(window, "当前会话为空，无法导出"); return; }
+		let name = (args || conversation.title || "conversation").replace(/[\\/:*?"<>|]/g, "-").slice(0, 60);
+		let lines = [
+			`# ${conversation.title}`, "",
+			`导出时间：${new Date().toLocaleString()}`,
+			`论文来源：${conversation.sources.map(source => source.title).join("、") || "无"}`, "",
+		];
+		for (let message of conversation.messages) {
+			lines.push(`## ${message.role === "user" ? "用户" : "Library AI"} · ${new Date(message.createdAt).toLocaleString()}`, "");
+			if (message.role === "user" && message.prompt) lines.push(`${message.content}`, "", `> 展开指令：${message.prompt.slice(0, 500)}`, "");
+			else lines.push(message.content || "", "");
+		}
+		try {
+			let directory = PathUtils.join(Zotero.DataDirectory.dir, "library-ai", "exports");
+			await IOUtils.makeDirectory(directory, { ignoreExisting: true });
+			let path = PathUtils.join(directory, `${name}.md`);
+			await IOUtils.writeUTF8(path, lines.join("\n"));
+			this.setStatus(window, `已导出：${path}`);
+		}
+		catch (error) { this.setStatus(window, `导出失败：${error.message || error}`); }
+	}
+
+	// /rename [会话名]：无参数时按首条提问重新自动命名
+	renameConversation(window, args) {
+		let conversation = this.repository.active;
+		conversation.title = args ? args.slice(0, 40) : "新对话";
+		this.repository.update(conversation);
+		this.renderAll();
+		this.setStatus(window, `会话已命名为「${conversation.title}」`);
+	}
+
+	// /resume [关键词]：无参数打开历史面板；有参数按 ID 或标题关键词切换
+	resumeConversation(window, args) {
+		if (!args) { this.togglePanel(window, "history"); return; }
+		let target = this.repository.list().find(item => item.id === args || item.title.includes(args));
+		if (!target) { this.setStatus(window, `没有找到包含「${args}」的会话`); return; }
+		this.repository.activate(target.id);
+		this.renderAll();
+		this.setStatus(window, `已切换到会话「${target.title}」`);
+	}
+
+	// /usage：在下拉面板中展示当前会话用量统计卡片
+	showUsage(window) {
+		let state = this.windows.get(window); if (!state) return;
+		let conversation = this.repository.active;
+		let user = conversation.messages.filter(message => message.role === "user").length;
+		let assistant = conversation.messages.length - user;
+		let chars = conversation.messages.reduce((sum, message) => sum + (message.prompt || message.content || "").length + (message.reasoning || "").length, 0);
+		state.slash = {
+			match: null, items: [], selected: -1,
+			card: {
+				title: "会话用量",
+				lines: [
+					`消息：${user} 问 / ${assistant} 答`,
+					`来源：${conversation.sources.length} 篇 · 参考片段：${(conversation.references || []).length} 条`,
+					`累计字符：约 ${chars.toLocaleString()} 字（≈ ${Math.round(chars / 4).toLocaleString()} tokens，粗略估计）`,
+					`上下文策略：仅最近 12 条消息进入请求，过长时使用 /compact 压缩`,
+				],
+			},
+		};
+		this.renderSlashDropdown(window);
 	}
 
 	async showSlashHelp(window) {

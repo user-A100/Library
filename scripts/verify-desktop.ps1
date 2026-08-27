@@ -87,8 +87,13 @@ $checks["AI slash commands (Claudian-style)"] = $bootstrap -match 'ai-commands\.
 	-and $aiCommandsSource -match 'matchTrigger' `
 	-and $aiCommandsSource -match '\$ARGUMENTS' `
 	-and $aiCommandsSource -match 'loadUserCommands' `
+	-and $aiCommandsSource -match 'builtin:compact' `
+	-and $aiCommandsSource -match 'builtin:model' `
 	-and $aiViewSource -match 'updateSlashDropdown' `
 	-and $aiViewSource -match 'handleSlashKeydown' `
+	-and $aiViewSource -match 'compactConversation' `
+	-and $aiViewSource -match 'switchModel' `
+	-and $aiViewSource -match 'copyLastAnswer' `
 	-and $aiViewSource -match 'data-role="slash"' `
 	-and $aiStyleSource -match 'library-ai-slash-item'
 $sectionSource = Get-Content -Raw (Join-Path $source "chrome\content\zotero\elements\itemPaneSection.js")
