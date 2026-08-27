@@ -49,10 +49,12 @@ var LibraryAISettings = {
 		let list = this.field("profile-list");
 		list.textContent = "";
 		let profiles = this.provider.listProfiles();
+		let count = this.field("count");
+		if (count) count.textContent = profiles.length ? `${profiles.length} 个` : "";
 		if (!profiles.length) {
 			let empty = document.createElement("div");
 			empty.className = "ai-prefs-empty";
-			empty.textContent = "还没有配置。点击「＋ 新增配置」或直接「导入配置」。";
+			empty.textContent = "还没有配置，点右上角「＋ 新增配置」或「⇩ 导入」开始";
 			list.append(empty);
 			return;
 		}
@@ -61,17 +63,29 @@ var LibraryAISettings = {
 			card.className = "ai-prefs-card";
 			card.classList.toggle("selected", profile.id === this.selectedId);
 			card.setAttribute("role", "option");
-			let title = document.createElement("div"); title.className = "ai-prefs-card-title";
+			// 头像：名称首字 + 由名称哈希出的色相，一眼区分不同配置
+			let hue = [...(profile.name || "?")].reduce((sum, ch) => sum + ch.charCodeAt(0), 0) % 360;
+			let main = document.createElement("div"); main.className = "ai-prefs-card-main";
+			let avatar = document.createElement("span"); avatar.className = "ai-prefs-avatar";
+			avatar.textContent = (profile.name || "?").trim().charAt(0).toUpperCase();
+			avatar.style.background = `hsl(${hue} 55% 55% / .16)`;
+			avatar.style.color = `color-mix(in srgb, hsl(${hue} 60% 55%) 78%, var(--fill-primary))`;
+			let titleCol = document.createElement("div"); titleCol.className = "ai-prefs-card-title";
 			let name = document.createElement("strong"); name.textContent = profile.name;
-			title.append(name);
+			let url = document.createElement("span"); url.className = "ai-prefs-card-url"; url.textContent = profile.baseURL;
+			titleCol.append(name, url);
+			main.append(avatar, titleCol);
+			let foot = document.createElement("div"); foot.className = "ai-prefs-card-foot";
+			let keydot = document.createElement("span"); keydot.className = `ai-prefs-keydot${profile.hasKey ? " saved" : ""}`;
+			keydot.title = profile.hasKey ? "已保存密钥" : "未保存密钥";
+			let meta = document.createElement("span");
+			meta.textContent = `${profile.model || "未设模型"} · ${profile.models?.length || 0} 个模型`;
+			foot.append(keydot, meta);
 			if (profile.active) {
-				let badge = document.createElement("span"); badge.className = "ai-prefs-badge active"; badge.textContent = "使用中";
-				title.append(badge);
+				let badge = document.createElement("span"); badge.className = "ai-prefs-badge"; badge.textContent = "使用中";
+				foot.append(badge);
 			}
-			let url = document.createElement("div"); url.className = "ai-prefs-card-url"; url.textContent = profile.baseURL;
-			let meta = document.createElement("div"); meta.className = "ai-prefs-card-meta";
-			meta.textContent = `${profile.model || "未设模型"} · ${profile.models?.length || 0} 个模型${profile.hasKey ? " · 已存密钥" : " · 未存密钥"}`;
-			card.append(title, url, meta);
+			card.append(main, foot);
 			card.addEventListener("click", () => this.select(profile.id));
 			list.append(card);
 		}
@@ -80,6 +94,8 @@ var LibraryAISettings = {
 	select(id) {
 		this.selectedId = id;
 		let profile = id ? this.provider.getProfile(id) : null;
+		let title = this.field("detail-title");
+		if (title) title.textContent = profile ? `编辑 · ${profile.name}` : "新建配置";
 		this.field("name").value = profile?.name || "";
 		this.field("preset").value = profile?.preset || "custom";
 		this.field("baseurl").value = profile?.baseURL || "";
