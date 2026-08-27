@@ -63,7 +63,7 @@ $checks["AI settings live in sidebar"] = $aiViewSource -match 'save-settings' `
 	-and $aiProviderSource -match 'library-ai://model' `
 	-and $preferencesMarkup -notmatch 'ai-api-key'
 $checks["AI credential storage API"] = $aiProviderSource -match 'Components\.interfaces\.nsILoginInfo' `
-	-and $aiProviderSource -match 'addLoginAsync' `
+	-and $aiProviderSource -match 'addLogin' `
 	-and $aiProviderSource -notmatch 'Components\.Constructor\([^\r\n]+,\s*"nsILoginInfo"'
 $checks["AI source picker"] = $aiViewSource -match 'selectItemsDialog\.xhtml' `
 	-and $aiViewSource -match 'onlyRegularItems:\s*true' `
@@ -97,12 +97,23 @@ $checks["AI slash commands (Claudian-style)"] = $bootstrap -match 'ai-commands\.
 	-and $aiViewSource -match 'data-role="slash"' `
 	-and $aiStyleSource -match 'library-ai-slash-item'
 $checks["AI model auto-discovery"] = $aiProviderSource -match 'listModels' `
-	-and $aiProviderSource -match 'aiModelCache' `
+	-and $aiProviderSource -match 'aiProfiles' `
 	-and $aiProviderSource -match 'fetchModels' `
 	-and $aiViewSource -match 'showModelPicker' `
 	-and $aiViewSource -match 'fillModelDatalist' `
 	-and $aiViewSource -match 'library-ai-slash-search' `
 	-and $aiViewSource -match 'data-action="models"'
+$aiPrefsPaneJs = Get-Content -Raw (Join-Path $workspace "desktop\addons\research-workspace\preferences-ai.js")
+$aiPrefsPaneMarkup = Get-Content -Raw (Join-Path $workspace "desktop\addons\research-workspace\preferences-ai.xhtml")
+$checks["AI multi-profile settings pane"] = $aiProviderSource -match 'upsertProfile' `
+	-and $aiProviderSource -match 'setActiveProfile' `
+	-and $aiProviderSource -match 'storeModels' `
+	-and $aiPrefsPaneJs -match 'LibraryAISettings' `
+	-and $aiPrefsPaneJs -match 'exportProfiles' `
+	-and $aiPrefsPaneJs -match 'importProfiles' `
+	-and $aiPrefsPaneMarkup -match 'ai-profile-list' `
+	-and $appearanceSource -match 'research-workspace-ai' `
+	-and $aiViewSource -match 'open-ai-prefs'
 $sectionSource = Get-Content -Raw (Join-Path $source "chrome\content\zotero\elements\itemPaneSection.js")
 $checks["ItemPane compatibility fix"] = $sectionSource -match "if \(!this\.initialized\)"
 

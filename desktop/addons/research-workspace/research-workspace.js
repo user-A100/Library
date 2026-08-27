@@ -272,6 +272,16 @@ ResearchWorkspace = {
 			stylesheets: [this.rootURI + "preferences.css"],
 		});
 
+		this.aiPreferencePaneID = await Zotero.PreferencePanes.register({
+			pluginID: this.id,
+			id: "research-workspace-ai",
+			label: "AI 服务",
+			image: this.rootURI + "icon.svg",
+			src: this.rootURI + "preferences-ai.xhtml",
+			scripts: [this.rootURI + "ai-provider.js", this.rootURI + "preferences-ai.js"],
+			stylesheets: [this.rootURI + "preferences.css"],
+		});
+
 		this.prefObserver = { observe: () => this.applyAppearanceToAllWindows() };
 		Services.prefs.addObserver(
 			"extensions.zotero.researchWorkspace.themeConfig",
@@ -286,6 +296,10 @@ ResearchWorkspace = {
 				menuType: "menuitem",
 				l10nID: "research-workspace-menu-open",
 				onCommand: () => this.openForCurrentSelection(),
+			}, {
+				menuType: "menuitem",
+				l10nID: "research-workspace-menu-ai",
+				onCommand: () => Zotero.Utilities.Internal.openPreferences("research-workspace-ai"),
 			}, {
 				menuType: "menuitem",
 				l10nID: "research-workspace-menu-appearance",
@@ -375,6 +389,10 @@ ResearchWorkspace = {
 		if (this.preferencePaneID) {
 			Zotero.PreferencePanes.unregister(this.preferencePaneID);
 			this.preferencePaneID = null;
+		}
+		if (this.aiPreferencePaneID) {
+			Zotero.PreferencePanes.unregister(this.aiPreferencePaneID);
+			this.aiPreferencePaneID = null;
 		}
 		for (let menuID of this.menuIDs) {
 			if (menuID) Zotero.MenuManager.unregisterMenu(menuID);

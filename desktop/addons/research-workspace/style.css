@@ -465,6 +465,8 @@
 .library-ai-settings-actions { display:flex; align-items:center; gap:9px; }
 .library-ai-settings-actions button { min-height:32px; padding:0 13px; border:0; border-radius:var(--library-ai-radius-sm); background:var(--library-ai-accent); color:#fff; font-weight:650; }
 .library-ai-settings-actions span { color:var(--fill-secondary); font-size:10px; }
+.library-ai-settings-link { align-self:flex-start; border:0; background:transparent; padding:0; color:var(--library-ai-accent); font-size:10px; text-decoration:none; cursor:pointer; }
+.library-ai-settings-link:hover { text-decoration:underline; }
 
 .library-ai-messages { flex:1; min-height:0; overflow:auto; padding:16px 14px 28px; scrollbar-width:thin; }
 .library-ai-empty { display:grid; justify-items:center; max-width:310px; margin:12vh auto 0; text-align:center; }

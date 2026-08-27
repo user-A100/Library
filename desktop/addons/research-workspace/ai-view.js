@@ -206,6 +206,7 @@ LibraryAIViewHost = class LibraryAIViewHost {
 				<datalist id="library-ai-model-list"></datalist>
 				<label>API 密钥<input data-field="apiKey" type="password" autocomplete="off" placeholder="保存在系统凭据存储"></label>
 				<div class="library-ai-settings-actions"><button type="button" data-action="save-settings">保存并测试</button><span data-role="settings-status"></span></div>
+				<button type="button" class="library-ai-settings-link" data-action="open-ai-prefs">管理多个配置（导入 / 导出 / 多接口）→</button>
 			</section>
 			<main class="library-ai-messages" aria-live="polite"></main>
 			<footer class="library-ai-composer-shell">
@@ -256,6 +257,7 @@ LibraryAIViewHost = class LibraryAIViewHost {
 		else if (action === "add-source") await this.chooseSources(window);
 		else if (action === "models") await this.showModelPicker(window);
 		else if (action === "save-settings") this.saveSettings(window);
+		else if (action === "open-ai-prefs") Zotero.Utilities.Internal.openPreferences("research-workspace-ai");
 		else if (action === "save-note") this.saveAsNote(window);
 	}
 

@@ -4,3 +4,5 @@ pref("extensions.zotero.researchWorkspace.annotationDisplayMode", "sidenotes");
 pref("extensions.zotero.researchWorkspace.aiProvider", "custom");
 pref("extensions.zotero.researchWorkspace.aiBaseURL", "https://api.openai.com/v1");
 pref("extensions.zotero.researchWorkspace.aiModel", "gpt-4.1-mini");
+pref("extensions.zotero.researchWorkspace.aiProfiles", "[]");
+pref("extensions.zotero.researchWorkspace.aiActiveProfile", "");
