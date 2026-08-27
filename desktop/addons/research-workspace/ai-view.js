@@ -682,7 +682,9 @@ LibraryAIViewHost = class LibraryAIViewHost {
 	renderSlashDropdown(window, scrollToSelected = false) {
 		let state = this.windows.get(window); if (!state?.slash) return;
 		let doc = state.view.ownerDocument, panel = state.view.querySelector('[data-role="slash"]');
-		panel.textContent = "";
+		// 模型选择器保留搜索框（整体重建会让输入焦点丢失），其余模式整体重建
+		let keepSearch = state.slash.mode === "models" && panel.querySelector(".library-ai-slash-search");
+		if (!keepSearch) panel.textContent = "";
 		// 卡片模式（/usage 等）：只读信息展示，Esc 关闭
 		if (state.slash.card) {
 			let card = doc.createElement("div"); card.className = "library-ai-slash-card";
@@ -695,19 +697,69 @@ LibraryAIViewHost = class LibraryAIViewHost {
 			panel.hidden = false;
 			return;
 		}
-		// 模型选择器模式（/model 或点击顶部模型名）
+		// 模型选择器模式（/model 或点击顶部模型名）：头部 + 搜索框 + 过滤列表
 		if (state.slash.mode === "models") {
 			let current = this.provider.config.model;
-			let header = doc.createElement("div"); header.className = "library-ai-slash-header";
-			let title = doc.createElement("strong"); title.textContent = "选择模型";
-			let hint = doc.createElement("span"); hint.textContent = "/model refresh 重新抓取";
-			header.append(title, hint); panel.append(header);
-			if (!state.slash.items.length) {
-				let empty = doc.createElement("div"); empty.className = "library-ai-slash-empty";
-				empty.textContent = "暂无模型列表：先在设置中保存并测试，或 /model refresh 抓取";
-				panel.append(empty);
+			let search = panel.querySelector(".library-ai-slash-search");
+			if (!search) {
+				panel.textContent = "";
+				let header = doc.createElement("div"); header.className = "library-ai-slash-header";
+				let title = doc.createElement("strong"); title.textContent = "选择模型";
+				let hint = doc.createElement("span"); hint.textContent = `${state.slash.items.length} 个模型 · /model refresh 重抓`;
+				header.append(title, hint);
+				search = doc.createElement("input");
+				search.className = "library-ai-slash-search";
+				search.placeholder = "搜索模型…";
+				search.value = state.slash.query || "";
+				search.addEventListener("input", () => {
+					if (state.slash?.mode !== "models") return;
+					state.slash.query = search.value;
+					state.slash.selected = 0;
+					this.renderSlashDropdown(window);
+				});
+				search.addEventListener("keydown", event => {
+					if (event.isComposing || state.slash?.mode !== "models") return;
+					let count = (state.slash.filtered || state.slash.items).length;
+					if (event.key === "ArrowDown" || event.key === "ArrowUp") {
+						event.preventDefault();
+						if (!count) return;
+						let delta = event.key === "ArrowDown" ? 1 : -1;
+						state.slash.selected = ((state.slash.selected + delta) % count + count) % count;
+						this.renderSlashDropdown(window, true);
+					}
+					else if (event.key === "Enter" || event.key === "Tab") {
+						event.preventDefault();
+						if (state.slash.selected >= 0) this.selectSlashCommand(window, state.slash.selected);
+					}
+					else if (event.key === "Escape") {
+						event.preventDefault();
+						this.hideSlashDropdown(window);
+						state.view.querySelector("textarea").focus();
+					}
+				});
+				let list = doc.createElement("div"); list.className = "library-ai-slash-model-list";
+				panel.append(header, search, list);
+				window.setTimeout(() => search.focus(), 0);
 			}
-			state.slash.items.forEach((modelId, index) => {
+			else {
+				// 搜索框保留时同步头部计数（后台重抓后模型数可能变化）
+				let hint = panel.querySelector(".library-ai-slash-header span");
+				if (hint) hint.textContent = `${state.slash.items.length} 个模型 · /model refresh 重抓`;
+			}
+			// 只重建列表容器，保住搜索框的焦点与光标
+			let query = (state.slash.query || "").toLocaleLowerCase();
+			let filtered = state.slash.items.filter(modelId => modelId.toLocaleLowerCase().includes(query));
+			state.slash.filtered = filtered;
+			if (state.slash.selected >= filtered.length) state.slash.selected = Math.max(0, filtered.length - 1);
+			if (!filtered.length) state.slash.selected = -1;
+			let list = panel.querySelector(".library-ai-slash-model-list");
+			list.textContent = "";
+			if (!filtered.length) {
+				let empty = doc.createElement("div"); empty.className = "library-ai-slash-empty";
+				empty.textContent = state.slash.items.length ? `没有匹配「${state.slash.query}」的模型` : "暂无模型列表：先在设置中保存并测试，或 /model refresh 抓取";
+				list.append(empty);
+			}
+			filtered.forEach((modelId, index) => {
 				let item = doc.createElement("div");
 				item.className = "library-ai-slash-item";
 				item.classList.toggle("selected", index === state.slash.selected);
@@ -722,11 +774,11 @@ LibraryAIViewHost = class LibraryAIViewHost {
 				item.addEventListener("mousemove", () => {
 					if (state.slash && state.slash.selected !== index) { state.slash.selected = index; this.renderSlashDropdown(window); }
 				});
-				panel.append(item);
+				list.append(item);
 			});
 			panel.hidden = false;
 			if (scrollToSelected && state.slash.selected >= 0) {
-				panel.children[state.slash.selected + 1]?.scrollIntoView?.({ block: "nearest" });
+				list.children[state.slash.selected]?.scrollIntoView?.({ block: "nearest" });
 			}
 			return;
 		}
@@ -796,10 +848,11 @@ LibraryAIViewHost = class LibraryAIViewHost {
 	// Claudian select/replaceRange：替换触发区间为 "/name "，尾部空白去重
 	async selectSlashCommand(window, index) {
 		let state = this.windows.get(window); if (!state?.slash) return;
-		// 模型选择器：选中即切换模型
+		// 模型选择器：选中即切换模型（按过滤后的列表取）
 		if (state.slash.mode === "models") {
-			let modelId = state.slash.items[index];
+			let modelId = (state.slash.filtered || state.slash.items)[index];
 			this.hideSlashDropdown(window);
+			state.view.querySelector("textarea").focus();
 			if (modelId) await this.applyModel(window, modelId);
 			return;
 		}
@@ -897,7 +950,7 @@ LibraryAIViewHost = class LibraryAIViewHost {
 		let state = this.windows.get(window); if (!state) return;
 		let current = this.provider.config.model;
 		let models = [...new Set([current, ...this.provider.getCachedModels()].filter(Boolean))];
-		state.slash = { match: null, mode: "models", items: models, selected: Math.max(0, models.indexOf(current)) };
+		state.slash = { match: null, mode: "models", items: models, filtered: models, query: "", selected: Math.max(0, models.indexOf(current)) };
 		this.renderSlashDropdown(window, true);
 		if (this.provider.cacheStale()) await this.refreshModels(window);
 	}

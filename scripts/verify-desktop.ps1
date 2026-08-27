@@ -101,6 +101,7 @@ $checks["AI model auto-discovery"] = $aiProviderSource -match 'listModels' `
 	-and $aiProviderSource -match 'fetchModels' `
 	-and $aiViewSource -match 'showModelPicker' `
 	-and $aiViewSource -match 'fillModelDatalist' `
+	-and $aiViewSource -match 'library-ai-slash-search' `
 	-and $aiViewSource -match 'data-action="models"'
 $sectionSource = Get-Content -Raw (Join-Path $source "chrome\content\zotero\elements\itemPaneSection.js")
 $checks["ItemPane compatibility fix"] = $sectionSource -match "if \(!this\.initialized\)"
