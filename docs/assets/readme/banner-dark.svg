@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 440">
+  <defs>
+    <linearGradient id="topbar" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#2f9e76"/>
+      <stop offset="0.55" stop-color="#34c98e"/>
+      <stop offset="1" stop-color="#9ed06c"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#34c98e" stop-opacity="0.14"/>
+      <stop offset="1" stop-color="#34c98e" stop-opacity="0"/>
+    </radialGradient>
+    <pattern id="dots" width="28" height="28" patternUnits="userSpaceOnUse">
+      <circle cx="2" cy="2" r="1.4" fill="#9fd6bd" opacity="0.08"/>
+    </pattern>
+    <filter id="cardShadow" x="-30%" y="-30%" width="160%" height="170%">
+      <feDropShadow dx="0" dy="10" stdDeviation="18" flood-color="#000000" flood-opacity="0.45"/>
+    </filter>
+  </defs>
+
+  <!-- canvas -->
+  <rect width="1600" height="440" fill="#101714"/>
+  <rect width="1600" height="440" fill="url(#dots)"/>
+  <circle cx="1380" cy="60" r="360" fill="url(#glow)"/>
+  <circle cx="120" cy="420" r="260" fill="url(#glow)"/>
+  <rect width="1600" height="6" fill="url(#topbar)"/>
+
+  <!-- brand block -->
+  <g>
+    <rect x="118" y="98" width="104" height="104" rx="26" fill="#34c98e"/>
+    <g transform="translate(129.5, 109.5) scale(0.1621)">
+      <path d="M154 112h76v220h150v68H154z" fill="#0d1411"/>
+    </g>
+    <text x="252" y="172" font-family="Newsreader, Georgia, 'Times New Roman', serif" font-size="88" font-weight="600" fill="#eef5f0" letter-spacing="1">Library</text>
+    <text x="254" y="228" font-family="Geist, 'PingFang SC', 'Microsoft YaHei', sans-serif" font-size="31" fill="#a7bcb1">可追溯的论文阅读与引用核验工作台</text>
+    <text x="254" y="276" font-family="'Geist Mono', ui-monospace, Consolas, monospace" font-size="16" letter-spacing="5" fill="#4cc695">GROUND EVERY CLAIM · TRACE EVERY SOURCE</text>
+    <text x="254" y="326" font-family="Geist, 'PingFang SC', 'Microsoft YaHei', sans-serif" font-size="19" fill="#6f857b">选择论文 → 拆解主张 → 锚定证据 → 回页核验 → 沉淀笔记</text>
+  </g>
+
+  <!-- evidence card cluster -->
+  <g transform="rotate(2.5 1318 250)">
+    <rect x="1108" y="132" width="420" height="236" rx="18" fill="#182119" stroke="#26332b" stroke-width="1.5"/>
+  </g>
+  <g filter="url(#cardShadow)">
+    <rect x="1060" y="96" width="420" height="236" rx="18" fill="#1a231e" stroke="#2c3a33" stroke-width="1.5"/>
+  </g>
+  <!-- card header -->
+  <circle cx="1088" cy="128" r="6" fill="#34c98e"/>
+  <text x="1104" y="134" font-family="'Geist Mono', ui-monospace, Consolas, monospace" font-size="15" letter-spacing="2" fill="#6f857b">CLAIM 03 · EVIDENCE BOUND</text>
+  <!-- skeleton lines -->
+  <rect x="1088" y="156" width="360" height="10" rx="5" fill="#2b3830"/>
+  <rect x="1088" y="176" width="326" height="10" rx="5" fill="#2b3830"/>
+  <!-- highlighted quote -->
+  <rect x="1088" y="202" width="364" height="36" rx="8" fill="#1f3528"/>
+  <rect x="1088" y="202" width="4" height="36" fill="#34c98e"/>
+  <text x="1106" y="225" font-family="Georgia, 'Times New Roman', serif" font-style="italic" font-size="15" fill="#9fc4ad">“…the proposed method improves recall by 12.4%…”</text>
+  <!-- footer chips -->
+  <rect x="1088" y="256" width="66" height="26" rx="13" fill="#34c98e"/>
+  <text x="1121" y="274" font-family="'Geist Mono', ui-monospace, Consolas, monospace" font-size="13" fill="#0d1411" text-anchor="middle">p. 42</text>
+  <rect x="1166" y="256" width="118" height="26" rx="13" fill="#141d18" stroke="#31423a" stroke-width="1.5"/>
+  <text x="1225" y="274" font-family="Geist, 'PingFang SC', 'Microsoft YaHei', sans-serif" font-size="13" fill="#6f857b" text-anchor="middle">Nature 2024</text>
+  <circle cx="1370" cy="269" r="12" fill="#34c98e"/>
+  <path d="M1364.5 269.5 l3.5 3.5 l7 -7.5" stroke="#0d1411" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="1390" y="275" font-family="Geist, 'PingFang SC', 'Microsoft YaHei', sans-serif" font-size="14" fill="#4cc695">已核验</text>
+</svg>
