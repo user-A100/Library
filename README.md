@@ -193,7 +193,6 @@ Library/
 - [Tencent-Hunyuan/Hy3](https://github.com/Tencent-Hunyuan/Hy3)
 - [zotero/zotero](https://github.com/zotero/zotero)
 - [zotero/zotero-connectors](https://github.com/zotero/zotero-connectors)
-- [ZhiFa-AI](https://github.com/jimmybai666/ZhiFa-AI) — README 信息组织与参赛项目展示参考
 - [Lucide](https://lucide.dev) — README 使用的开源图标（ISC 许可）
 
 ---
