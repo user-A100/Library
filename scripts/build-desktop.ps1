@@ -4,11 +4,13 @@ $workspace = Split-Path -Parent $PSScriptRoot
 $source = Join-Path $workspace "desktop\zotero"
 $addon = Join-Path $workspace "desktop\addons\research-workspace"
 $dist = Join-Path $workspace "desktop\dist\Zotero_win-x64"
+$publish = Join-Path $workspace "desktop\dist\.Zotero_win-x64-publish"
 $ciCache = Join-Path $workspace "desktop\.tools\zotero-ci"
 $sevenZipArchive = Join-Path $workspace "desktop\.tools\7z2602-linux-x64.tar.xz"
 $firefoxComponents = Join-Path $workspace "desktop\.tools\Firefox 140.12.0-x64 Components.zip"
 $rcedit = Join-Path $workspace "desktop\.tools\rcedit-x64.exe"
 $libraryIcon = Join-Path $source "app\win\zotero.ico"
+$updatePolicySource = Join-Path $workspace "desktop\distribution\policies.json"
 $expectedCommit = "7132587c2d6d56725debe64908733a8140bc6be3"
 $distro = "Ubuntu-22.04"
 
@@ -35,7 +37,7 @@ function Convert-ToWslPath([string]$path) {
 
 $sourceWsl = Convert-ToWslPath $source
 $addonWsl = Convert-ToWslPath $addon
-$distWsl = Convert-ToWslPath $dist
+$publishWsl = Convert-ToWslPath $publish
 $ciCacheWsl = Convert-ToWslPath $ciCache
 $sevenZipArchiveWsl = Convert-ToWslPath $sevenZipArchive
 $firefoxComponentsWsl = Convert-ToWslPath $firefoxComponents
@@ -123,9 +125,9 @@ mkdir -p '$wslBuild/app/staging/Zotero_win-x64/distribution/extensions'
 cp /tmp/research-workspace.xpi \
 	'$wslBuild/app/staging/Zotero_win-x64/distribution/extensions/research-workspace@tencent-practice.local.xpi'
 
-rm -rf '$distWsl'
-mkdir -p '$distWsl'
-rsync -a --delete '$wslBuild/app/staging/Zotero_win-x64/' '$distWsl/'
+rm -rf '$publishWsl'
+mkdir -p '$publishWsl'
+rsync -a --delete '$wslBuild/app/staging/Zotero_win-x64/' '$publishWsl/'
 "@
 
 Write-Host "构建 Zotero 9.0.6 Windows x64 内核…" -ForegroundColor Cyan
@@ -140,18 +142,44 @@ finally {
 	Remove-Item -LiteralPath $commandPath -Force -ErrorAction SilentlyContinue
 }
 
-$exe = Join-Path $dist "zotero.exe"
-$xpi = Join-Path $dist "distribution\extensions\research-workspace@tencent-practice.local.xpi"
+# Always finish and validate in a fresh publish directory. The currently running
+# Library may still hold its old binaries, but can no longer corrupt a new build.
+$exe = Join-Path $publish "zotero.exe"
+$xpi = Join-Path $publish "distribution\extensions\research-workspace@tencent-practice.local.xpi"
 if (!(Test-Path $exe)) { throw "构建完成但未找到 $exe" }
 if (!(Test-Path $xpi)) { throw "构建完成但未找到内置 XPI。" }
 if (!(Test-Path $libraryIcon)) { throw "缺少 Library 图标：$libraryIcon" }
+if (!(Test-Path $updatePolicySource)) { throw "缺少 Library 更新策略：$updatePolicySource" }
 
 # Zotero 的 Windows 构建从预制 EXE 解包，源码中的 ICO 不会自动写回 EXE。
 # 每次构建后显式覆盖，确保系统窗口、任务栏和安装包统一显示 Library 的 L。
 & $rcedit $exe --set-icon $libraryIcon
 if ($LASTEXITCODE -ne 0) { throw "写入 Library L 图标失败（退出码 $LASTEXITCODE）。" }
-$libraryExe = Join-Path $dist "Library.exe"
+$libraryExe = Join-Path $publish "Library.exe"
 Copy-Item -LiteralPath $exe -Destination $libraryExe -Force
+
+# Library 必须由自己的发布流程升级。若保留 Zotero 的应用更新通道，上游 MAR 包会在
+# 首次启动后覆盖 Library.exe、品牌资源和 distribution/extensions。
+$distributionDirectory = Join-Path $publish "distribution"
+New-Item -ItemType Directory -Force -Path $distributionDirectory | Out-Null
+Copy-Item -LiteralPath $updatePolicySource -Destination (Join-Path $distributionDirectory "policies.json") -Force
+
+# Translate for Zotero 作为独立上游组件随 Library 分发。独立 XPI 边界便于审计和升级，
+# 构建脚本会固定校验官方资产、Zotero 兼容范围、许可证和对应源码版本。
+& (Join-Path $PSScriptRoot "build-translation-addon.ps1") -DistributionRoot $publish
+
+$translationLock = Get-Content -Raw (Join-Path $workspace "desktop\third-party\translate-for-zotero.lock.json") | ConvertFrom-Json
+$translationXpi = Join-Path $publish "distribution\extensions\$($translationLock.addonId).xpi"
+if (!(Test-Path $translationXpi)) { throw "构建完成但未找到内置翻译 XPI。" }
+
+# Better Notes 以 Library Notes 品牌作为独立内置 XPI 分发。保留独立边界可以固定上游
+# 版本、审计品牌补丁，并随产物提供 AGPL 许可证和对应源码入口。
+& (Join-Path $PSScriptRoot "build-library-notes-addon.ps1") -DistributionRoot $publish
+
+$notesLock = Get-Content -Raw (Join-Path $workspace "desktop\third-party\better-notes.lock.json") | ConvertFrom-Json
+$notesXpi = Join-Path $publish "distribution\extensions\$($notesLock.libraryAddonId).xpi"
+if (!(Test-Path $notesXpi)) { throw "构建完成但未找到 Library Notes XPI。" }
+& (Join-Path $PSScriptRoot "verify-library-notes-addon.ps1") -DistributionRoot $publish
 
 $buildInfo = [ordered]@{
 	product = "Library"
@@ -161,6 +189,36 @@ $buildInfo = [ordered]@{
 	builtAt = (Get-Date).ToString("o")
 	executable = $libraryExe
 	addon = $xpi
+	translationAddon = $translationXpi
+	translationVersion = $translationLock.version
+	notesAddon = $notesXpi
+	notesVersion = $notesLock.libraryVersion
+	notesUpstreamVersion = $notesLock.version
+	notesBrandRevision = $notesLock.brandRevision
+	updateStrategy = "Library-managed; upstream Zotero application updates disabled"
 }
-$buildInfo | ConvertTo-Json | Set-Content -Encoding utf8 (Join-Path $dist "research-workspace-build.json")
+$buildInfo | ConvertTo-Json | Set-Content -Encoding utf8 (Join-Path $publish "research-workspace-build.json")
+
+# Publish is the only step that needs the old app to be fully stopped. Retry for
+# a short bounded period because Windows may keep Gecko child processes alive
+# briefly after the main window closes.
+Get-CimInstance Win32_Process | Where-Object { $_.ExecutablePath -like "$dist\*" } |
+	ForEach-Object { Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue }
+$published = $false
+for ($attempt = 1; $attempt -le 8; $attempt++) {
+	try {
+		if (Test-Path -LiteralPath $dist) {
+			Remove-Item -LiteralPath $dist -Recurse -Force
+		}
+		Move-Item -LiteralPath $publish -Destination $dist
+		$published = $true
+		break
+	}
+	catch {
+		if ($attempt -eq 8) { throw }
+		Start-Sleep -Seconds 1
+	}
+}
+if (!$published) { throw "Library 构建已完成，但无法发布到 $dist。" }
+$libraryExe = Join-Path $dist "Library.exe"
 Write-Host "构建完成：$libraryExe" -ForegroundColor Green

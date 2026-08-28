@@ -21,12 +21,13 @@
 
 ## 存储架构（ai-provider.js 重写）
 
-- `aiProfiles`（pref，JSON 数组，**不含密钥**）：`{id, name, preset, baseURL, model, models[], fetchedAt}`；
+- `aiProfiles`（pref，JSON 数组，**不含密钥**）：`{id, name, preset, protocol, baseURL, model, models[], fetchedAt}`；`protocol` 为 `openai` 或 `anthropic`，旧档案按已知预设/端点迁移，其余默认 OpenAI；
 - `aiActiveProfile`（pref）：当前档案 id；对话、侧栏快捷设置、模型选择器全部跟随活动档案；
 - API Key 按档案存系统凭据库：origin `library-ai://model/<id>`；
 - **无缝迁移**：首次读取时把 0.15.x 的单配置（`aiProvider/aiBaseURL/aiModel` + 旧密钥 origin）自动迁移为 `default` 档案，旧密钥搬移到新 origin 并删除旧条目；
 - 旧 API（`config` / `save()` / `fetchModels()` / `getCachedModels()`）语义不变，内部改走活动档案，侧栏代码零改动兼容；
 - `request()` 支持 `baseURL/apiKey` 覆盖，供设置页对**未保存/未激活**的表单内容做测试与抓取。
+- 请求适配器按 `protocol` 分派：OpenAI 使用 `/chat/completions` 与 `choices[].delta`，Anthropic 使用 `/v1/messages`、顶层 `system` 与 `content_block_delta`；Kimi Code 的 `k3[1m]` 在直接 API 场景归一化为 `k3`。
 
 ## 验证证据
 

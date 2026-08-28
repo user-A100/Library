@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<style>
+	:root { --accent:#1b7f5c; --accent-soft:rgba(27,127,92,.12); --ink:#26251f; --muted:#66736c; --line:rgba(39,78,61,.16); }
+	* { box-sizing:border-box; margin:0; }
+	body { width:320px; padding:14px; font:12px/1.55 "Segoe UI Variable Text","Noto Sans CJK SC","Microsoft YaHei UI",sans-serif; color:var(--ink); background:#f7f5ee; }
+	header { display:flex; align-items:center; gap:8px; margin-bottom:10px; }
+	header img { width:22px; height:22px; }
+	header strong { font-size:14px; }
+	#status { display:flex; align-items:center; gap:6px; margin-bottom:10px; padding:7px 9px; border:1px solid var(--line); border-radius:7px; background:#fffdf7; color:var(--muted); font-size:11px; }
+	#status .dot { width:7px; height:7px; border-radius:50%; background:#b6a99a; }
+	#status.ok .dot { background:var(--accent); box-shadow:0 0 0 3px var(--accent-soft); }
+	#status.ok { color:var(--ink); }
+	ul { list-style:none; padding:0; display:grid; gap:6px; max-height:280px; overflow:auto; }
+	li { display:flex; align-items:center; gap:8px; padding:7px 9px; border:1px solid var(--line); border-radius:7px; background:#fffdf7; }
+	li .t { flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+	button { border:0; border-radius:7px; padding:6px 10px; background:var(--accent); color:#fff; font:600 11px/1 inherit; cursor:pointer; }
+	button:disabled { opacity:.55; cursor:default; }
+	button.ghost { background:transparent; color:var(--muted); }
+	.empty { padding:12px; border:1px dashed var(--line); border-radius:7px; color:var(--muted); text-align:center; }
+	footer { margin-top:10px; display:flex; justify-content:space-between; align-items:center; color:var(--muted); font-size:10px; }
+	#msg { min-height:14px; margin-top:8px; font-size:11px; color:var(--muted); }
+</style>
+</head>
+<body>
+	<header><img src="icons/icon48.png" alt=""><strong>Library Crawl</strong></header>
+	<div id="status"><span class="dot"></span><span id="status-text">正在连接 Library…</span></div>
+	<ul id="list"></ul>
+	<div id="msg"></div>
+	<footer><span>数据只进本机 Library</span><button type="button" class="ghost" id="rescan">重新扫描</button></footer>
+	<script src="popup.js"></script>
+</body>
+</html>

@@ -13,7 +13,7 @@ async function startup({ id, version, rootURI }) {
 	Services.prefs.setStringPref("extensions.zotero.researchWorkspace.startedVersion", version);
 	Services.prefs.setBoolPref("extensions.zotero.researchWorkspace.active", true);
 	Services.prefs.setBoolPref("extensions.zotero.researchWorkspace.ready", false);
-	for (let script of ["ai-conversation.js", "ai-provider.js", "ai-context.js", "ai-commands.js", "ai-view.js", "research-workspace.js"]) {
+	for (let script of ["ai-artifacts.js", "ai-conversation.js", "ai-provider.js", "ai-context.js", "ai-commands.js", "ai-view.js", "research-workspace.js"]) {
 		Services.scriptloader.loadSubScript(rootURI + script);
 	}
 	ResearchWorkspace.init({ id, version, rootURI });

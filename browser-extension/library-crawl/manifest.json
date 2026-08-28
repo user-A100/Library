@@ -1,0 +1,23 @@
+{
+	"manifest_version": 3,
+	"name": "Library Crawl",
+	"version": "0.1.0",
+	"description": "把网页上的 PDF 一键抓取进 Library 桌面应用（本地运行，数据不出本机）。",
+	"permissions": ["activeTab", "contextMenus", "storage", "tabs"],
+	"host_permissions": ["http://127.0.0.1:23119/*", "http://localhost:23119/*", "<all_urls>"],
+	"background": { "service_worker": "background.js" },
+	"action": {
+		"default_popup": "popup.html",
+		"default_title": "Library Crawl — 抓取到 Library",
+		"default_icon": { "16": "icons/icon16.png", "48": "icons/icon48.png", "128": "icons/icon128.png" }
+	},
+	"icons": { "16": "icons/icon16.png", "48": "icons/icon48.png", "128": "icons/icon128.png" },
+	"content_scripts": [
+		{
+			"matches": ["<all_urls>"],
+			"js": ["content.js"],
+			"run_at": "document_idle",
+			"all_frames": false
+		}
+	]
+}

@@ -6,7 +6,14 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "verify": "npm run test && npm run build",
     "preview": "vite preview",
+    "desktop:addon": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/build-desktop-addon.ps1",
+    "desktop:translate": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/build-translation-addon.ps1",
+    "desktop:notes": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/build-library-notes-addon.ps1",
+    "desktop:notes:verify": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/verify-library-notes-addon.ps1",
     "desktop:build": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/build-desktop.ps1",
     "desktop:run": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/run-desktop.ps1",
     "desktop:verify": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/verify-desktop.ps1",
@@ -31,7 +38,11 @@
     "@types/react": "^19.2.0",
     "@types/react-dom": "^19.2.0",
     "@vitejs/plugin-react": "^5.0.0",
+    "ajv": "^8.20.0",
+    "ajv-formats": "^3.0.1",
+    "fast-check": "^4.9.0",
     "typescript": "^7.0.0",
-    "vite": "^8.2.0"
+    "vite": "^8.2.0",
+    "vitest": "^4.1.11"
   }
 }

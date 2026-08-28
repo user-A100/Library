@@ -18,10 +18,17 @@ var LibraryAISettings = {
 			option.value = key; option.textContent = label;
 			preset.append(option);
 		}
+		let protocol = root.querySelector("#ai-protocol");
+		for (let [key, label] of Object.entries(this.provider.protocols)) {
+			let option = document.createElement("option");
+			option.value = key; option.textContent = label;
+			protocol.append(option);
+		}
 		preset.addEventListener("change", () => {
-			let [, baseURL, model] = this.provider.presets[preset.value] || [];
-			if (baseURL && !root.querySelector("#ai-baseurl").value.trim()) root.querySelector("#ai-baseurl").value = baseURL;
-			if (model && !root.querySelector("#ai-model").value.trim()) root.querySelector("#ai-model").value = model;
+			let [, baseURL, model, protocolName] = this.provider.presets[preset.value] || [];
+			if (baseURL) root.querySelector("#ai-baseurl").value = baseURL;
+			if (model) root.querySelector("#ai-model").value = model;
+			if (protocolName) protocol.value = protocolName;
 		});
 
 		root.querySelector("#ai-add").addEventListener("click", () => this.select(null));
@@ -61,8 +68,11 @@ var LibraryAISettings = {
 		for (let profile of profiles) {
 			let card = document.createElement("div");
 			card.className = "ai-prefs-card";
-			card.classList.toggle("selected", profile.id === this.selectedId);
+			let selected = profile.id === this.selectedId;
+			card.classList.toggle("selected", selected);
 			card.setAttribute("role", "option");
+			card.setAttribute("aria-selected", String(selected));
+			card.tabIndex = selected ? 0 : -1;
 			// 头像：名称首字 + 由名称哈希出的色相，一眼区分不同配置
 			let hue = [...(profile.name || "?")].reduce((sum, ch) => sum + ch.charCodeAt(0), 0) % 360;
 			let main = document.createElement("div"); main.className = "ai-prefs-card-main";
@@ -79,7 +89,8 @@ var LibraryAISettings = {
 			let keydot = document.createElement("span"); keydot.className = `ai-prefs-keydot${profile.hasKey ? " saved" : ""}`;
 			keydot.title = profile.hasKey ? "已保存密钥" : "未保存密钥";
 			let meta = document.createElement("span");
-			meta.textContent = `${profile.model || "未设模型"} · ${profile.models?.length || 0} 个模型`;
+			let protocolLabel = profile.protocol === "anthropic" ? "Anthropic" : "OpenAI";
+			meta.textContent = `${protocolLabel} · ${profile.model || "未设模型"} · ${profile.models?.length || 0} 个模型`;
 			foot.append(keydot, meta);
 			if (profile.active) {
 				let badge = document.createElement("span"); badge.className = "ai-prefs-badge"; badge.textContent = "使用中";
@@ -98,6 +109,7 @@ var LibraryAISettings = {
 		if (title) title.textContent = profile ? `编辑 · ${profile.name}` : "新建配置";
 		this.field("name").value = profile?.name || "";
 		this.field("preset").value = profile?.preset || "custom";
+		this.field("protocol").value = profile?.protocol || "openai";
 		this.field("baseurl").value = profile?.baseURL || "";
 		this.field("model").value = profile?.model || "";
 		let key = this.field("key");
@@ -133,6 +145,7 @@ var LibraryAISettings = {
 				id: this.selectedId || undefined,
 				name: this.field("name").value,
 				preset: this.field("preset").value,
+				protocol: this.field("protocol").value,
 				baseURL: this.field("baseurl").value,
 				model: this.field("model").value,
 				apiKey: this.field("key").value.trim(),
@@ -169,7 +182,12 @@ var LibraryAISettings = {
 	async test() {
 		this.status("正在测试连接…");
 		try {
-			await this.provider.test({ baseURL: this.field("baseurl").value.trim(), apiKey: await this.formKey() });
+			await this.provider.test({
+				baseURL: this.field("baseurl").value.trim(),
+				apiKey: await this.formKey(),
+				protocol: this.field("protocol").value,
+				model: this.field("model").value.trim(),
+			});
 			this.status("连接成功");
 		}
 		catch (error) { this.status(error.message || String(error), true); }
@@ -178,7 +196,11 @@ var LibraryAISettings = {
 	async fetchModels() {
 		this.status("正在抓取模型列表…");
 		try {
-			let models = await this.provider.listModels({ baseURL: this.field("baseurl").value.trim(), apiKey: await this.formKey() });
+			let models = await this.provider.listModels({
+				baseURL: this.field("baseurl").value.trim(),
+				apiKey: await this.formKey(),
+				protocol: this.field("protocol").value,
+			});
 			this.fillModelOptions(models);
 			if (this.selectedId) this.provider.storeModels(this.selectedId, models);
 			this.status(`抓取到 ${models.length} 个模型，可在「默认模型」中点选`);
@@ -194,7 +216,7 @@ var LibraryAISettings = {
 			format: "library-ai-profiles",
 			version: 1,
 			profiles: await Promise.all(profiles.map(async p => ({
-				name: p.name, preset: p.preset, baseURL: p.baseURL, model: p.model,
+				name: p.name, preset: p.preset, protocol: p.protocol, baseURL: p.baseURL, model: p.model,
 				models: p.models || [], apiKey: await this.provider.getKey(p.id),
 			}))),
 		};
@@ -217,6 +239,7 @@ var LibraryAISettings = {
 				// 导入一律新建（不带 id），同名配置成为副本，绝不覆盖现有档案
 				await this.provider.upsertProfile({
 					name: entry.name, preset: entry.preset || "custom",
+					protocol: entry.protocol,
 					baseURL: entry.baseURL, model: entry.model,
 					apiKey: entry.apiKey || "",
 				});

@@ -9,8 +9,13 @@ ResearchWorkspace = {
 	shellStates: new Map(),
 	readerSurfacesRegistered: false,
 	annotationNotifierID: null,
+	translationPaneTimer: null,
+	fullTranslationJobs: new Map(),
 	aiViewHost: null,
 	aiPrefRoot: "extensions.zotero.researchWorkspace.",
+	// Library Crawl 浏览器扩展的仓库与下载地址
+	libraryCrawlRepoURL: "https://github.com/user-A100/Library",
+	libraryCrawlDownloadURL: "https://github.com/user-A100/Library/releases/latest/download/library-crawl.zip",
 
 	init({ id, version, rootURI }) {
 		if (this.initialized) return;
@@ -40,6 +45,7 @@ ResearchWorkspace = {
 		}
 		this.applyAppearance(window);
 		this.installShell(window);
+		this.customizeToolsMenu(window);
 		this.aiViewHost?.addToWindow(window);
 	},
 
@@ -135,6 +141,98 @@ ResearchWorkspace = {
 		}
 	},
 
+	// 工具菜单品牌定制：隐藏内核「插件」入口（about:addons），
+	// 把「安装浏览器扩展」改为 Library Crawl 引导面板（含仓库链接与下载按钮）
+	customizeToolsMenu(window) {
+		let doc = window?.document;
+		if (!doc) return;
+		let connector = doc.getElementById("installConnector");
+		if (!connector || connector.dataset.libraryCrawlPatched) return;
+		let addons = doc.getElementById("menu_addons");
+		if (addons) addons.hidden = true;
+		connector.dataset.libraryCrawlPatched = "true";
+		connector.setAttribute("label", "安装浏览器扩展（Library Crawl）…");
+		connector.removeAttribute("oncommand");
+		connector.removeAttribute("accesskey");
+		let handler = event => {
+			event.preventDefault();
+			event.stopPropagation();
+			this.showLibraryCrawlPanel(window);
+		};
+		connector.addEventListener("command", handler);
+		let state = this.shellStates.get(window);
+		if (state) state.listeners.push([connector, "command", handler]);
+	},
+
+	showLibraryCrawlPanel(window) {
+		let doc = window.document;
+		doc.getElementById("library-crawl-panel")?.remove();
+		let panel = doc.createXULElement("panel");
+		panel.id = "library-crawl-panel";
+		panel.setAttribute("type", "arrow");
+		panel.setAttribute("flip", "both");
+		panel.setAttribute("consumeoutsideclicks", "true");
+		panel.addEventListener("popuphidden", () => panel.remove());
+
+		let box = doc.createElementNS("http://www.w3.org/1999/xhtml", "div");
+		box.style.cssText = "box-sizing:border-box;width:320px;padding:16px;display:grid;gap:10px;"
+			+ "background:var(--material-background);color:var(--fill-primary);"
+			+ "font:12px/1.6 'Segoe UI Variable Text','Microsoft YaHei UI',sans-serif;";
+		let accent = "var(--research-custom-accent, var(--accent-blue, #1b7f5c))";
+
+		let title = doc.createElementNS("http://www.w3.org/1999/xhtml", "strong");
+		title.textContent = "Library Crawl 浏览器扩展";
+		title.style.cssText = "font-size:14px;font-weight:680;";
+
+		let desc = doc.createElementNS("http://www.w3.org/1999/xhtml", "p");
+		desc.style.cssText = "margin:0;color:var(--fill-secondary);";
+		desc.textContent = "一键把网页上的 PDF 抓取进 Library：PDF 页面角标、本页链接扫描、右键菜单。完全本地运行，数据不出本机。";
+
+		let repo = doc.createElementNS("http://www.w3.org/1999/xhtml", "a");
+		repo.textContent = this.libraryCrawlRepoURL;
+		repo.href = this.libraryCrawlRepoURL;
+		repo.style.cssText = `color:${accent};word-break:break-all;cursor:pointer;`;
+		repo.addEventListener("click", event => {
+			event.preventDefault();
+			Zotero.launchURL(this.libraryCrawlRepoURL);
+		});
+
+		let actions = doc.createElementNS("http://www.w3.org/1999/xhtml", "div");
+		actions.style.cssText = "display:flex;gap:8px;margin-top:2px;";
+
+		let download = doc.createElementNS("http://www.w3.org/1999/xhtml", "button");
+		download.type = "button";
+		download.textContent = "下载扩展";
+		download.style.cssText = `padding:7px 14px;border:0;border-radius:7px;background:${accent};color:#fff;font-weight:650;cursor:pointer;`;
+		download.addEventListener("click", () => Zotero.launchURL(this.libraryCrawlDownloadURL));
+
+		let local = doc.createElementNS("http://www.w3.org/1999/xhtml", "button");
+		local.type = "button";
+		local.textContent = "打开本地扩展目录";
+		local.style.cssText = "padding:7px 12px;border:1px solid var(--color-panedivider,#ccc);border-radius:7px;background:var(--material-button);color:inherit;cursor:pointer;";
+		let dirPref = "";
+		try { dirPref = Services.prefs.getStringPref(this.aiPrefRoot + "libraryCrawlDir", ""); } catch (_) {}
+		if (dirPref) {
+			local.addEventListener("click", () => {
+				try { new FileUtils.File(dirPref).reveal(); }
+				catch (error) { this.log(`Unable to reveal Library Crawl dir: ${error}`); }
+			});
+		} else {
+			local.style.display = "none";
+		}
+		actions.append(download, local);
+
+		let hint = doc.createElementNS("http://www.w3.org/1999/xhtml", "small");
+		hint.style.cssText = "color:var(--fill-secondary);font-size:10px;";
+		hint.textContent = "安装：浏览器扩展页 → 开发者模式 → 加载解压缩的扩展 → 选择解压后的 library-crawl 目录。";
+
+		box.append(title, desc, repo, actions, hint);
+		panel.appendChild(box);
+		doc.documentElement.appendChild(panel);
+		let anchor = doc.getElementById("toolsMenu") || doc.getElementById("menu_ToolsPopup");
+		panel.openPopup(anchor, "after_start", 8, 8);
+	},
+
 	installShell(window) {
 		let doc = window.document;
 		if (this.shellStates.has(window) || doc.querySelector(".research-shell-edge")) return;
@@ -150,15 +248,34 @@ ResearchWorkspace = {
 		};
 		this.shellStates.set(window, state);
 
-		let makeEdge = side => {
-			let edge = doc.createElementNS("http://www.w3.org/1999/xhtml", "div");
-			edge.className = `research-shell-edge research-shell-edge-${side}`;
-			edge.dataset.side = side;
-			edge.setAttribute("aria-hidden", "true");
-			return edge;
+		let rail = doc.createElementNS("http://www.w3.org/1999/xhtml", "nav");
+		rail.className = "research-shell-rail";
+		rail.setAttribute("aria-label", "Library 导航");
+		let railIcons = {
+			library: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5.5h5.5a3 3 0 0 1 3 3v10H7a3 3 0 0 0-3 3z"/><path d="M20 5.5h-5.5a3 3 0 0 0-3 3v10H17a3 3 0 0 1 3 3z"/></svg>',
+			ai: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 1.45 4.55L18 9l-4.55 1.45L12 15l-1.45-4.55L6 9l4.55-1.45z"/><path d="m18.2 14 .75 2.25L21.2 17l-2.25.75L18.2 20l-.75-2.25L15.2 17l2.25-.75z"/></svg>',
+			focus: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 4H4v4M16 4h4v4M8 20H4v-4M16 20h4v-4"/></svg>',
 		};
-		let edge = makeEdge("left");
-		doc.documentElement.append(edge);
+		let makeRailButton = (action, label) => {
+			let button = doc.createElementNS("http://www.w3.org/1999/xhtml", "button");
+			button.type = "button";
+			button.className = "research-shell-rail-button";
+			button.dataset.action = action;
+			button.setAttribute("aria-label", label);
+			button.title = label;
+			button.innerHTML = railIcons[action];
+			return button;
+		};
+		let edge = makeRailButton("library", "显示文库侧栏");
+		edge.classList.add("research-shell-edge", "research-shell-edge-left");
+		edge.dataset.side = "left";
+		edge.setAttribute("aria-pressed", "false");
+		let aiButton = makeRailButton("ai", "打开 AI 研究助手");
+		let focusButton = makeRailButton("focus", "退出紧凑模式");
+		let railSpacer = doc.createElementNS("http://www.w3.org/1999/xhtml", "span");
+		railSpacer.className = "research-shell-rail-spacer";
+		rail.append(edge, aiButton, railSpacer, focusButton);
+		doc.documentElement.append(rail);
 
 		let bind = (target, type, handler, options) => {
 			if (!target) return;
@@ -166,7 +283,31 @@ ResearchWorkspace = {
 			state.listeners.push([target, type, handler, options]);
 		};
 		bind(edge, "mouseenter", () => this.revealShellSide(window, "left"));
+		bind(edge, "focus", () => this.revealShellSide(window, "left"));
+		bind(edge, "click", () => {
+			state.pinned.left = !state.pinned.left;
+			this.setShellSide(window, "left", state.pinned.left);
+			edge.setAttribute("aria-pressed", String(state.pinned.left));
+			edge.title = state.pinned.left ? "取消固定文库侧栏" : "显示文库侧栏";
+		});
+		bind(edge, "keydown", event => {
+			if (event.key === "Escape") {
+				state.pinned.left = false;
+				edge.setAttribute("aria-pressed", "false");
+				this.setShellSide(window, "left", false);
+				edge.blur();
+			}
+		});
 		bind(edge, "mouseleave", () => this.scheduleShellHide(window, "left"));
+		bind(edge, "blur", () => this.scheduleShellHide(window, "left"));
+		bind(aiButton, "click", () => this.aiViewHost?.toggle?.(window));
+		bind(focusButton, "click", () => this.setShellCompact(window, false));
+		bind(rail, "mouseenter", () => window.clearTimeout(state.timers.left));
+		bind(rail, "mouseleave", event => {
+			if (!event.relatedTarget?.closest?.("#zotero-collections-pane")) {
+				this.scheduleShellHide(window, "left");
+			}
+		});
 		let collectionsPane = doc.getElementById("zotero-collections-pane");
 		bind(collectionsPane, "mouseenter", () => this.revealShellSide(window, "left"));
 		bind(collectionsPane, "mouseleave", () => this.scheduleShellHide(window, "left"));
@@ -239,7 +380,11 @@ ResearchWorkspace = {
 		let root = window?.document?.documentElement;
 		let state = this.shellStates.get(window);
 		if (!root || !state) return;
-		root.dataset[`research${side[0].toUpperCase()}${side.slice(1)}Open`] = String(Boolean(open));
+		let isOpen = Boolean(open);
+		root.dataset[`research${side[0].toUpperCase()}${side.slice(1)}Open`] = String(isOpen);
+		let button = window.document.querySelector(`.research-shell-edge-${side}`);
+		button?.setAttribute("aria-pressed", String(isOpen && state.pinned[side]));
+		button?.classList.toggle("active", isOpen);
 	},
 
 	removeShell(window) {
@@ -252,7 +397,7 @@ ResearchWorkspace = {
 				target.removeEventListener(type, handler, options);
 			}
 		}
-		for (let element of doc.querySelectorAll(".research-shell-edge")) element.remove();
+		for (let element of doc.querySelectorAll(".research-shell-rail, .research-shell-edge")) element.remove();
 		for (let key of [
 			"researchCompact", "researchShellReady", "researchLeftOpen",
 		]) delete doc.documentElement.dataset[key];
@@ -323,7 +468,33 @@ ResearchWorkspace = {
 			}],
 		}));
 
+		this.configureTranslationExperience();
 		this.registerReaderSurfaces();
+	},
+
+	configureTranslationExperience() {
+		// Library 的阅读交互以用户明确点击为准。Translate for Zotero 上游默认会
+		// 在划词后立即发起请求；这里设置用户级偏好，确保现有/新建 profile 都
+		// 只显示「翻译」按钮，不会在选择文本时自动向第三方服务发送内容。
+		Services.prefs.setBoolPref("extensions.zotero.ZoteroPDFTranslate.enableAuto", false);
+		Services.prefs.setBoolPref("extensions.zotero.ZoteroPDFTranslate.enablePopup", true);
+		// TRACE 复核表单属于评测工作流，普通论文阅读不显示，避免右下角出现
+		// 没有阅读价值的复选框和空白输入框。
+		Services.prefs.setBoolPref("extensions.zotero.researchWorkspace.traceReviewUI", false);
+
+		let window = Zotero.getMainWindow?.();
+		if (!window) return;
+		if (this.translationPaneTimer) window.clearTimeout(this.translationPaneTimer);
+		this.translationPaneTimer = window.setTimeout(() => {
+			this.translationPaneTimer = null;
+			this.removeLegacyTranslationPane();
+		}, 1600);
+	},
+
+	removeLegacyTranslationPane() {
+		// 翻译入口已经迁移到划词弹窗和阅读器工具栏。旧侧栏在当前 Zotero
+		// 内核中会渲染出一组没有可读标签的白色控件，因此不再作为产品入口。
+		Zotero.ItemPaneManager?.unregisterSection?.("translate");
 	},
 
 	registerReaderSurfaces() {
@@ -333,6 +504,14 @@ ResearchWorkspace = {
 		Zotero.Reader.registerEventListener(
 			"renderTextSelectionPopup",
 			event => this.handleTextSelectionPopup(event),
+			this.id,
+		);
+
+		// 阅读器右上工具区：全文翻译。Zotero 会把 renderToolbar 追加项放在
+		// 搜索/侧栏控制所在的工具区，不覆盖原生批注能力。
+		Zotero.Reader.registerEventListener(
+			"renderToolbar",
+			event => this.handleReaderToolbar(event),
 			this.id,
 		);
 
@@ -349,6 +528,191 @@ ResearchWorkspace = {
 			},
 		}, ["item"], "research-workspace-annotations");
 		this.readerSurfacesRegistered = true;
+	},
+
+	handleReaderToolbar({ reader, doc, append }) {
+		this.removeLegacyTranslationPane();
+		this.ensureReaderToolbarStyles(doc);
+		let id = `library-full-translate-${reader?._instanceID || reader?.itemID || "reader"}`;
+		if (doc.getElementById(id)) return;
+
+		let button = doc.createElement("button");
+		button.id = id;
+		button.type = "button";
+		button.className = "toolbar-button library-full-translate";
+		button.title = "使用当前翻译引擎翻译整篇论文，并生成文献笔记";
+		button.setAttribute("aria-label", "全文翻译");
+		let mark = doc.createElementNS("http://www.w3.org/2000/svg", "svg");
+		mark.classList.add("library-full-translate-icon");
+		mark.setAttribute("viewBox", "0 0 24 24");
+		mark.setAttribute("aria-hidden", "true");
+		for (let pathData of ["M5 8l6 6", "M4 14l6-6 2-3", "M2 5h12", "M7 2h1", "M22 22l-5-10-5 10", "M14 18h6"]) {
+			let path = doc.createElementNS("http://www.w3.org/2000/svg", "path");
+			path.setAttribute("d", pathData);
+			mark.append(path);
+		}
+		button.append(mark);
+		button.addEventListener("click", () => this.translateWholeDocument(reader, button));
+		append(button);
+	},
+
+	ensureReaderToolbarStyles(doc) {
+		if (doc.getElementById("library-reader-toolbar-style")) return;
+		let style = doc.createElement("style");
+		style.id = "library-reader-toolbar-style";
+		style.textContent = `
+			.library-full-translate{display:inline-grid;place-items:center;box-sizing:border-box;width:30px;height:28px;margin-inline:2px;padding:0;border:1px solid transparent;border-radius:6px;background:transparent;color:var(--fill-secondary);cursor:pointer;transition:background-color 120ms ease,color 120ms ease,border-color 120ms ease,transform 100ms ease}
+			.library-full-translate:hover:not(:disabled){background:var(--fill-quinary);color:var(--fill-primary)}
+			.library-full-translate:active:not(:disabled){transform:scale(.97)}
+			.library-full-translate:focus-visible{outline:2px solid color-mix(in srgb,var(--accent-blue) 65%,transparent);outline-offset:1px}
+			.library-full-translate-icon{width:18px;height:18px;flex:none;fill:none;stroke:var(--accent-blue);stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+			.library-full-translate[data-busy="true"]{cursor:progress;color:var(--fill-secondary)}
+			.library-full-translate[data-busy="true"] .library-full-translate-icon{animation:library-translate-pulse 900ms ease-in-out infinite alternate}
+			@keyframes library-translate-pulse{to{opacity:.38}}
+			@media (prefers-reduced-motion:reduce){.library-full-translate,.library-full-translate-icon{transition:none!important;animation:none!important}}
+		`;
+		(doc.head || doc.documentElement).append(style);
+	},
+
+	setFullTranslationButton(button, text, busy = false) {
+		if (!button?.isConnected) return;
+		button.disabled = busy;
+		button.setAttribute("aria-busy", String(busy));
+		button.setAttribute("aria-label", text);
+		button.title = busy ? text : "全文翻译：使用当前翻译引擎翻译整篇论文，并生成文献笔记";
+		button.dataset.busy = String(busy);
+	},
+
+	splitFullTextForTranslation(text, maxLength = 2600) {
+		let blocks = String(text || "")
+			.replace(/\r/g, "")
+			.replace(/[ \t]+\n/g, "\n")
+			.split(/\n{2,}/)
+			.map(block => block.replace(/\s+/g, " ").trim())
+			.filter(Boolean);
+		let chunks = [], current = "";
+		let flush = () => {
+			if (current.trim()) chunks.push(current.trim());
+			current = "";
+		};
+		for (let block of blocks) {
+			while (block.length > maxLength) {
+				let sample = block.slice(0, maxLength);
+				let cut = Math.max(
+					sample.lastIndexOf(". "), sample.lastIndexOf("? "),
+					sample.lastIndexOf("! "), sample.lastIndexOf("; "),
+				);
+				if (cut < Math.floor(maxLength * .55)) cut = maxLength - 1;
+				let part = block.slice(0, cut + 1).trim();
+				if (current && current.length + part.length + 2 > maxLength) flush();
+				current = [current, part].filter(Boolean).join("\n\n");
+				flush();
+				block = block.slice(cut + 1).trim();
+			}
+			if (!block) continue;
+			if (current && current.length + block.length + 2 > maxLength) flush();
+			current = [current, block].filter(Boolean).join("\n\n");
+		}
+		flush();
+		return chunks;
+	},
+
+	renderFullTranslationNote(title, translatedChunks, { complete = false, total = 0, service = "" } = {}) {
+		let escape = value => Zotero.Utilities.htmlSpecialChars(String(value || ""));
+		let paragraphs = translatedChunks.map(chunk => {
+			let html = escape(chunk).replace(/\n{2,}/g, "</p><p>").replace(/\n/g, "<br>");
+			return `<p>${html}</p>`;
+		}).join("");
+		let progress = complete
+			? `已完成 ${translatedChunks.length} 个分段${service ? ` · ${escape(service)}` : ""}`
+			: `正在翻译 ${translatedChunks.length}/${total} 个分段`;
+		return `<h1>${escape(title)} · 全文翻译</h1><p><em>机器翻译 · ${progress}</em></p><hr>${paragraphs}`;
+	},
+
+	async translateWholeDocument(reader, button) {
+		let itemID = Number(reader?.itemID || 0);
+		if (!itemID || this.fullTranslationJobs.has(itemID)) return;
+		let job = this.runFullDocumentTranslation(reader, button);
+		this.fullTranslationJobs.set(itemID, job);
+		try {
+			await job;
+		}
+		finally {
+			this.fullTranslationJobs.delete(itemID);
+			this.setFullTranslationButton(button, "全文翻译", false);
+		}
+	},
+
+	async runFullDocumentTranslation(reader, button) {
+		if (!Zotero.PDFTranslate?.api?.translate) {
+			Services.prompt.alert(null, "Library", "翻译组件尚未就绪，请重启 Library 后再试。");
+			return;
+		}
+		let attachment = await Zotero.Items.getAsync(reader.itemID);
+		if (!attachment?.isPDFAttachment?.()) {
+			Services.prompt.alert(null, "Library", "当前阅读内容不是可翻译的 PDF。");
+			return;
+		}
+
+		let parent = attachment.parentItemID ? await Zotero.Items.getAsync(attachment.parentItemID) : null;
+		let title = parent?.getDisplayTitle?.() || attachment.getDisplayTitle?.() || "当前论文";
+		let progressWindow = new Zotero.ProgressWindow({ closeOnClick: false });
+		progressWindow.changeHeadline("Library 全文翻译");
+		let progress = new progressWindow.ItemProgress(null, title);
+		progress.setProgress(0);
+		progressWindow.show();
+
+		let note = null;
+		try {
+			this.setFullTranslationButton(button, "提取全文…", true);
+			let cacheFile = Zotero.Fulltext.getItemCacheFile(attachment);
+			let fullText = cacheFile.exists()
+				? await Zotero.File.getContentsAsync(cacheFile)
+				: (await Zotero.PDFWorker.getFullText(attachment.id, null, true)).text;
+			let chunks = this.splitFullTextForTranslation(fullText);
+			if (!chunks.length) throw new Error("没有从 PDF 中提取到可翻译文本");
+
+			note = new Zotero.Item("note");
+			note.libraryID = attachment.libraryID;
+			if (parent?.isRegularItem?.()) note.parentID = parent.id;
+			note.setNote(this.renderFullTranslationNote(title, [], { total: chunks.length }));
+			await note.saveTx();
+
+			let results = [], service = "";
+			for (let [index, chunk] of chunks.entries()) {
+				this.setFullTranslationButton(button, `翻译 ${index + 1}/${chunks.length}`, true);
+				progress.setText(`正在翻译 ${index + 1}/${chunks.length}`);
+				progress.setProgress(Math.round((index / chunks.length) * 100));
+				let task = await Zotero.PDFTranslate.api.translate(chunk);
+				let result = task?.result?.trim();
+				if (!result) throw new Error(task?.status === "error" ? "翻译服务返回错误" : `第 ${index + 1} 段没有返回译文`);
+				service ||= task.service || "";
+				results.push(result);
+				if ((index + 1) % 4 === 0 || index === chunks.length - 1) {
+					note.setNote(this.renderFullTranslationNote(title, results, { total: chunks.length, service }));
+					await note.saveTx();
+				}
+				await Zotero.Promise.delay(80);
+			}
+
+			note.setNote(this.renderFullTranslationNote(title, results, { complete: true, total: chunks.length, service }));
+			await note.saveTx();
+			progress.setProgress(100);
+			progress.setText("翻译完成，已生成文献笔记");
+			progressWindow.startCloseTimer(3500);
+			Zotero.getActiveZoteroPane?.()?.openNote?.(note.id, { openInWindow: true });
+		}
+		catch (error) {
+			this.log(`Full-document translation failed: ${error?.stack || error}`);
+			progress.setError();
+			progress.setText(`全文翻译失败：${error.message || error}`);
+			progressWindow.startCloseTimer(8000);
+			if (note?.id) {
+				note.setNote(`${note.getNote()}<p><strong>翻译中断：</strong>${Zotero.Utilities.htmlSpecialChars(error.message || String(error))}</p>`);
+				await note.saveTx();
+			}
+			Services.prompt.alert(null, "Library", `全文翻译失败：${error.message || error}`);
+		}
 	},
 
 	handleTextSelectionPopup({ reader, doc, params, append }) {
@@ -369,6 +733,10 @@ ResearchWorkspace = {
 	},
 
 	removeReaderSurfaces() {
+		let window = Zotero.getMainWindow?.();
+		if (this.translationPaneTimer && window) window.clearTimeout(this.translationPaneTimer);
+		this.translationPaneTimer = null;
+		this.fullTranslationJobs.clear();
 		if (this.annotationNotifierID) {
 			Zotero.Notifier.unregisterObserver(this.annotationNotifierID);
 			this.annotationNotifierID = null;
@@ -609,7 +977,10 @@ ResearchWorkspace = {
 			let origin = "library-ai://model", realm = "Library AI";
 			for (let login of Services.logins.findLogins(origin, null, realm)) Services.logins.removeLogin(login);
 			let LoginInfo = Components.Constructor("@mozilla.org/login-manager/loginInfo;1", "nsILoginInfo", "init");
-			Services.logins.addLogin(new LoginInfo(origin, null, realm, "api", apiKey, "", ""));
+			let loginInfo = new LoginInfo(origin, null, realm, "api", apiKey, "", "");
+			if (typeof Services.logins.addLoginAsync === "function") await Services.logins.addLoginAsync(loginInfo);
+			else if (typeof Services.logins.addLogin === "function") Services.logins.addLogin(loginInfo);
+			else throw new Error("当前 Zotero 运行时不支持保存系统凭据");
 		}
 		if (!(await this.getAPIKey())) throw new Error("请输入 API 密钥。");
 	},
@@ -805,17 +1176,22 @@ ResearchWorkspace = {
 		return null;
 	},
 
-	async startReading(item) {
+	async startReading(item, location = null) {
 		let attachment = await this.getPDFAttachment(item);
 		if (!attachment) {
 			Services.prompt.alert(null, "Library", "当前条目没有可阅读的 PDF 附件。");
-			return;
+			return null;
 		}
-		let reader = await Zotero.Reader.open(attachment.id);
+		let reader = await Zotero.Reader.open(attachment.id, location);
 		if (!reader) {
 			let mainWindow = Zotero.getMainWindow?.();
 			let tabID = mainWindow?.Zotero_Tabs?.getTabIDByItemID?.(attachment.id);
-			if (tabID) reader = Zotero.Reader.getByTabID(tabID);
+			if (tabID) {
+				for (let attempt = 0; attempt < 30 && !reader; attempt++) {
+					reader = Zotero.Reader.getByTabID(tabID);
+					if (!reader) await Zotero.Promise.delay(50);
+				}
+			}
 		}
 		return reader;
 	},

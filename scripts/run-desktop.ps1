@@ -1,17 +1,53 @@
 param(
 	[ValidateRange(1024, 65535)]
-	[int]$ConnectorPort = 23119
+	[int]$ConnectorPort = 23119,
+	[string]$ProfileDirectory = "",
+	[string]$DataDirectory = ""
 )
 
 $ErrorActionPreference = "Stop"
 
 $workspace = Split-Path -Parent $PSScriptRoot
 $exe = Join-Path $workspace "desktop\dist\Zotero_win-x64\Library.exe"
-$profile = Join-Path $workspace "desktop\profile"
-$dataDir = Join-Path $workspace "desktop\data"
+$profile = if ($ProfileDirectory) {
+	[System.IO.Path]::GetFullPath($ProfileDirectory)
+} else {
+	Join-Path $workspace "desktop\profile"
+}
+$dataDir = if ($DataDirectory) {
+	[System.IO.Path]::GetFullPath($DataDirectory)
+} else {
+	Join-Path $workspace "desktop\data"
+}
 $bundledXPI = Join-Path $workspace "desktop\dist\Zotero_win-x64\distribution\extensions\research-workspace@tencent-practice.local.xpi"
+$translationLockPath = Join-Path $workspace "desktop\third-party\translate-for-zotero.lock.json"
+$translationLock = Get-Content -Raw $translationLockPath | ConvertFrom-Json
+$bundledTranslationXPI = Join-Path $workspace "desktop\dist\Zotero_win-x64\distribution\extensions\$($translationLock.addonId).xpi"
+$notesLockPath = Join-Path $workspace "desktop\third-party\better-notes.lock.json"
+$notesLock = Get-Content -Raw $notesLockPath | ConvertFrom-Json
+$bundledNotesXPI = Join-Path $workspace "desktop\dist\Zotero_win-x64\distribution\extensions\$($notesLock.libraryAddonId).xpi"
 $profileExtensions = Join-Path $profile "extensions"
 $addonManifestPath = Join-Path $workspace "desktop\addons\research-workspace\manifest.json"
+
+function Get-FileSha256([string]$Path) {
+	$stream = [System.IO.File]::OpenRead($Path)
+	$sha256 = [System.Security.Cryptography.SHA256]::Create()
+	try { return ([System.BitConverter]::ToString($sha256.ComputeHash($stream))).Replace("-", "") }
+	finally { $sha256.Dispose(); $stream.Dispose() }
+}
+
+function Copy-AddonIfChanged([string]$Source, [string]$Destination) {
+	if (Test-Path -LiteralPath $Destination) {
+		$sourceFile = Get-Item -LiteralPath $Source
+		$destinationFile = Get-Item -LiteralPath $Destination
+		if ($sourceFile.Length -eq $destinationFile.Length `
+			-and (Get-FileSha256 $Source) -eq (Get-FileSha256 $Destination)) {
+			return $false
+		}
+	}
+	Copy-Item -LiteralPath $Source -Destination $Destination -Force
+	return $true
+}
 
 if (!(Test-Path $exe)) {
 	throw "尚未找到桌面构建。请先运行 npm run desktop:build。"
@@ -24,11 +60,36 @@ if ((Test-Path $bundledXPI) -and (Test-Path $addonManifestPath)) {
 	$addonVersion = (Get-Content -LiteralPath $addonManifestPath -Raw | ConvertFrom-Json).version
 	$versionMarker = Join-Path $profileExtensions ".research-workspace-version"
 	$installedVersion = if (Test-Path $versionMarker) { (Get-Content -LiteralPath $versionMarker -Raw).Trim() } else { "" }
-	Copy-Item -LiteralPath $bundledXPI -Destination (Join-Path $profileExtensions "research-workspace@tencent-practice.local.xpi") -Force
-	if ($installedVersion -ne $addonVersion) {
+	$addonChanged = Copy-AddonIfChanged $bundledXPI (Join-Path $profileExtensions "research-workspace@tencent-practice.local.xpi")
+	if ($installedVersion -ne $addonVersion -or $addonChanged) {
 		Remove-Item -LiteralPath (Join-Path $profile "extensions.json") -Force -ErrorAction SilentlyContinue
 		Remove-Item -LiteralPath (Join-Path $profile "addonStartup.json.lz4") -Force -ErrorAction SilentlyContinue
 		Set-Content -LiteralPath $versionMarker -Value $addonVersion -Encoding ASCII
+	}
+}
+if (Test-Path $bundledTranslationXPI) {
+	$translationVersionMarker = Join-Path $profileExtensions ".translate-for-zotero-version"
+	$installedTranslationVersion = if (Test-Path $translationVersionMarker) {
+		(Get-Content -LiteralPath $translationVersionMarker -Raw).Trim()
+	} else { "" }
+	$null = Copy-AddonIfChanged $bundledTranslationXPI (Join-Path $profileExtensions "$($translationLock.addonId).xpi")
+	if ($installedTranslationVersion -ne $translationLock.version) {
+		Remove-Item -LiteralPath (Join-Path $profile "extensions.json") -Force -ErrorAction SilentlyContinue
+		Remove-Item -LiteralPath (Join-Path $profile "addonStartup.json.lz4") -Force -ErrorAction SilentlyContinue
+		Set-Content -LiteralPath $translationVersionMarker -Value $translationLock.version -Encoding ASCII
+	}
+}
+if (Test-Path $bundledNotesXPI) {
+	$notesVersionMarker = Join-Path $profileExtensions ".library-notes-version"
+	$notesBundleVersion = "$($notesLock.libraryVersion)-brand.$($notesLock.brandRevision)"
+	$installedNotesVersion = if (Test-Path $notesVersionMarker) {
+		(Get-Content -LiteralPath $notesVersionMarker -Raw).Trim()
+	} else { "" }
+	$notesChanged = Copy-AddonIfChanged $bundledNotesXPI (Join-Path $profileExtensions "$($notesLock.libraryAddonId).xpi")
+	if ($installedNotesVersion -ne $notesBundleVersion -or $notesChanged) {
+		Remove-Item -LiteralPath (Join-Path $profile "extensions.json") -Force -ErrorAction SilentlyContinue
+		Remove-Item -LiteralPath (Join-Path $profile "addonStartup.json.lz4") -Force -ErrorAction SilentlyContinue
+		Set-Content -LiteralPath $notesVersionMarker -Value $notesBundleVersion -Encoding ASCII
 	}
 }
 
@@ -40,8 +101,14 @@ $escapedDataDir = $dataDir.Replace("\", "\\")
 user_pref("extensions.zotero.useDataDir", true);
 user_pref("extensions.zotero.dataDir", "$escapedDataDir");
 user_pref("extensions.zotero.httpServer.port", $ConnectorPort);
+user_pref("app.update.auto", false);
+user_pref("app.update.enabled", false);
 user_pref("extensions.autoDisableScopes", 0);
 user_pref("extensions.enabledScopes", 15);
+user_pref("extensions.installedDistroAddon.$($notesLock.libraryAddonId)", false);
+user_pref("extensions.zotero.ZoteroPDFTranslate.enableAuto", false);
+user_pref("extensions.zotero.ZoteroPDFTranslate.enablePopup", true);
+user_pref("extensions.zotero.researchWorkspace.traceReviewUI", false);
 "@ | Set-Content -Encoding ASCII (Join-Path $profile "user.js")
 
 Write-Host "启动 Library（独立开发配置）…" -ForegroundColor Cyan

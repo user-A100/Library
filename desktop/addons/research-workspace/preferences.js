@@ -17,6 +17,7 @@ var ResearchWorkspacePreferences = {
 			Services.prefs.setIntPref("browser.theme.toolbar-theme", appearance);
 			document.documentElement.style.colorScheme = appearance === 0 ? "dark" : appearance === 1 ? "light" : "light dark";
 			this.refreshAppearance();
+			this.refresh();
 		});
 		for (let button of root.querySelectorAll("[data-preset]")) button.addEventListener("click", () => this.applyPreset(button.dataset.preset.split(",")));
 		root.querySelector("#theme-add").addEventListener("click", event => { event.stopPropagation(); this.addPoint(); });
@@ -30,7 +31,7 @@ var ResearchWorkspacePreferences = {
 			if (!event.target.closest("[data-theme-control], button, input, label")) this.movePoint(event, this.activePointID);
 		});
 		canvas.addEventListener("pointermove", event => { if (this.draggingPointID) this.movePoint(event, this.draggingPointID); });
-		for (let name of ["pointerup", "pointercancel", "pointerleave"]) canvas.addEventListener(name, () => { this.draggingPointID = null; this.refresh(); });
+		for (let name of ["pointerup", "pointercancel"]) canvas.addEventListener(name, event => { if (canvas.hasPointerCapture?.(event.pointerId)) canvas.releasePointerCapture(event.pointerId); this.draggingPointID = null; this.refresh(); });
 		this.refresh();
 	},
 	getActivePoint() { return this.config.points.find(point => point.id === this.activePointID) || this.config.points[0]; },
@@ -54,14 +55,18 @@ var ResearchWorkspacePreferences = {
 	},
 	buildGradient() {
 		let opacity = Math.max(18, Math.min(100, this.config.opacity)) / 100;
+		let appearance = Services.prefs.getIntPref("browser.theme.toolbar-theme", 2);
+		let dark = appearance === 0 || (appearance === 2 && window.matchMedia?.("(prefers-color-scheme: dark)").matches);
 		let layers = this.config.points.map((point,index) => { let x = this.config.algorithm === "flow" ? 10 + (index * 80) / Math.max(1,this.config.points.length - 1) : point.x; let y = this.config.algorithm === "flow" ? 25 + (index % 2) * 55 : point.y; return `radial-gradient(circle at ${x}% ${y}%, ${this.hexToRGBA(point.color,opacity)} 0%, ${this.hexToRGBA(point.color,0)} 62%)`; });
-		let texture = `repeating-radial-gradient(circle at 0 0, rgba(20,30,26,${Math.round((this.config.texture / 100) * 8) / 100}) 0 .7px, transparent .8px 5px)`;
-		return [texture, ...layers, "linear-gradient(155deg,#f5f3ea,#e8eee8)"].join(",");
+		let grainColor = dark ? "220,235,227" : "20,30,26";
+		let texture = `repeating-radial-gradient(circle at 0 0, rgba(${grainColor},${Math.round((this.config.texture / 100) * 8) / 100}) 0 .7px, transparent .8px 5px)`;
+		let base = dark ? "linear-gradient(155deg,#111815,#1d2d27)" : "linear-gradient(155deg,#f7f5ee,#e8f0e7)";
+		return [texture, ...layers, base].join(",");
 	},
 	refreshAppearance() { let appearance = String(Services.prefs.getIntPref("browser.theme.toolbar-theme",2)); for (let button of document.querySelectorAll("[data-appearance]")) { let selected = button.dataset.appearance === appearance; button.classList.toggle("selected",selected); button.setAttribute("aria-pressed",selected ? "true" : "false"); } },
 	refresh() {
 		let canvas = document.getElementById("theme-canvas"); if (!canvas) return; canvas.style.backgroundImage = this.buildGradient(); canvas.closest(".research-preferences")?.style.setProperty("--research-custom-accent", this.getActivePoint()?.color || "#72e3a6"); for (let oldPoint of canvas.querySelectorAll(".theme-point")) oldPoint.remove();
-		for (let point of this.config.points) { let button = document.createElementNS("http://www.w3.org/1999/xhtml","button"); button.type="button"; button.className="theme-point"; button.setAttribute("data-point-id",point.id); button.style.left=`${point.x}%`; button.style.top=`${point.y}%`; button.style.background=point.color; button.setAttribute("aria-label",`编辑颜色 ${point.color}`); button.setAttribute("aria-pressed",point.id === this.activePointID ? "true" : "false"); button.addEventListener("pointerdown",event => { event.stopPropagation(); this.activePointID=point.id; this.draggingPointID=point.id; for (let candidate of canvas.querySelectorAll(".theme-point")) candidate.setAttribute("aria-pressed",candidate === button ? "true" : "false"); document.getElementById("theme-color").value=point.color; }); canvas.appendChild(button); }
+		for (let point of this.config.points) { let button = document.createElementNS("http://www.w3.org/1999/xhtml","button"); button.type="button"; button.className="theme-point"; button.setAttribute("data-point-id",point.id); button.style.left=`${point.x}%`; button.style.top=`${point.y}%`; button.style.background=point.color; button.setAttribute("aria-label",`编辑颜色 ${point.color}`); button.setAttribute("aria-pressed",point.id === this.activePointID ? "true" : "false"); button.addEventListener("pointerdown",event => { event.stopPropagation(); this.activePointID=point.id; this.draggingPointID=point.id; canvas.setPointerCapture?.(event.pointerId); for (let candidate of canvas.querySelectorAll(".theme-point")) candidate.setAttribute("aria-pressed",candidate === button ? "true" : "false"); document.getElementById("theme-color").value=point.color; }); canvas.appendChild(button); }
 		let active=this.getActivePoint(); document.getElementById("theme-color").value=active?.color || "#72e3a6"; document.getElementById("theme-add").disabled=this.config.points.length >= 5; document.getElementById("theme-remove").disabled=this.config.points.length <= 1;
 		for (let key of ["opacity","texture"]) { document.getElementById(`theme-${key}`).value=this.config[key]; document.getElementById(`theme-${key}-output`).value=`${this.config[key]}%`; }
 		let flow=this.config.algorithm === "flow"; document.getElementById("theme-algorithm").setAttribute("aria-pressed",flow ? "true" : "false"); document.getElementById("theme-algorithm-title").textContent=flow ? "流动配色" : "自由渐变"; document.getElementById("theme-algorithm-description").textContent=flow ? "自动排列" : "拖动光点"; this.refreshAppearance();

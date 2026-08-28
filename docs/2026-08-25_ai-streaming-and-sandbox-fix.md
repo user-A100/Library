@@ -92,6 +92,18 @@ Zotero 9 的 `Item.prototype.getAnnotations(includeTrashed, asIDs)` **默认返�
 
 ## 遗留
 
+### Library Crawl 浏览器扩展（2026-08-27，`browser-extension/library-crawl/`）
+
+替代官方 Zotero Connector 的自有品牌抓取入口。按 reverse-skill 证据链纪律，直接逆向本仓库内的服务端协议（`desktop/zotero/.../server_connector.js`）而非盲抄客户端：
+
+- **协议选型**：官方 connector 的 `saveItems` 走翻译器且附件默认不下载（`ATTACHMENT_MODE_IGNORE`），需多次往返；`POST /connector/saveStandaloneAttachment`（`X-Metadata: sessionID/url/title` + 二进制 PDF 流）单请求入库且自动触发元数据识别，是最短路径。
+- **E2E 证据**：对运行中的 Library 推送真实 PDF（W3C dummy.pdf 13264 字节）→ `HTTP 201 {"canRecognize":true}`，文库中已出现「Library Crawl E2E 测试文档.pdf」（可手动删除）。
+- **能力**：PDF 页面右下角抓取角标、弹窗扫描本页全部 PDF 链接逐个抓取、右键菜单抓取链接/本页、登录站点 Cookie 携带、`%PDF-` 魔数校验、服务未连接时明确报错。
+- **品牌**：名称/图标/文案全部 Library，零 Zotero 字样（验收脚本已加入含该断言的 "Library Crawl browser extension" 检查项，总计 23 项 PASS）。
+- 安装：Edge/Chrome → 扩展页 → 开发者模式 → 加载解压缩的扩展 → 选择 `browser-extension/library-crawl/`。
+- 注意：官方 Zotero Connector 若已安装请移除，两者都连 23119 端口会重复弹窗。服务端 `GET /connector/ping` 返回的 "Zotero is running" 是内核内部字符串，仅 API 可见；如需彻底改品牌需动内核源码并重编译，暂记为 P3。
+- 另注：桌面侧已有并行会话将插件推进至 0.16.x（slash 命令、模型自动发现、多配置档案），本会话未触碰其代码，全部验收项含新特性均 PASS。
+
 - 开发文库 `desktop/data/library-ai/conversations.json` 中含两条自检产生的测试会话，属开发数据，可忽略或手动删除。
 - 交接文档 P0 第 4 项"真实 AI 全链路"已具备条件：请在界面中实测"提问 → 思考过程 → 流式回答 → 引用定位 → 保存为笔记"，并补一张脱敏截图。
 
@@ -104,3 +116,12 @@ Zotero 9 的 `Item.prototype.getAnnotations(includeTrashed, asIDs)` **默认返�
 3. **瞬态 UI 状态与持久会话分离**（`ChatState.ts`）：`isStreaming`、`thinkingEl`、`thinkingIndicatorTimeout` 等属于瞬态投影，永不写入持久层；持久层只存最终消息。我们的 `state: "streaming"` 会落盘，因此才需要启动时的遗留清理——更彻底的做法是持久化时把 streaming 归一化为终态。
 4. **延迟思考指示**：`thinkingIndicatorTimeout`（`ChatState.ts:246,445-454`）只在思考超过阈值后才显示指示器，避免短请求闪烁。
 5. **渲染器与控制器分层**：renderer 只渲染状态、发出用户意图，不触碰会话持久化与 provider 生命周期（见 `src/features/chat/AGENTS.md` 的 Ownership 表）。我们单文件实现可暂不深拆，但渲染纯函数化、副作用集中在 controller 的方向值得保持。
+
+### Open Notebook 迁移（0.17.0，2026-08-27）
+
+逆向 `lfnovo/open-notebook`（MIT，NotebookLM 开源替代品）后按批准迁移的概念（参考库在 `tmp/reference-open-notebook`）：
+
+1. **来源三级上下文**：来源芯片新增 全/摘/隐 循环开关（`source.level` 持久化）——全文进上下文 / 仅元数据摘要（`collectSummary`）/ 对 AI 完全排除。对应其 "Full Content / Summary Only / Not in Context" 隐私成本控制。
+2. **Ask 模式**：composer 底部新增 Ask 开关（按会话持久化）。开启后先经 LLM 分解问题为 1-3 个检索词（移植其 `prompts/ask/entry.jinja` 的 JSON 策略格式），再多路全文检索合并去重取 top10；跨来源综合问题召回质量显著提升。分解失败自动回退单路检索。
+3. **Transformations**：经核查已由既有斜杠命令体系覆盖（/summary /explain /translate /compare /review /questions），不重复建设。
+4. **未迁移**：播客生成（与场景弱相关）、向量语义检索（待探测 embedding 端点）、Notebook 容器层（由 Zotero 文集承担）。

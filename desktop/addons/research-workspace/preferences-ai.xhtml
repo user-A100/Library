@@ -1,10 +1,10 @@
 <vbox id="research-workspace-ai-root" class="research-preferences main-section">
-	<html:section class="research-preferences-intro">
-		<html:div class="intro-copy"><html:span class="intro-eyebrow">LIBRARY / AI</html:span><html:h1>AI 服务</html:h1><html:p>管理多套模型接口配置（OpenAI 兼容），保存后即可在 AI 面板中随时切换。</html:p></html:div>
-		<html:div class="ai-prefs-actions">
-			<html:button type="button" id="ai-import" class="ai-btn ghost">⇩ 导入</html:button>
-			<html:button type="button" id="ai-export" class="ai-btn ghost">⇧ 导出</html:button>
-			<html:button type="button" id="ai-add" class="ai-btn primary">＋ 新增配置</html:button>
+	<html:section class="research-preferences-intro ai-prefs-intro">
+		<html:div class="intro-copy"><html:span class="intro-eyebrow">LIBRARY / AI</html:span><html:h1>模型与接口</html:h1><html:p>集中管理模型服务、访问凭证和默认模型。保存后可在 AI 面板中随时切换。</html:p></html:div>
+		<html:div class="ai-prefs-actions" aria-label="配置操作">
+			<html:button type="button" id="ai-import" class="ai-btn ghost">导入</html:button>
+			<html:button type="button" id="ai-export" class="ai-btn ghost">导出</html:button>
+			<html:button type="button" id="ai-add" class="ai-btn primary">＋ 新建配置</html:button>
 		</html:div>
 	</html:section>
 	<html:section class="ai-prefs-body">
@@ -19,6 +19,7 @@
 				<html:div class="ai-prefs-grid">
 					<html:label>名称<html:input type="text" id="ai-name" placeholder="例如：DeepSeek 官方"/></html:label>
 					<html:label>接口预设<html:select id="ai-preset"></html:select></html:label>
+					<html:label class="ai-wide">API 协议<html:select id="ai-protocol"></html:select></html:label>
 				</html:div>
 			</html:div>
 			<html:div class="ai-field-group">
@@ -37,10 +38,14 @@
 				</html:div>
 			</html:div>
 			<html:div class="ai-prefs-savebar">
-				<html:button type="button" id="ai-test" class="ai-btn ghost">测试连接</html:button>
-				<html:button type="button" id="ai-save" class="ai-btn primary">保存配置</html:button>
-				<html:button type="button" id="ai-activate" class="ai-btn soft">设为当前</html:button>
-				<html:button type="button" id="ai-delete" class="ai-btn danger">删除</html:button>
+				<html:div class="ai-prefs-savebar-secondary">
+					<html:button type="button" id="ai-test" class="ai-btn ghost">测试连接</html:button>
+					<html:button type="button" id="ai-delete" class="ai-btn danger">删除配置</html:button>
+				</html:div>
+				<html:div class="ai-prefs-savebar-primary">
+					<html:button type="button" id="ai-activate" class="ai-btn soft">设为当前</html:button>
+					<html:button type="button" id="ai-save" class="ai-btn primary">保存配置</html:button>
+				</html:div>
 			</html:div>
 			<html:p class="ai-prefs-note">导出的 JSON 包含 API Key，请妥善保管；导入时同名配置会新建副本，不会覆盖。</html:p>
 		</html:div>

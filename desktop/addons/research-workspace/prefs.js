@@ -6,3 +6,6 @@ pref("extensions.zotero.researchWorkspace.aiBaseURL", "https://api.openai.com/v1
 pref("extensions.zotero.researchWorkspace.aiModel", "gpt-4.1-mini");
 pref("extensions.zotero.researchWorkspace.aiProfiles", "[]");
 pref("extensions.zotero.researchWorkspace.aiActiveProfile", "");
+pref("extensions.zotero.researchWorkspace.traceReviewUI", false);
+pref("extensions.zotero.ZoteroPDFTranslate.enableAuto", false);
+pref("extensions.zotero.ZoteroPDFTranslate.enablePopup", true);

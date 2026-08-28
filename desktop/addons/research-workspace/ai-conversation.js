@@ -22,7 +22,13 @@ LibraryAIConversationRepository = class LibraryAIConversationRepository {
 		for (let conversation of this.state.conversations) {
 			if (!Array.isArray(conversation.messages)) conversation.messages = [];
 			if (!Array.isArray(conversation.sources)) conversation.sources = [];
+			if (!Array.isArray(conversation.dismissedSourceIDs)) conversation.dismissedSourceIDs = [];
 			if (!Array.isArray(conversation.references)) conversation.references = [];
+			for (let source of conversation.sources) {
+				source.level ??= "full";
+				source.insight ??= null;
+			}
+			conversation.askMode = Boolean(conversation.askMode);
 			for (let message of conversation.messages) {
 				if (message.state === "streaming") {
 					message.state = "error";
@@ -39,7 +45,7 @@ LibraryAIConversationRepository = class LibraryAIConversationRepository {
 		let now = new Date().toISOString();
 		let conversation = {
 			id: Zotero.Utilities.randomString(12), title: "新对话", createdAt: now, updatedAt: now,
-			providerID: "openai-compatible", model: "", messages: [], sources: source ? [source] : [], references: [],
+			providerID: "openai-compatible", model: "", messages: [], sources: source ? [source] : [], dismissedSourceIDs: [], references: [],
 		};
 		this.state.conversations.unshift(conversation);
 		this.state.openIDs = [...this.state.openIDs, conversation.id].slice(-6);
@@ -65,21 +71,22 @@ LibraryAIConversationRepository = class LibraryAIConversationRepository {
 		this.save();
 		return this.active;
 	}
-	update(conversation) {
+	update(conversation, { save = true } = {}) {
 		conversation.updatedAt = new Date().toISOString();
 		if (conversation.title === "新对话") {
 			let first = conversation.messages.find(message => message.role === "user");
 			if (first) conversation.title = first.content.replace(/\s+/g, " ").slice(0, 24) || "新对话";
 		}
-		this.save();
+		if (save) this.save();
 	}
-	async save() {
+	async save({ throwOnError = false } = {}) {
 		let snapshot = JSON.stringify(this.state, null, 2);
-		this.saveTail = this.saveTail.then(async () => {
+		let operation = this.saveTail.then(async () => {
 			let temp = this.path + ".tmp";
 			await IOUtils.writeUTF8(temp, snapshot);
 			await IOUtils.move(temp, this.path, { noOverwrite: false });
-		}).catch(error => Zotero.logError(error));
-		return this.saveTail;
+		});
+		this.saveTail = operation.catch(error => Zotero.logError(error));
+		return throwOnError ? operation : this.saveTail;
 	}
 };

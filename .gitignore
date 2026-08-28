@@ -5,7 +5,9 @@ desktop/.tools/
 desktop/dist/
 desktop/profile/
 desktop/data/
+desktop/data-about-qa/
 desktop/*.xpi
+desktop/profile-about-qa/
 .env
 .env.*
 !.env.example

@@ -1,0 +1,136 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/user-A100/Library/schemas/library-ai-artifact.schema.json",
+  "title": "Library AI research artifact",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "run", "claims", "evidence", "decisions", "validation"],
+  "properties": {
+    "schemaVersion": { "const": "library.trace/v1" },
+    "run": { "$ref": "#/$defs/run" },
+    "claims": { "type": "array", "items": { "$ref": "#/$defs/claim" } },
+    "evidence": { "type": "array", "items": { "$ref": "#/$defs/evidence" } },
+    "decisions": { "type": "array", "items": { "$ref": "#/$defs/decision" } },
+    "validation": { "$ref": "#/$defs/validation" }
+  },
+  "$defs": {
+    "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["itemID", "itemKey", "attachmentID", "attachmentKey", "title", "level"],
+      "properties": {
+        "itemID": { "type": "integer", "minimum": 1 },
+        "itemKey": { "type": "string", "minLength": 1 },
+        "attachmentID": { "type": ["integer", "null"], "minimum": 1 },
+        "attachmentKey": { "type": ["string", "null"] },
+        "title": { "type": "string" },
+        "level": { "enum": ["full", "summary", "off"] }
+      }
+    },
+    "run": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["runID", "profileID", "providerPreset", "model", "state", "question", "createdAt", "completedAt", "promptHash", "responseHash", "requestMessages", "rawResponse", "sourceScope", "retrieval"],
+      "properties": {
+        "runID": { "type": "string", "minLength": 1 },
+        "profileID": { "type": "string" },
+        "providerPreset": { "type": "string", "minLength": 1 },
+        "model": { "type": "string" },
+        "state": { "enum": ["done", "stopped", "error"] },
+        "question": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "completedAt": { "type": "string", "format": "date-time" },
+        "promptHash": { "$ref": "#/$defs/sha256" },
+        "responseHash": { "$ref": "#/$defs/sha256" },
+        "requestMessages": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["role", "content"],
+            "properties": { "role": { "type": "string" }, "content": { "type": "string" } }
+          }
+        },
+        "rawResponse": { "type": "string" },
+        "sourceScope": { "type": "array", "items": { "$ref": "#/$defs/source" } },
+        "retrieval": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["mode", "queries", "evidenceIDs"],
+          "properties": {
+            "mode": { "enum": ["chat", "ask"] },
+            "queries": { "type": "array", "items": { "type": "string" } },
+            "evidenceIDs": { "type": "array", "items": { "type": "string" }, "uniqueItems": true }
+          }
+        }
+      }
+    },
+    "claim": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "text", "criticality", "epistemicStatus", "evidenceIDs", "verificationStatus"],
+      "properties": {
+        "id": { "type": "string", "pattern": "^C[1-9][0-9]*$" },
+        "text": { "type": "string", "minLength": 1 },
+        "criticality": { "enum": ["unspecified", "supporting", "key"] },
+        "epistemicStatus": { "enum": ["unclassified", "source_fact", "synthesis", "hypothesis", "unknown"] },
+        "evidenceIDs": { "type": "array", "items": { "type": "string" }, "uniqueItems": true },
+        "verificationStatus": { "enum": ["unjudged", "unsupported", "supported", "partial", "contradicted", "irrelevant"] }
+      }
+    },
+    "evidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "sourceItemID", "sourceItemKey", "attachmentID", "attachmentKey", "annotationKey", "page", "recordID", "blockID", "startOffset", "endOffset", "parserVersion", "sourceHash", "quote", "quoteHash", "locatorStatus", "retrieval"],
+      "properties": {
+        "id": { "type": "string", "pattern": "^[A-Z][0-9]+-C[0-9]+$" },
+        "sourceItemID": { "type": "integer", "minimum": 1 },
+        "sourceItemKey": { "type": "string", "minLength": 1 },
+        "attachmentID": { "type": ["integer", "null"], "minimum": 1 },
+        "attachmentKey": { "type": ["string", "null"] },
+        "annotationKey": { "type": ["string", "null"] },
+        "page": { "type": ["integer", "null"], "minimum": 1 },
+        "recordID": { "type": "string", "minLength": 1 },
+        "blockID": { "type": "string", "minLength": 1 },
+        "startOffset": { "type": ["integer", "null"], "minimum": 0 },
+        "endOffset": { "type": ["integer", "null"], "minimum": 0 },
+        "parserVersion": { "type": "string", "minLength": 1 },
+        "sourceHash": { "anyOf": [{ "$ref": "#/$defs/sha256" }, { "type": "null" }] },
+        "quote": { "type": "string", "minLength": 1 },
+        "quoteHash": { "$ref": "#/$defs/sha256" },
+        "locatorStatus": { "enum": ["locatable", "unresolved"] },
+        "retrieval": { "type": "string", "minLength": 1 }
+      }
+    },
+    "decision": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "claimID", "actor", "verdict", "reason", "replacementText", "replacementEvidenceIDs", "previousDecisionID", "createdAt"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "claimID": { "type": "string", "minLength": 1 },
+        "actor": { "enum": ["user", "reviewer", "system"] },
+        "verdict": { "enum": ["accepted", "rejected", "edited", "rebound"] },
+        "reason": { "type": "string" },
+        "replacementText": { "type": ["string", "null"] },
+        "replacementEvidenceIDs": { "type": "array", "items": { "type": "string" }, "uniqueItems": true },
+        "previousDecisionID": { "type": ["string", "null"] },
+        "createdAt": { "type": "string", "format": "date-time" }
+      }
+    },
+    "validation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["errors", "hardFailures", "structuralPassed", "semanticStatus", "unresolvedEvidenceIDs", "uncitedClaimIDs"],
+      "properties": {
+        "errors": { "type": "array", "items": { "type": "string" } },
+        "hardFailures": { "type": "array", "items": { "type": "object" } },
+        "structuralPassed": { "type": "boolean" },
+        "semanticStatus": { "const": "not_evaluated" },
+        "unresolvedEvidenceIDs": { "type": "array", "items": { "type": "string" }, "uniqueItems": true },
+        "uncitedClaimIDs": { "type": "array", "items": { "type": "string" }, "uniqueItems": true }
+      }
+    }
+  }
+}
