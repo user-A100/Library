@@ -15,7 +15,7 @@ ResearchWorkspace = {
 	aiPrefRoot: "extensions.zotero.researchWorkspace.",
 	// Library Crawl 浏览器扩展的仓库与下载地址
 	libraryCrawlRepoURL: "https://github.com/user-A100/Library",
-	libraryCrawlDownloadURL: "https://github.com/user-A100/Library/releases/latest/download/library-crawl.zip",
+	libraryCrawlDownloadURL: "https://github.com/user-A100/Library/releases",
 
 	init({ id, version, rootURI }) {
 		if (this.initialized) return;
@@ -34,6 +34,16 @@ ResearchWorkspace = {
 		if (!window?.ZoteroPane) return;
 		let doc = window.document;
 		window.MozXULElement.insertFTLIfNeeded("research-workspace.ftl");
+
+		// 本产品不提供同步服务：永久关闭「通过Library备份你的文库」等同步提醒横幅
+		try {
+			Zotero.Prefs.set("sync.reminder.setUp.enabled", false);
+			Zotero.Prefs.set("sync.reminder.autoSync.enabled", false);
+			doc.getElementById("sync-reminder-container")?.setAttribute("collapsed", "true");
+		}
+		catch (error) {
+			this.log(`Unable to disable sync reminders: ${error}`);
+		}
 
 		if (!doc.getElementById("research-workspace-stylesheet")) {
 			let link = doc.createElement("link");
@@ -162,6 +172,81 @@ ResearchWorkspace = {
 		connector.addEventListener("command", handler);
 		let state = this.shellStates.get(window);
 		if (state) state.listeners.push([connector, "command", handler]);
+
+		this.installMenuL10nCompat(window);
+	},
+
+	// 插件通过 Zotero.MenuManager 注册的菜单依赖 data-l10n-id 翻译，
+	// 但本构建中主窗口 DOMLocalization 无法解析插件 FTL（sync Localization 可以），
+	// 导致工具菜单出现只有图标没有文字的菜单项。这里在 MenuManager 渲染菜单后
+	// 用 sync Localization 解析标签并直接写入 label 属性。
+	installMenuL10nCompat(window) {
+		if (window.__researchMenuL10nPatched) return;
+		window.__researchMenuL10nPatched = true;
+		this.menuL10nCache = this.menuL10nCache || new Map();
+		let manager = Zotero.MenuManager;
+		if (!manager || typeof manager.updateMenuPopup !== "function") return;
+		let original = manager.updateMenuPopup;
+		manager.updateMenuPopup = (...args) => {
+			let result = original.apply(manager, args);
+			try {
+				let popup = args[0];
+				if (popup?.querySelectorAll) {
+					for (let elem of popup.querySelectorAll("menuitem[data-l10n-id], menu[data-l10n-id]")) {
+						this.applyMenuL10nLabel(elem);
+					}
+				}
+			}
+			catch (error) {
+				this.log(`Menu l10n compat failed: ${error}`);
+			}
+			return result;
+		};
+	},
+
+	applyMenuL10nLabel(elem) {
+		let l10nId = elem.dataset?.l10nId;
+		if (!l10nId) return;
+		if (elem.getAttribute("label")) return;
+		let label = this.resolveMenuL10nLabel(l10nId);
+		if (label) elem.setAttribute("label", label);
+	},
+
+	resolveMenuL10nLabel(l10nId, debugErrors) {
+		// l10nId 形如 <addonRef>-<name>，逐级尝试 <addonRef>-mainWindow.ftl
+		// （addonRef 本身可以是单段，如 BetterNotes）
+		let parts = l10nId.split("-");
+		while (parts.length >= 1) {
+			let file = `${parts.join("-")}-mainWindow.ftl`;
+			let loc = this.menuL10nCache.get(file);
+			if (loc === undefined) {
+				try {
+					loc = new Localization([file], true);
+				}
+				catch (error) {
+					if (debugErrors) this.log(`menu-l10n ctor ${file} => ${error}`);
+					loc = null;
+				}
+				this.menuL10nCache.set(file, loc);
+			}
+			if (loc) {
+				try {
+					let msg = loc.formatMessagesSync([{ id: l10nId }])[0];
+					let attr = msg?.attributes?.find?.(a => a.name === "label");
+					let label = attr?.value || msg?.value;
+					if (label) return label;
+					if (debugErrors) this.log(`menu-l10n ${file}:${l10nId} => msg=${JSON.stringify(msg)}`);
+				}
+				catch (error) {
+					if (debugErrors) this.log(`menu-l10n ${file}:${l10nId} => ERROR ${error}`);
+				}
+			}
+			else if (debugErrors) {
+				this.log(`menu-l10n ${file} unavailable`);
+			}
+			parts.pop();
+		}
+		return null;
 	},
 
 	showLibraryCrawlPanel(window) {
