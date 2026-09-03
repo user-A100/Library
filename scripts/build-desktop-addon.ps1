@@ -14,13 +14,32 @@ if (Test-Path $xpi) {
 	Remove-Item -LiteralPath $xpi -Force
 }
 
+Add-Type -AssemblyName System.IO.Compression
 Add-Type -AssemblyName System.IO.Compression.FileSystem
-[System.IO.Compression.ZipFile]::CreateFromDirectory(
-	$addon,
-	$xpi,
-	[System.IO.Compression.CompressionLevel]::Optimal,
-	$false
-)
+# 手工打包：CreateFromDirectory 在 Windows 上会用「\」作为 zip 条目分隔符，
+# 导致插件内 locale/FTL 等路径无法被 Zotero 解析（菜单标签空白等问题），
+# 这里强制使用「/」作为条目名分隔符。
+$archive = [System.IO.Compression.ZipFile]::Open($xpi, [System.IO.Compression.ZipArchiveMode]::Create)
+try {
+	Push-Location $addon
+	try {
+		Get-ChildItem -LiteralPath $addon -Recurse -File | ForEach-Object {
+			$relative = (Resolve-Path -LiteralPath $_.FullName -Relative).Replace(".\", "").Replace("\", "/")
+			[System.IO.Compression.ZipFileExtensions]::CreateEntryFromFile(
+				$archive,
+				$_.FullName,
+				$relative,
+				[System.IO.Compression.CompressionLevel]::Optimal
+			) | Out-Null
+		}
+	}
+	finally {
+		Pop-Location
+	}
+}
+finally {
+	$archive.Dispose()
+}
 
 $archive = [System.IO.Compression.ZipFile]::OpenRead($xpi)
 try {
