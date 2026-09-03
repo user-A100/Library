@@ -446,6 +446,9 @@
 .library-ai-shortcuts:empty { display:none; }
 .library-ai-shortcuts button { height:24px; padding:0 9px; border:1px solid color-mix(in srgb,var(--library-ai-border) 82%,transparent); border-radius:999px; background:color-mix(in srgb,var(--material-button) 88%,transparent); color:var(--fill-secondary); font-size:10px; font-weight:600; }
 .library-ai-shortcuts button:hover { border-color:color-mix(in srgb,var(--library-ai-accent) 42%,var(--library-ai-border)); color:var(--fill-primary); }
+.library-ai-shortcut-menu { position:absolute; z-index:90; display:grid; min-width:150px; padding:5px; border:1px solid color-mix(in srgb,var(--library-ai-border) 82%,transparent); border-radius:var(--library-ai-radius-md); background:color-mix(in srgb,var(--material-button) 95%,transparent); box-shadow:var(--library-ai-shadow-float); backdrop-filter:blur(18px); animation:library-ai-panel-in 140ms var(--library-ai-ease) both; }
+.library-ai-shortcut-menu button { padding:7px 10px; border:0; border-radius:var(--library-ai-radius-sm); background:transparent; text-align:left; font-size:10.5px; }
+.library-ai-shortcut-menu button:hover { background:var(--library-ai-hover); }
 
 .library-ai-history[hidden] { display:none; }
 

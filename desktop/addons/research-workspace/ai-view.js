@@ -6,6 +6,7 @@ LibraryAIViewHost = class LibraryAIViewHost {
 		this.context = new LibraryAIPaperContextService();
 		this.commands = new LibraryAISlashCommands();
 		this.chat = new LibraryAIChatRenderer(this);
+		this.shortcuts = new LibraryAIShortcuts(this.workspace.aiPrefRoot);
 		this.windows = new Map();
 		this.abortController = null;
 		this.notifierID = null;
@@ -725,6 +726,7 @@ LibraryAIViewHost = class LibraryAIViewHost {
 		view.querySelector('[data-role="model-name"]').textContent = config.model || "尚未配置模型";
 		view.querySelector('[data-role="conversation-title"]').textContent = conversation?.title || "Library AI";
 		this.chat.render(window);
+		this.shortcuts.render(window, this);
 		let sourceHost = view.querySelector('[data-role="sources"]'); sourceHost.textContent = "";
 		for (let source of conversation.sources) {
 			let wrapper = view.ownerDocument.createElement("span"); wrapper.className = "library-ai-source-stack";
