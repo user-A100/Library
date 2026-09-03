@@ -213,38 +213,67 @@ ResearchWorkspace = {
 	},
 
 	resolveMenuL10nLabel(l10nId, debugErrors) {
-		// l10nId 形如 <addonRef>-<name>，逐级尝试 <addonRef>-mainWindow.ftl
-		// （addonRef 本身可以是单段，如 BetterNotes）
+		// l10nId 形如 <addonRef>-<name>，逐级尝试 <addonRef>-mainWindow.ftl 与
+		// <addonRef>.ftl（addonRef 本身可以是单段，如 BetterNotes）
 		let parts = l10nId.split("-");
 		while (parts.length >= 1) {
-			let file = `${parts.join("-")}-mainWindow.ftl`;
-			let loc = this.menuL10nCache.get(file);
-			if (loc === undefined) {
-				try {
-					loc = new Localization([file], true);
+			for (let file of [`${parts.join("-")}-mainWindow.ftl`, `${parts.join("-")}.ftl`]) {
+				let loc = this.menuL10nCache.get(file);
+				if (loc === undefined) {
+					try {
+						loc = new Localization([file], true);
+					}
+					catch (error) {
+						if (debugErrors) this.log(`menu-l10n ctor ${file} => ${error}`);
+						loc = null;
+					}
+					this.menuL10nCache.set(file, loc);
 				}
-				catch (error) {
-					if (debugErrors) this.log(`menu-l10n ctor ${file} => ${error}`);
-					loc = null;
+				if (loc) {
+					try {
+						let msg = loc.formatMessagesSync([{ id: l10nId }])[0];
+						let attr = msg?.attributes?.find?.(a => a.name === "label");
+						let label = attr?.value || msg?.value;
+						if (label) return label;
+						if (debugErrors) this.log(`menu-l10n ${file}:${l10nId} => msg=${JSON.stringify(msg)}`);
+					}
+					catch (error) {
+						if (debugErrors) this.log(`menu-l10n ${file}:${l10nId} => ERROR ${error}`);
+					}
 				}
-				this.menuL10nCache.set(file, loc);
-			}
-			if (loc) {
-				try {
-					let msg = loc.formatMessagesSync([{ id: l10nId }])[0];
-					let attr = msg?.attributes?.find?.(a => a.name === "label");
-					let label = attr?.value || msg?.value;
-					if (label) return label;
-					if (debugErrors) this.log(`menu-l10n ${file}:${l10nId} => msg=${JSON.stringify(msg)}`);
+				else if (debugErrors) {
+					this.log(`menu-l10n ${file} unavailable`);
 				}
-				catch (error) {
-					if (debugErrors) this.log(`menu-l10n ${file}:${l10nId} => ERROR ${error}`);
-				}
-			}
-			else if (debugErrors) {
-				this.log(`menu-l10n ${file} unavailable`);
 			}
 			parts.pop();
+		}
+		// 回退：本插件的 FTL 可能未进入 L10nRegistry，直接从 XPI 内读取
+		if (l10nId.startsWith("research-workspace-") && this.rootURI) {
+			let locale = Zotero.locale || "en-US";
+			for (let candidate of [locale, "zh-CN", "en-US"]) {
+				let url = `${this.rootURI}locale/${candidate}/research-workspace.ftl`;
+				let loc = this.menuL10nCache.get(url);
+				if (loc === undefined) {
+					try {
+						loc = new Localization([url], true);
+					}
+					catch (_) {
+						loc = null;
+					}
+					this.menuL10nCache.set(url, loc);
+				}
+				if (loc) {
+					try {
+						let msg = loc.formatMessagesSync([{ id: l10nId }])[0];
+						let attr = msg?.attributes?.find?.(a => a.name === "label");
+						let label = attr?.value || msg?.value;
+						if (label) return label;
+					}
+					catch (_) {}
+				}
+				if (candidate === locale) continue;
+				break;
+			}
 		}
 		return null;
 	},
