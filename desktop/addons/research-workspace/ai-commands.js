@@ -20,6 +20,7 @@ LibraryAISlashCommands = class LibraryAISlashCommands {
 			{ id: "builtin:rename", name: "rename", kind: "action", description: "重命名当前会话；无参数时自动命名", argumentHint: "[会话名]", source: "builtin" },
 			{ id: "builtin:resume", name: "resume", aliases: ["continue"], kind: "action", description: "按关键词切换会话；无参数时打开历史", argumentHint: "[关键词]", source: "builtin" },
 			{ id: "builtin:usage", name: "usage", aliases: ["cost", "stats"], kind: "action", description: "查看当前会话用量统计", source: "builtin" },
+			{ id: "builtin:note-edit", name: "note-edit", aliases: ["edit-note"], kind: "action", description: "让 AI 修改已有笔记；diff 预览确认后才写入", argumentHint: "[修改指令]", source: "builtin" },
 			{ id: "builtin:settings", name: "settings", aliases: ["config"], kind: "action", description: "打开模型设置", source: "builtin" },
 			{ id: "builtin:exit", name: "exit", aliases: ["quit"], kind: "action", description: "收起 AI 面板", source: "builtin" },
 			{
