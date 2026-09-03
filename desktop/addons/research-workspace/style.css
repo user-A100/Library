@@ -106,83 +106,11 @@
 	--research-shell-gap: 8px;
 	--research-shell-panel-width: clamp(260px, 24vw, 360px);
 	--research-shell-panel-radius: 13px;
-	--research-shell-rail-width: 48px;
+	--research-shell-rail-width: 0px;
 	--research-shell-ease: var(--research-ease-out,cubic-bezier(.2,.82,.2,1));
 	--research-shell-z-pane: var(--research-z-pane,70);
 	--research-shell-z-edge: calc(var(--research-shell-z-pane) + 1);
 }
-
-.research-shell-rail {
-	position: fixed;
-	z-index: var(--research-shell-z-edge,71);
-	inset: calc(32px + var(--research-shell-gap)) auto var(--research-shell-gap) var(--research-shell-gap);
-	display: none;
-	box-sizing: border-box;
-	width: var(--research-shell-rail-width);
-	padding: 7px 6px;
-	border: 1px solid var(--research-border-subtle,color-mix(in srgb,var(--fill-primary) 7%,transparent));
-	border-radius: var(--research-shell-panel-radius);
-	background: color-mix(in srgb,var(--material-sidepane) 62%,transparent);
-	box-shadow: inset 0 1px color-mix(in srgb,#fff 16%,transparent);
-	backdrop-filter: blur(20px) saturate(1.08);
-	flex-direction: column;
-	align-items: center;
-	gap: 7px;
-}
-:root[data-research-compact="true"] .research-shell-rail { display:flex; }
-.research-shell-rail-spacer { flex:1; }
-.research-shell-rail-button {
-	position: relative;
-	display: grid;
-	place-items: center;
-	box-sizing: border-box;
-	width: 34px;
-	height: 34px;
-	padding: 0;
-	border: 1px solid transparent;
-	border-radius: 9px;
-	background: transparent;
-	color: var(--fill-secondary);
-	cursor: pointer;
-	transition: color 110ms ease,background-color 130ms ease,border-color 130ms ease,transform 180ms var(--research-ease-spring,var(--research-shell-ease)),box-shadow 180ms ease;
-}
-.research-shell-rail-button svg {
-	width: 19px;
-	height: 19px;
-	fill: none;
-	stroke: currentColor;
-	stroke-width: 1.75;
-	stroke-linecap: round;
-	stroke-linejoin: round;
-	pointer-events: none;
-}
-.research-shell-rail-button:hover {
-	border-color: var(--research-border-subtle);
-	background: var(--research-surface-hover,color-mix(in srgb,var(--fill-primary) 7%,transparent));
-	color: var(--fill-primary);
-	transform: translateY(-1px) scale(1.025);
-}
-.research-shell-rail-button.active {
-	border-color: color-mix(in srgb,var(--research-custom-accent,var(--accent-blue)) 22%,transparent);
-	background: color-mix(in srgb,var(--research-custom-accent,var(--accent-blue)) 13%,var(--material-button));
-	color: var(--fill-primary);
-	box-shadow: inset 0 0 0 1px color-mix(in srgb,var(--research-custom-accent,var(--accent-blue)) 7%,transparent),0 2px 8px rgba(18,30,25,.07);
-}
-.research-shell-rail-button:active { transform:scale(.94); }
-.research-shell-rail-button:focus-visible { outline:2px solid var(--research-focus-ring,var(--accent-blue)); outline-offset:2px; }
-.research-shell-edge::after {
-	position: absolute;
-	inset-block: 7px;
-	inset-inline-start: -7px;
-	width: 2px;
-	border-radius: 999px;
-	background: var(--research-custom-accent,var(--accent-blue));
-	content: "";
-	opacity: 0;
-	transform: scaleY(.55);
-	transition: opacity 150ms ease,transform 180ms var(--research-shell-ease);
-}
-.research-shell-edge:is(:hover,:focus-visible,.active,[aria-pressed="true"])::after { opacity:.72; transform:scaleY(1); }
 
 :root[data-research-compact="true"] #zotero-collections-pane {
 	position: fixed !important;
@@ -231,7 +159,7 @@
 }
 
 :root[data-research-compact="true"] #browser {
-	margin: var(--research-shell-gap) var(--research-shell-gap) var(--research-shell-gap) calc(var(--research-shell-gap) + var(--research-shell-rail-width) + var(--research-shell-gap));
+	margin: var(--research-shell-gap);
 	border-radius: calc(var(--research-shell-panel-radius) + 2px);
 	overflow: clip;
 	box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--fill-primary) 8%, transparent);
@@ -251,7 +179,7 @@
 }
 
 @media (max-width: 720px) {
-	:root[data-research-compact="true"] #browser { margin:5px 5px 5px calc(5px + var(--research-shell-rail-width) + 5px); }
+	:root[data-research-compact="true"] #browser { margin:5px; }
 	:root[data-research-shell-ready="true"] { --research-shell-panel-width: min(82vw, 330px); }
 }
 

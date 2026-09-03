@@ -348,9 +348,10 @@ ResearchWorkspace = {
 	},
 
 	installShell(window) {
-		let doc = window.document;
-		if (this.shellStates.has(window) || doc.querySelector(".research-shell-edge")) return;
+		if (this.shellStates.has(window)) return;
 
+		// 专注布局不再安装左侧导航栏：文库侧栏与 AI 助手均有原生入口，
+		// 独立侧栏既占空间又影响布局。这里仅保留紧凑模式状态本身。
 		let state = {
 			compact: Services.prefs.getBoolPref(
 				"extensions.zotero.researchWorkspace.compactShell",
@@ -361,83 +362,6 @@ ResearchWorkspace = {
 			listeners: [],
 		};
 		this.shellStates.set(window, state);
-
-		let rail = doc.createElementNS("http://www.w3.org/1999/xhtml", "nav");
-		rail.className = "research-shell-rail";
-		rail.setAttribute("aria-label", "Library 导航");
-		// innerHTML-injected <svg> 不在 Zotero 特权窗口渲染（表现为空白按钮），
-		// 与 reader 工具栏图标一致，用 createElementNS 显式构建
-		let railIcons = {
-			library: ["M4 5.5h5.5a3 3 0 0 1 3 3v10H7a3 3 0 0 0-3 3z", "M20 5.5h-5.5a3 3 0 0 0-3 3v10H17a3 3 0 0 1 3 3z"],
-			ai: ["m12 3 1.45 4.55L18 9l-4.55 1.45L12 15l-1.45-4.55L6 9l4.55-1.45z", "m18.2 14 .75 2.25L21.2 17l-2.25.75L18.2 20l-.75-2.25L15.2 17l2.25-.75z"],
-			focus: ["M8 4H4v4M16 4h4v4M8 20H4v-4M16 20h4v-4"],
-		};
-		let makeRailButton = (action, label) => {
-			let button = doc.createElementNS("http://www.w3.org/1999/xhtml", "button");
-			button.type = "button";
-			button.className = "research-shell-rail-button";
-			button.dataset.action = action;
-			button.setAttribute("aria-label", label);
-			button.title = label;
-			let mark = doc.createElementNS("http://www.w3.org/2000/svg", "svg");
-			mark.setAttribute("viewBox", "0 0 24 24");
-			mark.setAttribute("aria-hidden", "true");
-			for (let pathData of railIcons[action] || []) {
-				let path = doc.createElementNS("http://www.w3.org/2000/svg", "path");
-				path.setAttribute("d", pathData);
-				mark.append(path);
-			}
-			button.append(mark);
-			return button;
-		};
-		let edge = makeRailButton("library", "显示文库侧栏");
-		edge.classList.add("research-shell-edge", "research-shell-edge-left");
-		edge.dataset.side = "left";
-		edge.setAttribute("aria-pressed", "false");
-		let aiButton = makeRailButton("ai", "打开 AI 研究助手");
-		let focusButton = makeRailButton("focus", "退出紧凑模式");
-		let railSpacer = doc.createElementNS("http://www.w3.org/1999/xhtml", "span");
-		railSpacer.className = "research-shell-rail-spacer";
-		rail.append(edge, aiButton, railSpacer, focusButton);
-		doc.documentElement.append(rail);
-
-		let bind = (target, type, handler, options) => {
-			if (!target) return;
-			target.addEventListener(type, handler, options);
-			state.listeners.push([target, type, handler, options]);
-		};
-		bind(edge, "mouseenter", () => this.revealShellSide(window, "left"));
-		bind(edge, "focus", () => this.revealShellSide(window, "left"));
-		bind(edge, "click", () => {
-			state.pinned.left = !state.pinned.left;
-			this.setShellSide(window, "left", state.pinned.left);
-			edge.setAttribute("aria-pressed", String(state.pinned.left));
-			edge.title = state.pinned.left ? "取消固定文库侧栏" : "显示文库侧栏";
-		});
-		bind(edge, "keydown", event => {
-			if (event.key === "Escape") {
-				state.pinned.left = false;
-				edge.setAttribute("aria-pressed", "false");
-				this.setShellSide(window, "left", false);
-				edge.blur();
-			}
-		});
-		bind(edge, "mouseleave", () => this.scheduleShellHide(window, "left"));
-		bind(edge, "blur", () => this.scheduleShellHide(window, "left"));
-		bind(aiButton, "click", () => this.aiViewHost?.toggle?.(window));
-		bind(focusButton, "click", () => this.setShellCompact(window, false));
-		bind(rail, "mouseenter", () => window.clearTimeout(state.timers.left));
-		bind(rail, "mouseleave", event => {
-			if (!event.relatedTarget?.closest?.("#zotero-collections-pane")) {
-				this.scheduleShellHide(window, "left");
-			}
-		});
-		let collectionsPane = doc.getElementById("zotero-collections-pane");
-		bind(collectionsPane, "mouseenter", () => this.revealShellSide(window, "left"));
-		bind(collectionsPane, "mouseleave", () => this.scheduleShellHide(window, "left"));
-		bind(window, "deactivate", () => {
-			if (!state.pinned.left) this.setShellSide(window, "left", false);
-		});
 		this.setShellCompact(window, state.compact, false);
 	},
 
