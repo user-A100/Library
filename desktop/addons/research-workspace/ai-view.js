@@ -193,64 +193,56 @@ LibraryAIViewHost = class LibraryAIViewHost {
 	buildView(window, state) {
 		let markup = `
 			<header class="library-ai-topbar">
-				<div class="library-ai-tabs" role="tablist"></div>
+				<div class="library-ai-header-info"><span class="library-ai-header-mark" data-role="header-icon" aria-hidden="true"></span><strong data-role="conversation-title">Library AI</strong><button type="button" data-action="export" title="导出会话为 Markdown">⤓</button><button type="button" data-action="clear" title="清空当前会话">⌫</button></div>
+				<nav class="library-ai-tab-nav" role="tablist">
+					<button type="button" role="tab" data-action="tab" data-tab="discussion">讨论</button>
+					<button type="button" role="tab" data-action="tab" data-tab="translate">翻译</button>
+					<button type="button" role="tab" data-action="tab" data-tab="setting">设置</button>
+				</nav>
 				<div class="library-ai-top-actions">
 					<button type="button" data-action="new" title="新建会话">＋</button>
 					<button type="button" data-action="history" title="历史记录">◷</button>
-					<button type="button" data-action="settings" title="模型设置">⚙</button>
 					<button type="button" data-action="close" title="收起">×</button>
 				</div>
 			</header>
-			<div class="library-ai-model-strip"><span class="library-ai-model-dot"></span><button type="button" data-action="models" data-role="model-name" title="点击切换模型">尚未配置模型</button><button type="button" data-action="settings">配置</button></div>
-			<section class="library-ai-history" hidden><header><strong>会话历史</strong><button type="button" data-action="history">完成</button></header><div data-role="history-list"></div></section>
-			<section class="library-ai-settings" hidden aria-label="模型设置">
-				<header class="library-ai-settings-head">
-					<div class="library-ai-settings-title"><span class="library-ai-settings-mark" aria-hidden="true">AI</span><span><strong>模型连接</strong><small>OpenAI / Anthropic 兼容接口</small></span></div>
-					<button type="button" data-action="settings" aria-label="关闭模型设置">×</button>
-				</header>
-				<div class="library-ai-settings-form">
-					<label class="library-ai-field library-ai-field-provider"><span>提供商</span><select data-field="preset"></select></label>
-					<label class="library-ai-field library-ai-field-protocol"><span>API 协议</span><select data-field="protocol"></select></label>
-					<label class="library-ai-field library-ai-field-url"><span>接口地址</span><input data-field="baseURL" type="url" spellcheck="false" placeholder="https://api.example.com/v1"></label>
-					<label class="library-ai-field library-ai-field-model"><span>模型 ID</span><input data-field="model" type="text" spellcheck="false" list="library-ai-model-list" placeholder="选择或输入模型 ID"></label>
-					<datalist id="library-ai-model-list"></datalist>
-					<label class="library-ai-field library-ai-field-key"><span>API 密钥 <small>安全保存到系统凭据</small></span><input data-field="apiKey" type="password" autocomplete="off" placeholder="留空则保留现有密钥"></label>
-				</div>
-				<div class="library-ai-settings-status" data-role="settings-status" role="status"></div>
-				<footer class="library-ai-settings-actions">
-					<button type="button" class="library-ai-settings-link" data-action="open-ai-prefs"><span>配置档案</span><small>导入、导出与多接口</small><b aria-hidden="true">→</b></button>
-					<button type="button" class="library-ai-settings-save" data-action="save-settings">保存并测试</button>
-				</footer>
-			</section>
-			<section class="library-ai-noteedit" hidden aria-label="AI 修改笔记">
-				<header class="library-ai-noteedit-head">
-					<div class="library-ai-noteedit-title"><span class="library-ai-settings-mark" aria-hidden="true">✎</span><span><strong>AI 修改笔记</strong><small>迁移自 Claudian Inline Edit：diff 预览，确认后才写入</small></span></div>
-					<button type="button" data-action="note-edit" aria-label="关闭笔记修改">×</button>
-				</header>
-				<div class="library-ai-noteedit-form">
-					<label class="library-ai-field"><span>目标笔记 <small>当前来源文献的子笔记</small></span><select data-field="note-target"></select></label>
-					<label class="library-ai-field"><span>修改指令</span><textarea data-field="note-instruction" rows="3" placeholder="例如：把第二段改写成更学术的表达，并补充一段方法局限"></textarea></label>
-				</div>
-				<div class="library-ai-noteedit-status" data-role="noteedit-status" role="status"></div>
-				<div class="library-ai-noteedit-diff" data-role="noteedit-diff" hidden></div>
-				<footer class="library-ai-noteedit-actions">
-					<button type="button" class="library-ai-noteedit-reject" data-action="note-edit-reject" hidden>拒绝（Esc）</button>
-					<button type="button" class="library-ai-noteedit-accept" data-action="note-edit-accept" hidden>接受修改（Enter）</button>
-					<button type="button" class="library-ai-noteedit-run" data-action="note-edit-run">生成修改稿</button>
-				</footer>
-			</section>
-			<main class="library-ai-messages" aria-live="polite"></main>
+			<div class="library-ai-history-menu" data-role="history-menu" hidden></div>
+			<div class="library-ai-tab-wrapper">
+				<section class="library-ai-tab-panel" data-tab-panel="discussion">
+					<section class="library-ai-noteedit" hidden aria-label="AI 修改笔记">
+						<header class="library-ai-noteedit-head">
+							<div class="library-ai-noteedit-title"><span class="library-ai-settings-mark" aria-hidden="true">✎</span><span><strong>AI 修改笔记</strong><small>diff 预览，确认后才写入</small></span></div>
+							<button type="button" data-action="note-edit" aria-label="关闭笔记修改">×</button>
+						</header>
+						<div class="library-ai-noteedit-form">
+							<label class="library-ai-field"><span>目标笔记 <small>当前来源文献的子笔记</small></span><select data-field="note-target"></select></label>
+							<label class="library-ai-field"><span>修改指令</span><textarea data-field="note-instruction" rows="3" placeholder="例如：把第二段改写成更学术的表达，并补充一段方法局限"></textarea></label>
+						</div>
+						<div class="library-ai-noteedit-status" data-role="noteedit-status" role="status"></div>
+						<div class="library-ai-noteedit-diff" data-role="noteedit-diff" hidden></div>
+						<footer class="library-ai-noteedit-actions">
+							<button type="button" class="library-ai-noteedit-reject" data-action="note-edit-reject" hidden>拒绝（Esc）</button>
+							<button type="button" class="library-ai-noteedit-accept" data-action="note-edit-accept" hidden>接受修改（Enter）</button>
+							<button type="button" class="library-ai-noteedit-run" data-action="note-edit-run">生成修改稿</button>
+						</footer>
+					</section>
+					<main class="library-ai-messages" aria-live="polite"></main>
+				</section>
+				<section class="library-ai-tab-panel" data-tab-panel="translate" hidden><p class="library-ai-tab-placeholder">翻译功能加载中…</p></section>
+				<section class="library-ai-tab-panel" data-tab-panel="setting" hidden><p class="library-ai-tab-placeholder">设置功能加载中…</p></section>
+			</div>
 			<footer class="library-ai-composer-shell">
+				<div class="library-ai-shortcuts" data-role="shortcuts"></div>
 				<div class="library-ai-slash" data-role="slash" hidden></div>
 				<div class="library-ai-source-row"><div data-role="sources"></div><button type="button" data-action="add-source" title="从文库选择其他论文">＋来源</button></div>
 				<div class="library-ai-references" data-role="references" hidden></div>
 				<div class="library-ai-composer"><textarea rows="3" placeholder="向论文提问…（输入 / 唤起命令）"></textarea><div class="library-ai-send-stack"><button type="button" data-action="stop" hidden title="停止生成">■</button><button type="button" data-action="send" title="发送">↑</button></div></div>
-				<div class="library-ai-composer-foot"><span data-role="status">准备就绪</span><span class="library-ai-composer-actions"><button type="button" data-action="toggle-ask" title="Ask 模式（Open Notebook 式）：先让模型把问题分解为多个检索词，再多路检索合并后回答。跨多篇论文的综合问题更准。">Ask</button><button type="button" data-action="note-edit" title="AI 修改笔记（Claudian Inline Edit 式）：选择已有笔记，给出修改指令，diff 预览确认后才写入">修改笔记</button><button type="button" data-action="save-note">保存为笔记</button></span></div>
+				<div class="library-ai-composer-foot"><span data-role="status">准备就绪</span><span class="library-ai-composer-actions"><button type="button" data-action="models" data-role="model-name" title="点击切换模型">尚未配置模型</button><button type="button" data-action="toggle-ask" title="Ask 模式（Open Notebook 式）：先让模型把问题分解为多个检索词，再多路检索合并后回答。跨多篇论文的综合问题更准。">Ask</button><button type="button" data-action="note-edit" title="AI 修改笔记：选择已有笔记，给出修改指令，diff 预览确认后才写入">修改笔记</button><button type="button" data-action="save-note">保存为笔记</button></span></div>
 			</footer>`;
 		let view = state.view;
 		let parsed = new window.DOMParser().parseFromString(`<body>${markup}</body>`, "text/html");
 		for (let child of [...parsed.body.children]) view.append(view.ownerDocument.importNode(child, true));
-		for (let button of view.querySelectorAll("[data-action]")) button.addEventListener("click", () => this.handleAction(window, button.dataset.action));
+		view.querySelector('[data-role="header-icon"]').append(this.createRobotIcon(view.ownerDocument));
+		for (let button of view.querySelectorAll("[data-action]")) button.addEventListener("click", () => this.handleAction(window, button.dataset.action, button));
 		// Claudian Inline Edit 语义：diff 预览显示时 Enter 接受、Esc 拒绝
 		let noteEditSection = view.querySelector(".library-ai-noteedit");
 		noteEditSection.addEventListener("keydown", event => {
@@ -267,7 +259,9 @@ LibraryAIViewHost = class LibraryAIViewHost {
 			if (this.handleSlashKeydown(window, event)) return;
 			if (event.key === "Enter" && !event.shiftKey) { event.preventDefault(); this.send(window); }
 		});
+		// 点击历史菜单外区域时收起菜单
 		view.addEventListener("click", event => {
+			if (!event.target.closest?.("[data-role=history-menu]") && !event.target.closest?.('[data-action="history"]')) this.toggleHistoryMenu(window, false);
 			let citation = event.target.closest?.("[data-citation-id]");
 			if (citation) {
 				event.preventDefault();
@@ -280,39 +274,54 @@ LibraryAIViewHost = class LibraryAIViewHost {
 			let auditToggle = event.target.closest?.("[data-toggle-audit]"); if (auditToggle) this.toggleMessageAudit(auditToggle);
 			let citationPreview = event.target.closest?.("[data-preview-citation]"); if (citationPreview) { event.preventDefault(); event.stopPropagation(); this.toggleCitationPreview(citationPreview); }
 			let referenceRemove = event.target.closest?.("[data-remove-reference]"); if (referenceRemove) this.removeReference(window, referenceRemove.dataset.removeReference);
-			let tab = event.target.closest?.("[data-conversation-id]"); if (tab && !event.target.closest("[data-close-tab]")) { this.repository.activate(tab.dataset.conversationId); this.render(window); }
-			let closeTab = event.target.closest?.("[data-close-tab]"); if (closeTab) { this.repository.close(closeTab.dataset.closeTab); this.renderAll(); }
-			let history = event.target.closest?.("[data-open-history]"); if (history) { this.repository.activate(history.dataset.openHistory); this.renderAll(); this.togglePanel(window, "history", false); }
+			let history = event.target.closest?.("[data-open-history]"); if (history) { this.repository.activate(history.dataset.openHistory); this.renderAll(); this.toggleHistoryMenu(window, false); }
 			let retry = event.target.closest?.("[data-retry-message]"); if (retry) { let active = this.repository.active; let index = active.messages.findIndex(message => message.id === retry.dataset.retryMessage); let previous = [...active.messages.slice(0, index)].reverse().find(message => message.role === "user"); if (previous) this.send(window, previous.prompt || previous.content, previous.prompt ? previous.content : null); }
 		});
-		let select = view.querySelector('[data-field="preset"]');
-		for (let [id, [name]] of Object.entries(this.provider.presets)) {
-			let option = view.ownerDocument.createElementNS("http://www.w3.org/1999/xhtml", "option");
-			option.value = id; option.textContent = name; select.append(option);
-		}
-		let protocolSelect = view.querySelector('[data-field="protocol"]');
-		for (let [id, name] of Object.entries(this.provider.protocols)) {
-			let option = view.ownerDocument.createElementNS("http://www.w3.org/1999/xhtml", "option");
-			option.value = id; option.textContent = name; protocolSelect.append(option);
-		}
-		select.addEventListener("change", () => {
-			let preset = this.provider.presets[select.value]; if (!preset) return;
-			view.querySelector('[data-field="baseURL"]').value = preset[1];
-			view.querySelector('[data-field="model"]').value = preset[2];
-			view.querySelector('[data-field="protocol"]').value = preset[3];
-		});
+		this.showTab(window, Services.prefs.getStringPref(this.workspace.aiPrefRoot + "aiActiveTab", "discussion"), { force: true });
 	}
 
-	async handleAction(window, action) {
+	showTab(window, tab, { force = false } = {}) {
+		let state = this.windows.get(window); if (!state) return;
+		if (!["discussion", "translate", "setting"].includes(tab)) tab = "discussion";
+		if (state.tab === tab && !force) return;
+		state.tab = tab;
+		Services.prefs.setStringPref(this.workspace.aiPrefRoot + "aiActiveTab", tab);
+		let view = state.view;
+		for (let panel of view.querySelectorAll("[data-tab-panel]")) panel.hidden = panel.dataset.tabPanel !== tab;
+		for (let button of view.querySelectorAll(".library-ai-tab-nav [data-tab]")) button.classList.toggle("active", button.dataset.tab === tab);
+		view.querySelector(".library-ai-composer-shell").hidden = tab !== "discussion";
+		this.toggleHistoryMenu(window, false);
+		this.render(window);
+	}
+
+	toggleHistoryMenu(window, force = null) {
+		let state = this.windows.get(window); if (!state) return;
+		let menu = state.view.querySelector('[data-role="history-menu"]');
+		let next = force === null ? menu.hidden : !force;
+		menu.hidden = next;
+		if (!menu.hidden) {
+			menu.textContent = "";
+			for (let item of this.repository.list()) {
+				let button = menu.ownerDocument.createElement("button");
+				button.type = "button"; button.dataset.openHistory = item.id;
+				button.innerHTML = `<strong>${item.pinned ? "📌 " : ""}${this.escape(item.title)}</strong><small>${new Date(item.updatedAt).toLocaleString()}</small>`;
+				menu.append(button);
+			}
+			if (!menu.children.length) { let empty = menu.ownerDocument.createElement("small"); empty.textContent = "暂无历史会话"; menu.append(empty); }
+		}
+	}
+
+	async handleAction(window, action, button = null) {
 		if (action === "new") { this.repository.create(); await this.syncCurrentSource(window); this.renderAll(); }
-		else if (action === "history") this.togglePanel(window, "history");
-		else if (action === "settings") this.togglePanel(window, "settings");
+		else if (action === "tab") this.showTab(window, button?.dataset?.tab || "discussion");
+		else if (action === "history") this.toggleHistoryMenu(window);
+		else if (action === "export") this.exportConversation(window, []);
+		else if (action === "clear") { let conversation = this.repository.active; if (conversation) { conversation.nodes = {}; conversation.rootId = null; conversation.activeLeafId = null; this.repository.syncMessages(conversation); this.repository.update(conversation); this.renderAll(); } }
 		else if (action === "close") this.close(window);
 		else if (action === "send") this.send(window);
 		else if (action === "stop") this.abortController?.abort();
 		else if (action === "add-source") await this.chooseSources(window);
 		else if (action === "models") await this.showModelPicker(window);
-		else if (action === "save-settings") this.saveSettings(window);
 		else if (action === "open-ai-prefs") Zotero.Utilities.Internal.openPreferences("research-workspace-ai");
 		else if (action === "save-note") this.saveAsNote(window);
 		else if (action === "note-edit") this.togglePanel(window, "noteedit");
@@ -332,73 +341,14 @@ LibraryAIViewHost = class LibraryAIViewHost {
 
 	togglePanel(window, name, force = null) {
 		let state = this.windows.get(window); if (!state) return;
-		for (let panelName of ["history", "settings", "noteedit"]) {
-			let panel = state.view.querySelector(`.library-ai-${panelName}`);
-			let next = panelName === name ? (force === null ? !panel.hidden : !force) : true;
-			panel.hidden = next;
-		}
-		if (name === "settings" && !state.view.querySelector(".library-ai-settings").hidden) this.fillSettings(window);
-		if (name === "noteedit" && !state.view.querySelector(".library-ai-noteedit").hidden) {
+		if (name !== "noteedit") return;
+		let panel = state.view.querySelector(".library-ai-noteedit");
+		panel.hidden = force === null ? !panel.hidden : !force;
+		if (!panel.hidden) {
 			// 来源为空时先兜底同步当前论文，再填充目标笔记列表
 			let ensured = (!this.repository.active?.sources.length) ? this.syncCurrentSource(window) : Promise.resolve();
 			ensured.then(() => this.fillNoteEdit(window)).catch(error => this.workspace.log?.(`Note edit panel: ${error}`));
 		}
-	}
-
-	fillSettings(window) {
-		let view = this.windows.get(window).view, config = this.provider.config;
-		view.querySelector('[data-field="preset"]').value = config.preset;
-		view.querySelector('[data-field="protocol"]').value = config.protocol;
-		view.querySelector('[data-field="baseURL"]').value = config.baseURL;
-		view.querySelector('[data-field="model"]').value = config.model;
-		view.querySelector('[data-field="apiKey"]').value = "";
-		view.querySelector('[data-role="settings-status"]').textContent = "";
-		this.fillModelDatalist(window);
-	}
-
-	// 把当前 baseURL 缓存的模型列表回填到设置页的 datalist（输入即自动补全）
-	fillModelDatalist(window) {
-		let datalist = this.windows.get(window)?.view.querySelector("#library-ai-model-list");
-		if (!datalist) return;
-		datalist.textContent = "";
-		for (let model of this.provider.getCachedModels()) {
-			let option = datalist.ownerDocument.createElement("option");
-			option.value = model;
-			datalist.append(option);
-		}
-	}
-
-	async saveSettings(window) {
-		let view = this.windows.get(window).view, status = view.querySelector('[data-role="settings-status"]');
-		status.textContent = "正在保存…";
-		try {
-			await this.provider.save({
-				preset: view.querySelector('[data-field="preset"]').value,
-				protocol: view.querySelector('[data-field="protocol"]').value,
-				baseURL: view.querySelector('[data-field="baseURL"]').value.trim(),
-				model: view.querySelector('[data-field="model"]').value.trim(),
-				apiKey: view.querySelector('[data-field="apiKey"]').value.trim(),
-			});
-			view.querySelector('[data-field="apiKey"]').value = "";
-			this.renderAll();
-			status.textContent = "设置已保存，正在测试连接…";
-			try {
-				await this.provider.test();
-				// 连接成功后按协议抓取模型列表；兼容端点不支持时保留手动模型 ID。
-				status.textContent = "设置已保存，连接成功，正在抓取模型列表…";
-				try {
-					let models = await this.provider.fetchModels();
-					this.fillModelDatalist(window);
-					status.textContent = `设置已保存，连接成功，抓取到 ${models.length} 个模型`;
-				}
-				catch (fetchError) {
-					status.textContent = `设置已保存，连接成功；模型列表抓取失败：${fetchError.message || fetchError}`;
-				}
-			}
-			catch (testError) {
-				status.textContent = `设置已保存；连接测试失败：${testError.message || testError}`;
-			}
-		} catch (error) { status.textContent = error.message || String(error); }
 	}
 
 	async syncCurrentSource(window, forceSelected = false) {
@@ -674,15 +624,7 @@ LibraryAIViewHost = class LibraryAIViewHost {
 		let state = this.windows.get(window); if (!state) return;
 		let view = state.view, conversation = this.repository.active, config = this.provider.config;
 		view.querySelector('[data-role="model-name"]').textContent = config.model || "尚未配置模型";
-		view.querySelector(".library-ai-model-dot").classList.toggle("configured", Boolean(config.model));
-		let tabs = view.querySelector(".library-ai-tabs"); tabs.textContent = "";
-		for (let id of this.repository.state.openIDs) {
-			let current = this.repository.get(id); if (!current) continue;
-			let tab = view.ownerDocument.createElement("button"); tab.type = "button"; tab.className = "library-ai-tab"; tab.dataset.conversationId = id; tab.classList.toggle("active", id === conversation.id);
-			tab.innerHTML = `<span>${this.escape(current.title)}</span><span data-close-tab="${id}" title="关闭">×</span>`; tabs.append(tab);
-		}
-		let history = view.querySelector('[data-role="history-list"]'); history.textContent = "";
-		for (let item of this.repository.list()) { let button = view.ownerDocument.createElement("button"); button.type = "button"; button.dataset.openHistory = item.id; button.innerHTML = `<strong>${this.escape(item.title)}</strong><small>${new Date(item.updatedAt).toLocaleString()}</small>`; history.append(button); }
+		view.querySelector('[data-role="conversation-title"]').textContent = conversation?.title || "Library AI";
 		let messages = view.querySelector(".library-ai-messages"); messages.textContent = "";
 		if (!conversation.messages.length) messages.append(this.emptyState(view.ownerDocument));
 		for (let message of conversation.messages) {
