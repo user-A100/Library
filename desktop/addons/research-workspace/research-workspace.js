@@ -365,10 +365,12 @@ ResearchWorkspace = {
 		let rail = doc.createElementNS("http://www.w3.org/1999/xhtml", "nav");
 		rail.className = "research-shell-rail";
 		rail.setAttribute("aria-label", "Library 导航");
+		// innerHTML-injected <svg> 不在 Zotero 特权窗口渲染（表现为空白按钮），
+		// 与 reader 工具栏图标一致，用 createElementNS 显式构建
 		let railIcons = {
-			library: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5.5h5.5a3 3 0 0 1 3 3v10H7a3 3 0 0 0-3 3z"/><path d="M20 5.5h-5.5a3 3 0 0 0-3 3v10H17a3 3 0 0 1 3 3z"/></svg>',
-			ai: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 1.45 4.55L18 9l-4.55 1.45L12 15l-1.45-4.55L6 9l4.55-1.45z"/><path d="m18.2 14 .75 2.25L21.2 17l-2.25.75L18.2 20l-.75-2.25L15.2 17l2.25-.75z"/></svg>',
-			focus: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 4H4v4M16 4h4v4M8 20H4v-4M16 20h4v-4"/></svg>',
+			library: ["M4 5.5h5.5a3 3 0 0 1 3 3v10H7a3 3 0 0 0-3 3z", "M20 5.5h-5.5a3 3 0 0 0-3 3v10H17a3 3 0 0 1 3 3z"],
+			ai: ["m12 3 1.45 4.55L18 9l-4.55 1.45L12 15l-1.45-4.55L6 9l4.55-1.45z", "m18.2 14 .75 2.25L21.2 17l-2.25.75L18.2 20l-.75-2.25L15.2 17l2.25-.75z"],
+			focus: ["M8 4H4v4M16 4h4v4M8 20H4v-4M16 20h4v-4"],
 		};
 		let makeRailButton = (action, label) => {
 			let button = doc.createElementNS("http://www.w3.org/1999/xhtml", "button");
@@ -377,7 +379,15 @@ ResearchWorkspace = {
 			button.dataset.action = action;
 			button.setAttribute("aria-label", label);
 			button.title = label;
-			button.innerHTML = railIcons[action];
+			let mark = doc.createElementNS("http://www.w3.org/2000/svg", "svg");
+			mark.setAttribute("viewBox", "0 0 24 24");
+			mark.setAttribute("aria-hidden", "true");
+			for (let pathData of railIcons[action] || []) {
+				let path = doc.createElementNS("http://www.w3.org/2000/svg", "path");
+				path.setAttribute("d", pathData);
+				mark.append(path);
+			}
+			button.append(mark);
 			return button;
 		};
 		let edge = makeRailButton("library", "显示文库侧栏");
