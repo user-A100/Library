@@ -8,6 +8,7 @@ LibraryAIViewHost = class LibraryAIViewHost {
 		this.chat = new LibraryAIChatRenderer(this);
 		this.shortcuts = new LibraryAIShortcuts(this.workspace.aiPrefRoot);
 		this.settingsTab = new LibraryAISettingsTab(this);
+		this.translateTab = new LibraryAITranslateTab(this);
 		this.windows = new Map();
 		this.abortController = null;
 		this.notifierID = null;
@@ -303,6 +304,7 @@ LibraryAIViewHost = class LibraryAIViewHost {
 		view.querySelector(".library-ai-composer-shell").hidden = tab !== "discussion";
 		this.toggleHistoryMenu(window, false);
 		if (tab === "setting") this.settingsTab.render(window);
+		if (tab === "translate") this.translateTab.render(window);
 		this.render(window);
 	}
 

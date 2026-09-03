@@ -186,6 +186,10 @@ ResearchWorkspace = {
 		this.menuL10nCache = this.menuL10nCache || new Map();
 		let manager = Zotero.MenuManager;
 		if (!manager || typeof manager.updateMenuPopup !== "function") return;
+		// 其他插件的 FTL 同样可能未进入 L10nRegistry。先记录自身 rootURI，
+		// 再异步补全所有已安装插件的 rootURI，供 resolveMenuL10nLabel 兜底读取。
+		this.pluginRootURIs = [this.rootURI].filter(Boolean);
+		this.resolvePluginRootURIs();
 		let original = manager.updateMenuPopup;
 		manager.updateMenuPopup = (...args) => {
 			let result = original.apply(manager, args);
@@ -202,6 +206,22 @@ ResearchWorkspace = {
 			}
 			return result;
 		};
+	},
+
+	// 枚举所有已安装插件的 rootURI（异步，完成后仅供兜底读取使用）
+	async resolvePluginRootURIs() {
+		try {
+			let pluginIDs = await Zotero.Plugins.getAllPluginIDs();
+			let uris = [];
+			for (let pluginID of pluginIDs) {
+				let rootURI = await Zotero.Plugins.getRootURI(pluginID);
+				if (rootURI) uris.push(rootURI);
+			}
+			this.pluginRootURIs = uris;
+		}
+		catch (error) {
+			this.log(`Menu l10n plugin enumeration failed: ${error}`);
+		}
 	},
 
 	applyMenuL10nLabel(elem) {
@@ -247,22 +267,30 @@ ResearchWorkspace = {
 			}
 			parts.pop();
 		}
-		// 回退：本插件的 FTL 可能未进入 L10nRegistry，直接从 XPI 内读取
-		if (l10nId.startsWith("research-workspace-") && this.rootURI) {
-			let locale = Zotero.locale || "en-US";
-			for (let candidate of [locale, "zh-CN", "en-US"]) {
-				let url = `${this.rootURI}locale/${candidate}/research-workspace.ftl`;
-				let loc = this.menuL10nCache.get(url);
-				if (loc === undefined) {
-					try {
-						loc = new Localization([url], true);
+		// 回退：插件的 FTL 可能未进入 L10nRegistry，直接从各插件 XPI 内读取
+		let segments = l10nId.split("-");
+		let names = [];
+		while (segments.length >= 1) {
+			names.push(segments.join("-"));
+			segments.pop();
+		}
+		let locale = Zotero.locale || "en-US";
+		let candidates = [...new Set([locale, "zh-CN", "en-US"])];
+		for (let rootURI of this.pluginRootURIs || []) {
+			for (let candidate of candidates) {
+				for (let name of names) {
+					let url = `${rootURI}locale/${candidate}/${name}.ftl`;
+					let loc = this.menuL10nCache.get(url);
+					if (loc === undefined) {
+						try {
+							loc = new Localization([url], true);
+						}
+						catch (_) {
+							loc = null;
+						}
+						this.menuL10nCache.set(url, loc);
 					}
-					catch (_) {
-						loc = null;
-					}
-					this.menuL10nCache.set(url, loc);
-				}
-				if (loc) {
+					if (!loc) continue;
 					try {
 						let msg = loc.formatMessagesSync([{ id: l10nId }])[0];
 						let attr = msg?.attributes?.find?.(a => a.name === "label");
@@ -271,8 +299,6 @@ ResearchWorkspace = {
 					}
 					catch (_) {}
 				}
-				if (candidate === locale) continue;
-				break;
 			}
 		}
 		return null;
@@ -778,6 +804,17 @@ ResearchWorkspace = {
 			});
 		});
 		append(button);
+		// 划词翻译（ai-translate-tab 开关控制）：流式译文浮层
+		if (this.aiViewHost?.translateTab && Services.prefs.getBoolPref(this.aiPrefRoot + "aiSelectionTranslate", false)) {
+			let translateButton = doc.createElement("button");
+			translateButton.type = "button";
+			translateButton.style.cssText = "display:flex;align-items:center;justify-content:center;gap:6px;width:100%;margin-top:4px;padding:6px 10px;border:0;border-radius:6px;background:#3f6212;color:#fff;font-size:12px;cursor:pointer;";
+			translateButton.textContent = "✦ 划词翻译";
+			translateButton.addEventListener("click", () => {
+				this.aiViewHost.translateTab.runSelectionTranslate({ reader, doc, text });
+			});
+			append(translateButton);
+		}
 	},
 
 	removeReaderSurfaces() {

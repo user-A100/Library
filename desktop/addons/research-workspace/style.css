@@ -463,6 +463,11 @@
 .library-ai-set-models button:hover { background:var(--library-ai-hover); }
 .library-ai-set-models button.active { border-color:color-mix(in srgb,var(--library-ai-accent) 42%,transparent); background:var(--library-ai-accent-soft); color:color-mix(in srgb,var(--library-ai-accent) 75%,var(--fill-primary)); }
 .library-ai-set-hint { color:var(--fill-secondary); font-size:9.5px; }
+.library-ai-set-toggle { display:flex; align-items:center; gap:8px; font-size:11px; cursor:pointer; }
+.library-ai-set-toggle input { width:15px; height:15px; accent-color:var(--library-ai-accent); }
+.library-ai-set-lang-row { display:flex; gap:6px; }
+.library-ai-set-lang-row select { flex:1; min-width:0; height:34px; padding:0 8px; border:1px solid color-mix(in srgb,var(--library-ai-border) 88%,transparent); border-radius:9px; background:var(--material-button); color:var(--fill-primary); font-size:11px; }
+.library-ai-set-lang-row button { flex:none; width:36px; height:34px; border:1px solid color-mix(in srgb,var(--library-ai-border) 82%,transparent); border-radius:9px; background:var(--material-button); font-size:13px; }
 .library-ai-set-system { box-sizing:border-box; width:100%; min-height:110px; padding:9px 11px; border:1px solid color-mix(in srgb,var(--library-ai-border) 88%,transparent); border-radius:9px; background:var(--material-button); color:var(--fill-primary); font-size:10.5px; line-height:1.55; resize:vertical; }
 .library-ai-settings-more { display:block; margin:0 auto 14px; padding:8px 14px; border:0; background:transparent; color:color-mix(in srgb,var(--library-ai-accent) 80%,var(--fill-primary)); font-size:10.5px; font-weight:640; }
 .library-ai-settings-more:hover { text-decoration:underline; }
