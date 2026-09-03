@@ -222,19 +222,45 @@ LibraryAIViewHost = class LibraryAIViewHost {
 					<button type="button" class="library-ai-settings-save" data-action="save-settings">保存并测试</button>
 				</footer>
 			</section>
+			<section class="library-ai-noteedit" hidden aria-label="AI 修改笔记">
+				<header class="library-ai-noteedit-head">
+					<div class="library-ai-noteedit-title"><span class="library-ai-settings-mark" aria-hidden="true">✎</span><span><strong>AI 修改笔记</strong><small>迁移自 Claudian Inline Edit：diff 预览，确认后才写入</small></span></div>
+					<button type="button" data-action="note-edit" aria-label="关闭笔记修改">×</button>
+				</header>
+				<div class="library-ai-noteedit-form">
+					<label class="library-ai-field"><span>目标笔记 <small>当前来源文献的子笔记</small></span><select data-field="note-target"></select></label>
+					<label class="library-ai-field"><span>修改指令</span><textarea data-field="note-instruction" rows="3" placeholder="例如：把第二段改写成更学术的表达，并补充一段方法局限"></textarea></label>
+				</div>
+				<div class="library-ai-noteedit-status" data-role="noteedit-status" role="status"></div>
+				<div class="library-ai-noteedit-diff" data-role="noteedit-diff" hidden></div>
+				<footer class="library-ai-noteedit-actions">
+					<button type="button" class="library-ai-noteedit-reject" data-action="note-edit-reject" hidden>拒绝（Esc）</button>
+					<button type="button" class="library-ai-noteedit-accept" data-action="note-edit-accept" hidden>接受修改（Enter）</button>
+					<button type="button" class="library-ai-noteedit-run" data-action="note-edit-run">生成修改稿</button>
+				</footer>
+			</section>
 			<main class="library-ai-messages" aria-live="polite"></main>
 			<footer class="library-ai-composer-shell">
 				<div class="library-ai-slash" data-role="slash" hidden></div>
 				<div class="library-ai-source-row"><div data-role="sources"></div><button type="button" data-action="add-source" title="从文库选择其他论文">＋来源</button></div>
 				<div class="library-ai-references" data-role="references" hidden></div>
 				<div class="library-ai-composer"><textarea rows="3" placeholder="向论文提问…（输入 / 唤起命令）"></textarea><div class="library-ai-send-stack"><button type="button" data-action="stop" hidden title="停止生成">■</button><button type="button" data-action="send" title="发送">↑</button></div></div>
-				<div class="library-ai-composer-foot"><span data-role="status">准备就绪</span><span class="library-ai-composer-actions"><button type="button" data-action="toggle-ask" title="Ask 模式（Open Notebook 式）：先让模型把问题分解为多个检索词，再多路检索合并后回答。跨多篇论文的综合问题更准。">Ask</button><button type="button" data-action="save-note">保存为笔记</button></span></div>
+				<div class="library-ai-composer-foot"><span data-role="status">准备就绪</span><span class="library-ai-composer-actions"><button type="button" data-action="toggle-ask" title="Ask 模式（Open Notebook 式）：先让模型把问题分解为多个检索词，再多路检索合并后回答。跨多篇论文的综合问题更准。">Ask</button><button type="button" data-action="note-edit" title="AI 修改笔记（Claudian Inline Edit 式）：选择已有笔记，给出修改指令，diff 预览确认后才写入">修改笔记</button><button type="button" data-action="save-note">保存为笔记</button></span></div>
 			</footer>`;
 		let view = state.view;
 		let parsed = new window.DOMParser().parseFromString(`<body>${markup}</body>`, "text/html");
 		for (let child of [...parsed.body.children]) view.append(view.ownerDocument.importNode(child, true));
 		for (let button of view.querySelectorAll("[data-action]")) button.addEventListener("click", () => this.handleAction(window, button.dataset.action));
-		let textarea = view.querySelector("textarea");
+		// Claudian Inline Edit 语义：diff 预览显示时 Enter 接受、Esc 拒绝
+		let noteEditSection = view.querySelector(".library-ai-noteedit");
+		noteEditSection.addEventListener("keydown", event => {
+			if (event.isComposing || event.target.matches?.("textarea")) return;
+			let previewShown = !view.querySelector('[data-role="noteedit-diff"]').hidden;
+			if (event.key === "Escape") { event.preventDefault(); this.rejectNoteEdit(window); }
+			else if (event.key === "Enter" && previewShown) { event.preventDefault(); this.acceptNoteEdit(window); }
+		});
+		// 聊天输入框必须精确选取：noteedit 面板里也有 textarea，不能依赖"第一个"
+		let textarea = view.querySelector(".library-ai-composer textarea");
 		textarea.addEventListener("input", () => this.updateSlashDropdown(window));
 		textarea.addEventListener("click", () => this.updateSlashDropdown(window));
 		textarea.addEventListener("keydown", event => {
@@ -289,6 +315,10 @@ LibraryAIViewHost = class LibraryAIViewHost {
 		else if (action === "save-settings") this.saveSettings(window);
 		else if (action === "open-ai-prefs") Zotero.Utilities.Internal.openPreferences("research-workspace-ai");
 		else if (action === "save-note") this.saveAsNote(window);
+		else if (action === "note-edit") this.togglePanel(window, "noteedit");
+		else if (action === "note-edit-run") this.runNoteEdit(window);
+		else if (action === "note-edit-accept") this.acceptNoteEdit(window);
+		else if (action === "note-edit-reject") this.rejectNoteEdit(window);
 		else if (action === "toggle-ask") {
 			let conversation = this.repository.active;
 			if (conversation) {
@@ -302,12 +332,17 @@ LibraryAIViewHost = class LibraryAIViewHost {
 
 	togglePanel(window, name, force = null) {
 		let state = this.windows.get(window); if (!state) return;
-		for (let panelName of ["history", "settings"]) {
+		for (let panelName of ["history", "settings", "noteedit"]) {
 			let panel = state.view.querySelector(`.library-ai-${panelName}`);
 			let next = panelName === name ? (force === null ? !panel.hidden : !force) : true;
 			panel.hidden = next;
 		}
 		if (name === "settings" && !state.view.querySelector(".library-ai-settings").hidden) this.fillSettings(window);
+		if (name === "noteedit" && !state.view.querySelector(".library-ai-noteedit").hidden) {
+			// 来源为空时先兜底同步当前论文，再填充目标笔记列表
+			let ensured = (!this.repository.active?.sources.length) ? this.syncCurrentSource(window) : Promise.resolve();
+			ensured.then(() => this.fillNoteEdit(window)).catch(error => this.workspace.log?.(`Note edit panel: ${error}`));
+		}
 	}
 
 	fillSettings(window) {
@@ -446,7 +481,7 @@ LibraryAIViewHost = class LibraryAIViewHost {
 
 	async send(window, retryQuestion = null, displayOverride = null) {
 		let state = this.windows.get(window), conversation = this.repository.active;
-		let input = state.view.querySelector("textarea"), question = (retryQuestion || input.value).trim();
+		let input = state.view.querySelector(".library-ai-composer textarea"), question = (retryQuestion || input.value).trim();
 		if (!question || this.abortController) return;
 		// 斜杠命令（Claudian 式）：消息以 / 开头时先查注册中心；
 		// 动作命令直接执行，提示词命令展开 $ARGUMENTS 后作为真实提问发送
@@ -463,14 +498,14 @@ LibraryAIViewHost = class LibraryAIViewHost {
 		if (!retryQuestion) {
 			let outgoing = { id: Zotero.Utilities.randomString(8), role: "user", content: displayOverride || question, createdAt: new Date().toISOString() };
 			if (displayOverride) { outgoing.command = displayOverride.split(/\s+/)[0]; outgoing.prompt = question; }
-			conversation.messages.push(outgoing);
+			this.repository.appendNode(conversation, outgoing);
 			input.value = "";
 		}
 		let assistant = {
 			id: Zotero.Utilities.randomString(8), role: "assistant", content: "", citations: {}, state: "streaming",
 			activity: { phase: "preparing", label: "正在准备回答…" }, createdAt: new Date().toISOString(),
 		};
-		conversation.messages.push(assistant); this.repository.update(conversation); this.abortController = new window.AbortController(); this.renderAll();
+		this.repository.appendNode(conversation, assistant); this.abortController = new window.AbortController(); this.renderAll();
 		let setActivity = (phase, label) => {
 			assistant.activity = { phase, label };
 			this.renderAll();
@@ -716,7 +751,7 @@ LibraryAIViewHost = class LibraryAIViewHost {
 		let content = doc.createElement("div");
 		content.innerHTML = `<h2>和论文一起思考</h2><p>当前论文会自动成为来源。回答中的引用可直接定位回原文。</p><div><button type="button">概括本文的核心贡献</button><button type="button">解释作者的方法与证据</button><button type="button">列出可继续追问的问题</button></div>`;
 		while (content.firstChild) node.append(content.firstChild);
-		for (let button of node.querySelectorAll("button")) button.addEventListener("click", () => { let view = node.closest(".library-ai-view"); view.querySelector("textarea").value = button.textContent; view.querySelector("textarea").focus(); });
+		for (let button of node.querySelectorAll("button")) button.addEventListener("click", () => { let view = node.closest(".library-ai-view"); let composer = view.querySelector(".library-ai-composer textarea"); composer.value = button.textContent; composer.focus(); });
 		return node;
 	}
 
@@ -1095,6 +1130,247 @@ LibraryAIViewHost = class LibraryAIViewHost {
 		} catch (error) { this.setStatus(window, `保存失败：${error.message || error}`); }
 	}
 
+	// ---- AI 修改笔记（Claudian Inline Edit 迁移版）----
+	// 交互复刻 Claudian inline-edit：指令 → 模型产出修改稿 → 行级 diff 预览 →
+	// Accept/Reject（Enter/Esc）。只有接受时才 setNote 写入，且写入前校验源笔记
+	// 未被外部修改（对应 Claudian isSourceUnchanged 快照保护）。
+
+	async fillNoteEdit(window) {
+		let state = this.windows.get(window); if (!state) return;
+		let view = state.view;
+		let select = view.querySelector('[data-field="note-target"]');
+		select.textContent = "";
+		let source = this.repository.active?.sources?.[0];
+		if (!source) { this.setNoteEditStatus(window, "先添加论文来源，再修改它的笔记"); return; }
+		let item = await Zotero.Items.getAsync(source.itemID);
+		let options = [{ value: "new", label: "（新建子笔记）" }];
+		for (let noteID of item.getNotes?.() || []) {
+			let note = await Zotero.Items.getAsync(noteID);
+			let text = String(note?.getNote?.() || "").replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
+			options.push({ value: String(noteID), label: `${(text || "空笔记").slice(0, 46)}${text.length > 46 ? "…" : ""}` });
+		}
+		for (let option of options) {
+			let node = view.ownerDocument.createElementNS("http://www.w3.org/1999/xhtml", "option");
+			node.value = option.value; node.textContent = option.label; select.append(node);
+		}
+		this.setNoteEditStatus(window, options.length > 1
+			? "选择要修改的笔记，输入修改指令后生成修改稿"
+			: "该文献还没有笔记，默认将新建一篇");
+		this.setNoteEditPreview(window, null);
+	}
+
+	async runNoteEdit(window) {
+		let state = this.windows.get(window); if (!state) return;
+		if (this.abortController) { this.setNoteEditStatus(window, "正在生成回答，请等当前任务结束"); return; }
+		let view = state.view;
+		let instruction = view.querySelector('[data-field="note-instruction"]').value.trim();
+		if (!instruction) { this.setNoteEditStatus(window, "请先输入修改指令"); return; }
+		let conversation = this.repository.active;
+		let source = conversation?.sources?.[0];
+		if (!source) { this.setNoteEditStatus(window, "先添加论文来源，再修改它的笔记"); return; }
+		let item = await Zotero.Items.getAsync(source.itemID);
+		let targetValue = view.querySelector('[data-field="note-target"]').value || "new";
+		let note = null, originalHTML = "";
+		if (targetValue !== "new") {
+			note = await Zotero.Items.getAsync(Number(targetValue));
+			if (!note || !note.isNote?.()) { this.setNoteEditStatus(window, "目标笔记不存在，请重新打开面板"); return; }
+			originalHTML = note.getNote() || "";
+		}
+		let originalLines = this.htmlToEditLines(originalHTML);
+		state.noteEdit = { note, itemID: item.id, originalHTML, originalLines, proposed: null };
+		this.setNoteEditPreview(window, null);
+		this.setNoteEditStatus(window, "正在生成修改稿…");
+		this.abortController = new window.AbortController();
+		let runButton = view.querySelector('[data-action="note-edit-run"]');
+		runButton.disabled = true;
+		let proposed = "";
+		try {
+			let answer = [...conversation.messages].reverse().find(message => message.role === "assistant" && message.content);
+			let answerBlock = answer ? `\n\n最近的 AI 回答（可作为修改素材）：\n${answer.content.slice(0, 6000)}` : "";
+			await this.provider.stream([
+				{ role: "system", content: "你是笔记编辑器。根据用户指令修改给定的笔记内容，输出修改后的完整笔记。严格用中文 Markdown（标题用 #/##、列表用 -、引用用 >）。只输出笔记正文本身，不要输出解释、代码围栏或diff。" },
+				{ role: "user", content: `【修改指令】\n${instruction}\n\n【当前笔记内容】\n${originalLines.join("\n") || "（空笔记，请按指令撰写）"}${answerBlock}` },
+			], {
+				signal: this.abortController.signal, window,
+				onDelta: delta => { proposed += delta; this.setNoteEditStatus(window, `正在生成修改稿… ${proposed.length} 字`); },
+				onReasoning: () => {},
+			});
+			proposed = proposed.replace(/^```(?:markdown|md)?\n([\s\S]*?)\n```$/m, "$1").trim();
+			if (!proposed) throw new Error("模型没有返回修改稿");
+			state.noteEdit.proposed = proposed;
+			let diffOps = this.computeLineDiff(originalLines, proposed.split(/\r?\n/));
+			this.setNoteEditPreview(window, diffOps);
+			let changed = diffOps.some(op => op.type !== "equal");
+			this.setNoteEditStatus(window, changed
+				? "修改稿已生成：请核对 diff，Enter 接受，Esc 拒绝"
+				: "修改稿与原笔记没有实质差异，可直接拒绝或换个指令");
+			let hasNote = Boolean(state.noteEdit.note);
+			view.querySelector('[data-action="note-edit-accept"]').hidden = false;
+			view.querySelector('[data-action="note-edit-reject"]').hidden = false;
+			view.querySelector('[data-action="note-edit-accept"]').textContent = hasNote ? "接受修改（Enter）" : "接受并新建笔记（Enter）";
+		}
+		catch (error) {
+			state.noteEdit = null;
+			this.setNoteEditStatus(window, error.name === "AbortError" ? "已取消生成" : `生成修改稿失败：${error.message || error}`);
+		}
+		finally {
+			this.abortController = null;
+			runButton.disabled = false;
+		}
+	}
+
+	async acceptNoteEdit(window) {
+		let state = this.windows.get(window);
+		let session = state?.noteEdit;
+		if (!session?.proposed) { this.setNoteEditStatus(window, "还没有可接受的修改稿"); return; }
+		try {
+			let html = this.markdownToNoteHTML(session.proposed, session.note ? null : (await Zotero.Items.getAsync(session.itemID))?.getDisplayTitle?.());
+			if (session.note) {
+				// 快照保护（Claudian isSourceUnchanged）：生成期间源笔记被改动则拒绝写入
+				let current = session.note.getNote() || "";
+				if (current !== session.originalHTML) {
+					this.rejectNoteEdit(window, "笔记在生成期间被修改过，已放弃写入以保护你的内容");
+					return;
+				}
+				session.note.setNote(html);
+				await session.note.saveTx();
+				this.setStatus(window, "笔记已按修改稿更新");
+			}
+			else {
+				let note = new Zotero.Item("note");
+				note.libraryID = (await Zotero.Items.getAsync(session.itemID)).libraryID;
+				note.parentID = session.itemID;
+				note.setNote(html);
+				await note.saveTx();
+				this.setStatus(window, "已按修改稿新建笔记");
+			}
+			this.setNoteEditStatus(window, "已写入笔记。可继续输入新指令迭代，或关闭面板。");
+			this.setNoteEditPreview(window, null);
+			state.noteEdit = null;
+			await this.fillNoteEdit(window);
+		}
+		catch (error) {
+			this.setNoteEditStatus(window, `写入失败：${error.message || error}`);
+		}
+	}
+
+	rejectNoteEdit(window, message = "已拒绝修改稿，笔记未改动") {
+		let state = this.windows.get(window); if (!state) return;
+		state.noteEdit = null;
+		this.setNoteEditPreview(window, null);
+		this.setNoteEditStatus(window, message);
+	}
+
+	setNoteEditStatus(window, text) {
+		let status = this.windows.get(window)?.view.querySelector('[data-role="noteedit-status"]');
+		if (status) status.textContent = text;
+	}
+
+	setNoteEditPreview(window, diffOps) {
+		let state = this.windows.get(window); if (!state) return;
+		let view = state.view;
+		let host = view.querySelector('[data-role="noteedit-diff"]');
+		host.textContent = "";
+		host.hidden = !diffOps;
+		if (!diffOps) {
+			view.querySelector('[data-action="note-edit-accept"]').hidden = true;
+			view.querySelector('[data-action="note-edit-reject"]').hidden = true;
+			return;
+		}
+		// Claudian DiffRenderer：只渲染变更 hunks，上下 3 行
+		let changedIndexes = diffOps.map((op, index) => op.type !== "equal" ? index : -1).filter(index => index >= 0);
+		let ranges = [];
+		for (let index of changedIndexes) {
+			let start = Math.max(0, index - 3), end = Math.min(diffOps.length - 1, index + 3);
+			if (ranges.length && start <= ranges[ranges.length - 1][1] + 1) ranges[ranges.length - 1][1] = end;
+			else ranges.push([start, end]);
+		}
+		let doc = view.ownerDocument;
+		ranges.forEach(([start, end], hunkIndex) => {
+			if (hunkIndex) {
+				let separator = doc.createElementNS("http://www.w3.org/1999/xhtml", "div");
+				separator.className = "library-ai-diff-separator"; separator.textContent = "···";
+				host.append(separator);
+			}
+			let hunk = doc.createElementNS("http://www.w3.org/1999/xhtml", "div");
+			hunk.className = "library-ai-diff-hunk";
+			for (let index = start; index <= end; index++) {
+				let op = diffOps[index];
+				let line = doc.createElementNS("http://www.w3.org/1999/xhtml", "div");
+				line.className = `library-ai-diff-line ${op.type}`;
+				let prefix = doc.createElementNS("http://www.w3.org/1999/xhtml", "span");
+				prefix.className = "library-ai-diff-prefix";
+				prefix.textContent = op.type === "insert" ? "+" : op.type === "delete" ? "−" : " ";
+				let text = doc.createElementNS("http://www.w3.org/1999/xhtml", "span");
+				text.className = "library-ai-diff-text";
+				text.textContent = op.text || " ";
+				line.append(prefix, text);
+				hunk.append(line);
+			}
+			host.append(hunk);
+		});
+		if (!changedIndexes.length) {
+			let none = doc.createElementNS("http://www.w3.org/1999/xhtml", "div");
+			none.className = "library-ai-diff-no-changes"; none.textContent = "没有变化";
+			host.append(none);
+		}
+	}
+
+	// 笔记 HTML → 文本行：取块级元素（h1-h6/p/li/pre/blockquote），跳过被其他块级元素
+	// 包裹产生的重复（如 blockquote > p）
+	htmlToEditLines(html) {
+		if (!html?.trim()) return [];
+		let doc = new DOMParser().parseFromString(`<body>${html}</body>`, "text/html");
+		let selector = "h1,h2,h3,h4,h5,h6,p,li,pre,blockquote";
+		let lines = [];
+		for (let element of doc.body.querySelectorAll(selector)) {
+			if (element.parentElement?.closest?.(selector)) continue;
+			let text = element.textContent.replace(/\s+/g, " ").trim();
+			let tag = element.localName;
+			if (tag === "li") text = `- ${text}`;
+			else if (/^h[1-6]$/.test(tag)) text = `${"#".repeat(Number(tag[1]))} ${text}`;
+			if (text.trim("-# ")) lines.push(text);
+		}
+		if (!lines.length) {
+			let text = doc.body.textContent.replace(/\s+/g, " ").trim();
+			if (text) lines.push(text);
+		}
+		return lines;
+	}
+
+	// Claudian computeMarkdownDiff 的行级 LCS 移植；超出上限退化为整体替换，避免 O(n·m) 爆内存
+	computeLineDiff(oldLines, newLines, lineCap = 600) {
+		let m = oldLines.length, n = newLines.length;
+		if (m > lineCap || n > lineCap) {
+			return [{ type: "delete", text: oldLines.join("\n") }, { type: "insert", text: newLines.join("\n") }];
+		}
+		let dp = Array.from({ length: m + 1 }, () => new Array(n + 1).fill(0));
+		for (let i = 1; i <= m; i++) {
+			for (let j = 1; j <= n; j++) {
+				dp[i][j] = oldLines[i - 1] === newLines[j - 1] ? dp[i - 1][j - 1] + 1 : Math.max(dp[i - 1][j], dp[i][j - 1]);
+			}
+		}
+		let ops = [], i = m, j = n;
+		while (i > 0 || j > 0) {
+			if (i > 0 && j > 0 && oldLines[i - 1] === newLines[j - 1]) { ops.push({ type: "equal", text: oldLines[i - 1] }); i--; j--; }
+			else if (j > 0 && (i === 0 || dp[i][j - 1] >= dp[i - 1][j])) { ops.push({ type: "insert", text: newLines[j - 1] }); j--; }
+			else { ops.push({ type: "delete", text: oldLines[i - 1] }); i--; }
+		}
+		ops.reverse();
+		let merged = [];
+		for (let op of ops) {
+			if (merged.length && merged[merged.length - 1].type === op.type) merged[merged.length - 1].text += `\n${op.text}`;
+			else merged.push({ ...op });
+		}
+		return merged;
+	}
+
+	markdownToNoteHTML(markdown, newTitle = null) {
+		let body = this.renderMarkdown(markdown, {});
+		let header = newTitle ? `<h1>${this.escape(newTitle)}</h1>` : "";
+		return `${header}${body}`;
+	}
+
 	// ---- 参考片段（剪贴板监测 / 阅读器划词 / 选择区域）----
 
 	addReference(window, reference) {
@@ -1200,7 +1476,7 @@ LibraryAIViewHost = class LibraryAIViewHost {
 	async updateSlashDropdown(window) {
 		let state = this.windows.get(window);
 		if (!state) return;
-		let input = state.view.querySelector("textarea");
+		let input = state.view.querySelector(".library-ai-composer textarea");
 		let match = this.commands.matchTrigger(input.value, input.selectionStart ?? 0);
 		if (!match) { this.hideSlashDropdown(window); return; }
 		try { await this.commands.refresh(); } catch (_) {}
@@ -1267,7 +1543,7 @@ LibraryAIViewHost = class LibraryAIViewHost {
 					else if (event.key === "Escape") {
 						event.preventDefault();
 						this.hideSlashDropdown(window);
-						state.view.querySelector("textarea").focus();
+						state.view.querySelector(".library-ai-composer textarea").focus();
 					}
 				});
 				let list = doc.createElement("div"); list.className = "library-ai-slash-model-list";
@@ -1385,12 +1661,12 @@ LibraryAIViewHost = class LibraryAIViewHost {
 		if (state.slash.mode === "models") {
 			let modelId = (state.slash.filtered || state.slash.items)[index];
 			this.hideSlashDropdown(window);
-			state.view.querySelector("textarea").focus();
+			state.view.querySelector(".library-ai-composer textarea").focus();
 			if (modelId) await this.applyModel(window, modelId);
 			return;
 		}
 		let command = state.slash.items[index]; if (!command) return;
-		let input = state.view.querySelector("textarea");
+		let input = state.view.querySelector(".library-ai-composer textarea");
 		let replacement = `/${command.name} `;
 		if (state.slash.match) {
 			let { start, end } = state.slash.match;
@@ -1433,7 +1709,7 @@ LibraryAIViewHost = class LibraryAIViewHost {
 			case "rename": this.renameConversation(window, args); break;
 			case "resume": this.resumeConversation(window, args); break;
 			case "usage": this.showUsage(window); break;
-			case "settings": this.togglePanel(window, "settings", true); break;
+			case "note-edit": this.togglePanel(window, "noteedit", true); if (args) { let view = this.windows.get(window)?.view; if (view) view.querySelector('[data-field="note-instruction"]').value = args; } break;
 			case "exit": this.close(window); break;
 		}
 	}
