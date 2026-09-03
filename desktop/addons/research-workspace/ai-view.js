@@ -5,6 +5,7 @@ LibraryAIViewHost = class LibraryAIViewHost {
 		this.provider = new LibraryAIProviderAdapter(workspace.aiPrefRoot);
 		this.context = new LibraryAIPaperContextService();
 		this.commands = new LibraryAISlashCommands();
+		this.chat = new LibraryAIChatRenderer(this);
 		this.windows = new Map();
 		this.abortController = null;
 		this.notifierID = null;
@@ -74,6 +75,7 @@ LibraryAIViewHost = class LibraryAIViewHost {
 		this.stopClipboardMonitor(window);
 		window.clearTimeout(state.buttonTimer);
 		window.clearTimeout(state.renderTimer);
+		window.clearTimeout(state.chatPatchTimer);
 		for (let [target, type, listener, options] of state.listeners) target.removeEventListener(type, listener, options);
 		for (let button of state.buttons) { button.closest(".library-ai-nav-wrapper")?.remove(); if (button === state.launcher || button.classList.contains("library-ai-floating-launcher")) button.remove(); }
 		state.view.remove();
@@ -275,7 +277,14 @@ LibraryAIViewHost = class LibraryAIViewHost {
 			let citationPreview = event.target.closest?.("[data-preview-citation]"); if (citationPreview) { event.preventDefault(); event.stopPropagation(); this.toggleCitationPreview(citationPreview); }
 			let referenceRemove = event.target.closest?.("[data-remove-reference]"); if (referenceRemove) this.removeReference(window, referenceRemove.dataset.removeReference);
 			let history = event.target.closest?.("[data-open-history]"); if (history) { this.repository.activate(history.dataset.openHistory); this.renderAll(); this.toggleHistoryMenu(window, false); }
-			let retry = event.target.closest?.("[data-retry-message]"); if (retry) { let active = this.repository.active; let index = active.messages.findIndex(message => message.id === retry.dataset.retryMessage); let previous = [...active.messages.slice(0, index)].reverse().find(message => message.role === "user"); if (previous) this.send(window, previous.prompt || previous.content, previous.prompt ? previous.content : null); }
+			let retry = event.target.closest?.("[data-retry-message]"); if (retry) this.retryAssistant(window, retry.dataset.retryMessage);
+			let copyMessage = event.target.closest?.("[data-copy-message]"); if (copyMessage) this.copyMessage(window, copyMessage.dataset.copyMessage);
+			let noteMessage = event.target.closest?.("[data-note-message]"); if (noteMessage) this.saveMessageAsNote(window, noteMessage.dataset.noteMessage);
+			let variantPrev = event.target.closest?.("[data-variant-prev]"); if (variantPrev) this.switchVariant(window, variantPrev.dataset.variantPrev, -1);
+			let variantNext = event.target.closest?.("[data-variant-next]"); if (variantNext) this.switchVariant(window, variantNext.dataset.variantNext, 1);
+			let editMessage = event.target.closest?.("[data-edit-message]"); if (editMessage) this.beginEditUserMessage(window, editMessage.dataset.editMessage);
+			let editSave = event.target.closest?.("[data-edit-save]"); if (editSave) this.commitEditUserMessage(window, editSave.dataset.editSave);
+			let editCancel = event.target.closest?.("[data-edit-cancel]"); if (editCancel) this.renderAll();
 		});
 		this.showTab(window, Services.prefs.getStringPref(this.workspace.aiPrefRoot + "aiActiveTab", "discussion"), { force: true });
 	}
@@ -445,17 +454,103 @@ LibraryAIViewHost = class LibraryAIViewHost {
 				return this.send(window, this.commands.expand(detected.command, detected.args), question);
 			}
 		}
+		let user = null;
 		if (!retryQuestion) {
-			let outgoing = { id: Zotero.Utilities.randomString(8), role: "user", content: displayOverride || question, createdAt: new Date().toISOString() };
-			if (displayOverride) { outgoing.command = displayOverride.split(/\s+/)[0]; outgoing.prompt = question; }
-			this.repository.appendNode(conversation, outgoing);
+			user = { id: Zotero.Utilities.randomString(8), role: "user", content: displayOverride || question, createdAt: new Date().toISOString() };
+			if (displayOverride) { user.command = displayOverride.split(/\s+/)[0]; user.prompt = question; }
+			this.repository.appendNode(conversation, user);
 			input.value = "";
 		}
 		let assistant = {
 			id: Zotero.Utilities.randomString(8), role: "assistant", content: "", citations: {}, state: "streaming",
 			activity: { phase: "preparing", label: "正在准备回答…" }, createdAt: new Date().toISOString(),
 		};
-		this.repository.appendNode(conversation, assistant); this.abortController = new window.AbortController(); this.renderAll();
+		this.repository.appendNode(conversation, assistant);
+		await this.runGeneration(window, conversation, assistant, question);
+	}
+
+	// 重试：旧回答的兄弟分支（父节点同为提问），产生后可用 ‹ n/m › 导航切换
+	async retryAssistant(window, assistantID) {
+		let conversation = this.repository.active;
+		if (!conversation || this.abortController) return;
+		let old = conversation.nodes[assistantID];
+		let parent = old?.parentId ? conversation.nodes[old.parentId] : null;
+		if (!parent || parent.role !== "user") return;
+		let question = parent.prompt || parent.content;
+		let assistant = this.repository.createSibling(conversation, assistantID, {
+			extra: { citations: {}, state: "streaming", activity: { phase: "preparing", label: "正在准备回答…" } },
+		});
+		this.renderAll();
+		await this.runGeneration(window, conversation, assistant, question);
+	}
+
+	// 编辑用户消息：新建兄弟 user 分支并立即重新生成回答
+	beginEditUserMessage(window, userID) {
+		let state = this.windows.get(window); if (!state) return;
+		let conversation = this.repository.active;
+		let node = conversation?.nodes[userID];
+		if (!node || node.role !== "user" || this.abortController) return;
+		let wrapper = state.view.querySelector(`.library-ai-message[data-message-id="${userID}"] .library-ai-bubble`);
+		if (!wrapper || wrapper.querySelector("textarea")) return;
+		let original = node.prompt || node.content;
+		wrapper.textContent = "";
+		let editor = wrapper.ownerDocument.createElementNS("http://www.w3.org/1999/xhtml", "textarea");
+		editor.rows = 3; editor.value = original; editor.className = "library-ai-edit-input";
+		let save = wrapper.ownerDocument.createElementNS("http://www.w3.org/1999/xhtml", "button");
+		save.type = "button"; save.textContent = "保存并重新生成"; save.dataset.editSave = userID;
+		let cancel = wrapper.ownerDocument.createElementNS("http://www.w3.org/1999/xhtml", "button");
+		cancel.type = "button"; cancel.textContent = "取消"; cancel.dataset.editCancel = userID;
+		wrapper.append(editor, save, cancel);
+		editor.focus();
+	}
+
+	async commitEditUserMessage(window, userID) {
+		let state = this.windows.get(window); if (!state) return;
+		let conversation = this.repository.active;
+		let node = conversation?.nodes[userID];
+		let editor = state.view.querySelector(`.library-ai-message[data-message-id="${userID}"] .library-ai-edit-input`);
+		if (!node || !editor) return;
+		let text = editor.value.trim();
+		if (!text) return;
+		let user = this.repository.createSibling(conversation, userID, { content: text });
+		let assistant = {
+			id: Zotero.Utilities.randomString(8), role: "assistant", content: "", citations: {}, state: "streaming",
+			activity: { phase: "preparing", label: "正在准备回答…" }, createdAt: new Date().toISOString(),
+		};
+		this.repository.appendNode(conversation, assistant);
+		this.renderAll();
+		await this.runGeneration(window, conversation, assistant, text);
+	}
+
+	switchVariant(window, nodeID, dir) {
+		let conversation = this.repository.active;
+		if (!conversation || this.abortController) return;
+		if (this.repository.switchVariant(conversation, nodeID, dir)) this.renderAll();
+	}
+
+	copyMessage(window, messageID) {
+		let message = this.repository.active?.messages.find(candidate => candidate.id === messageID);
+		if (!message?.content) return;
+		Zotero.Utilities.Internal.copyTextToClipboard(message.prompt || message.content);
+		this.setStatus(window, "已复制消息原文");
+	}
+
+	async saveMessageAsNote(window, messageID) {
+		let conversation = this.repository.active;
+		let answer = conversation?.messages.find(candidate => candidate.id === messageID);
+		let source = conversation?.sources[0];
+		if (!answer || !source) { this.setStatus(window, "需要论文来源才能保存笔记"); return; }
+		try {
+			let item = await Zotero.Items.getAsync(source.itemID), note = new Zotero.Item("note"); note.parentID = item.id;
+			note.setNote(`<h1>${this.escape(conversation.title)}</h1>${this.chat.renderMarkdown(answer.content, {})}<h2>引用</h2><pre>${this.escape(Object.entries(answer.citations || {}).map(([id, citation]) => `${id}：${citation.title}${citation.page ? `，第 ${citation.page} 页` : ""}`).join("\n"))}</pre>`);
+			await note.saveTx(); this.setStatus(window, "已保存到当前文献的笔记");
+		} catch (error) { this.setStatus(window, `保存失败：${error.message || error}`); }
+	}
+
+	// 生成管线：检索来源 → 组装上下文 → 流式生成 → 引用审计 → 工件归档。
+	// assistant 节点已挂在会话树上（新提问/重试/编辑共用）。
+	async runGeneration(window, conversation, assistant, question) {
+		this.abortController = new window.AbortController(); this.renderAll();
 		let setActivity = (phase, label) => {
 			assistant.activity = { phase, label };
 			this.renderAll();
@@ -526,8 +621,8 @@ LibraryAIViewHost = class LibraryAIViewHost {
 			await this.provider.stream(messages, {
 				signal: this.abortController.signal,
 				window,
-				onDelta: delta => { assistant.activity = { phase: "writing", label: "正在生成回答…" }; assistant.content += delta; this.scheduleRenderAll(); },
-				onReasoning: delta => { assistant.activity = { phase: "reasoning", label: "模型正在思考…" }; assistant.reasoning = (assistant.reasoning || "") + delta; this.scheduleRenderAll(); },
+				onDelta: delta => { assistant.activity = { phase: "writing", label: "正在生成回答…" }; assistant.content += delta; this.chat.patchStreaming(window, assistant); },
+				onReasoning: delta => { assistant.activity = { phase: "reasoning", label: "模型正在思考…" }; assistant.reasoning = (assistant.reasoning || "") + delta; this.chat.patchStreaming(window, assistant); },
 			});
 			assistant.state = "done";
 			assistant.citationAudit = this.auditAnswerCitations(assistant.content, citations);
@@ -579,6 +674,10 @@ LibraryAIViewHost = class LibraryAIViewHost {
 				window.clearTimeout(state.renderTimer);
 				state.renderTimer = null;
 			}
+			if (state.chatPatchTimer) {
+				window.clearTimeout(state.chatPatchTimer);
+				state.chatPatchTimer = null;
+			}
 			this.render(window);
 		}
 	}
@@ -625,16 +724,7 @@ LibraryAIViewHost = class LibraryAIViewHost {
 		let view = state.view, conversation = this.repository.active, config = this.provider.config;
 		view.querySelector('[data-role="model-name"]').textContent = config.model || "尚未配置模型";
 		view.querySelector('[data-role="conversation-title"]').textContent = conversation?.title || "Library AI";
-		let messages = view.querySelector(".library-ai-messages"); messages.textContent = "";
-		if (!conversation.messages.length) messages.append(this.emptyState(view.ownerDocument));
-		for (let message of conversation.messages) {
-			let node = this.messageNode(view.ownerDocument, message);
-			if (!state.seenMessageIDs.has(message.id)) {
-				node.className += " is-new";
-				state.seenMessageIDs.add(message.id);
-			}
-			messages.append(node);
-		}
+		this.chat.render(window);
 		let sourceHost = view.querySelector('[data-role="sources"]'); sourceHost.textContent = "";
 		for (let source of conversation.sources) {
 			let wrapper = view.ownerDocument.createElement("span"); wrapper.className = "library-ai-source-stack";
@@ -655,7 +745,7 @@ LibraryAIViewHost = class LibraryAIViewHost {
 			if (source.insight?.state === "done" && source.insight.content) {
 				let details = view.ownerDocument.createElement("details"); details.className = "library-ai-source-insight";
 				let summary = view.ownerDocument.createElement("summary"); summary.textContent = "来源洞察";
-				let content = view.ownerDocument.createElement("div"); content.innerHTML = this.renderMarkdown(source.insight.content, {});
+				let content = view.ownerDocument.createElement("div"); content.innerHTML = this.chat.renderMarkdown(source.insight.content, {});
 				details.append(summary, content); wrapper.append(details);
 			}
 			sourceHost.append(wrapper);
@@ -684,17 +774,6 @@ LibraryAIViewHost = class LibraryAIViewHost {
 			? (streamingMessage?.activity?.label || (streamingMessage?.reasoning && !streamingMessage?.content ? "正在思考（推理阶段）…" : "正在生成…"))
 			: "Enter 发送 · Shift+Enter 换行 · / 命令";
 		view.querySelector('[data-role="status"]').textContent = statusText;
-		messages.scrollTop = messages.scrollHeight;
-	}
-
-	emptyState(doc) {
-		let node = doc.createElement("section"); node.className = "library-ai-empty";
-		node.append(this.createRobotIcon(doc));
-		let content = doc.createElement("div");
-		content.innerHTML = `<h2>和论文一起思考</h2><p>当前论文会自动成为来源。回答中的引用可直接定位回原文。</p><div><button type="button">概括本文的核心贡献</button><button type="button">解释作者的方法与证据</button><button type="button">列出可继续追问的问题</button></div>`;
-		while (content.firstChild) node.append(content.firstChild);
-		for (let button of node.querySelectorAll("button")) button.addEventListener("click", () => { let view = node.closest(".library-ai-view"); let composer = view.querySelector(".library-ai-composer textarea"); composer.value = button.textContent; composer.focus(); });
-		return node;
 	}
 
 	auditAnswerCitations(content, citations) {
@@ -707,188 +786,6 @@ LibraryAIViewHost = class LibraryAIViewHost {
 		return { allowed: [...allowed], valid, invalid, uncited, passed: !invalid.length, createdAt: new Date().toISOString() };
 	}
 
-	messageNode(doc, message) {
-		let article = doc.createElement("article"); article.className = `library-ai-message ${message.role}${message.compacted ? " compacted" : ""}${message.state === "streaming" ? " streaming" : ""}`; article.dataset.messageId = message.id;
-		let role = doc.createElement("div"); role.className = "library-ai-message-role"; role.textContent = message.role === "user" ? "你" : (message.compacted ? "上下文摘要" : "Library AI");
-		article.append(role);
-		let content = message.content;
-		if (message.command) {
-			let chip = doc.createElement("span"); chip.className = "library-ai-command-chip"; chip.textContent = message.command;
-			article.append(chip);
-			if (content.startsWith(message.command)) content = content.slice(message.command.length).trim();
-		}
-		if (message.references?.length) {
-			let refs = doc.createElement("div"); refs.className = "library-ai-message-refs";
-			refs.textContent = `参考：${message.references.join("、")}`; article.append(refs);
-		}
-		if (message.reasoning) {
-			let thinking = doc.createElement("details"); thinking.className = "library-ai-thinking";
-			let isThinking = message.state === "streaming" && !message.content;
-			thinking.open = isThinking;
-			let summary = doc.createElement("summary"); summary.textContent = isThinking ? "正在思考…" : "思考过程";
-			let thinkingBody = doc.createElement("div"); thinkingBody.className = "library-ai-thinking-body"; thinkingBody.textContent = message.reasoning;
-			thinking.append(summary, thinkingBody);
-			article.append(thinking);
-		}
-		// Preferences/context pane 是 XUL 文档；普通 createElement("div") 会创建 XUL 节点，
-		// Gecko 不允许对它写 innerHTML。显式创建 XHTML 节点才能稳定渲染 Markdown/引用。
-		let body = doc.createElementNS("http://www.w3.org/1999/xhtml", "div"); body.className = "library-ai-message-body";
-		let markup = this.renderMarkdown(content, message.citations || {}, message.id);
-		let HTMLParser = doc.defaultView?.DOMParser || DOMParser;
-		let parsedBody = new HTMLParser().parseFromString(`<body>${markup}</body>`, "text/html").body;
-		for (let child of [...parsedBody.childNodes]) body.append(doc.importNode(child, true));
-		if (message.state === "streaming" && !content) {
-			let progress = doc.createElementNS("http://www.w3.org/1999/xhtml", "div");
-			progress.className = `library-ai-progress phase-${message.activity?.phase || "preparing"}`;
-			progress.setAttribute("role", "status"); progress.setAttribute("aria-live", "polite");
-			let mark = doc.createElementNS("http://www.w3.org/1999/xhtml", "span"); mark.className = "library-ai-progress-mark"; mark.setAttribute("aria-hidden", "true");
-			for (let index = 0; index < 3; index++) mark.append(doc.createElementNS("http://www.w3.org/1999/xhtml", "i"));
-			let label = doc.createElementNS("http://www.w3.org/1999/xhtml", "span"); label.textContent = message.activity?.label || (message.reasoning ? "模型正在思考…" : "正在准备回答…");
-			progress.append(mark, label); body.append(progress);
-		}
-		article.append(body);
-		if (message.state === "streaming" && content) { let cursor = doc.createElement("span"); cursor.className = "library-ai-cursor"; cursor.textContent = ""; body.append(cursor); }
-		if (message.citationAudit && (message.citationAudit.invalid.length || message.citationAudit.uncited.length)) {
-			let warning = doc.createElement("div"); warning.className = "library-ai-citation-audit-warning";
-			let parts = [];
-			if (message.citationAudit.invalid.length) parts.push(`发现 ${message.citationAudit.invalid.length} 个非白名单引用`);
-			if (message.citationAudit.uncited.length) parts.push(`${message.citationAudit.uncited.length} 条长声明未附引用`);
-			warning.textContent = `引用审计：${parts.join("；")}。请结合下方实际上下文核查。`; article.append(warning);
-		}
-		// TRACE 主张复核是评测/研究工作流，不属于普通论文阅读界面。
-		// 后台仍生成并持久化结构化工件；只有显式打开隐藏评测开关时才渲染复核卡片。
-		let traceReviewUI = Services.prefs.getBoolPref("extensions.zotero.researchWorkspace.traceReviewUI", false);
-		if (traceReviewUI && message.artifact) {
-			let validation = message.artifact.validation;
-			let status = doc.createElement("div");
-			status.className = validation.structuralPassed ? "library-ai-artifact-status passed" : "library-ai-citation-audit-warning";
-			let reviewedClaims = new Set(message.artifact.decisions.map(decision => decision.claimID)).size;
-			let details = [`${message.artifact.claims.length} 条候选主张`, `${reviewedClaims} 条已人工复核`, `${message.artifact.evidence.length} 条证据记录`];
-			if (validation.unresolvedEvidenceIDs.length) details.push(`${validation.unresolvedEvidenceIDs.length} 条缺少稳定页码/批注锚点`);
-			if (validation.hardFailures.length) details.push(`${validation.hardFailures.length} 个结构硬失败`);
-			status.textContent = `研究工件：${validation.structuralPassed ? "结构校验通过" : "结构校验失败"} · ${details.join(" · ")}；语义支持尚未评估。`;
-			article.append(status, this.claimReviewPanel(doc, message));
-		}
-		else if (traceReviewUI && message.artifactError) {
-			let warning = doc.createElement("div"); warning.className = "library-ai-citation-audit-warning";
-			warning.textContent = `研究工件生成失败：${message.artifactError}`; article.append(warning);
-		}
-		if (message.audit?.chunks?.length) {
-			let auditButton = doc.createElement("button"); auditButton.type = "button"; auditButton.className = "library-ai-audit-toggle"; auditButton.dataset.toggleAudit = message.id;
-			auditButton.textContent = `查看 AI 实际读取内容 · ${message.audit.chunks.length} 段`;
-			let audit = doc.createElement("section"); audit.className = "library-ai-audit"; audit.hidden = true;
-			let head = doc.createElement("div"); head.className = "library-ai-audit-head";
-			head.textContent = `${message.audit.mode === "ask" ? "Ask 多路检索" : "Chat 上下文"} · 查询：${(message.audit.queries || []).join(" / ")}`;
-			audit.append(head);
-			for (let chunk of message.audit.chunks) {
-				let row = doc.createElement("article"); row.className = "library-ai-audit-chunk";
-				let title = doc.createElement("strong"); title.textContent = `${chunk.id} · ${chunk.title}${chunk.page ? ` · p.${chunk.page}` : ""}`;
-				let preview = doc.createElement("p"); preview.textContent = chunk.text;
-				row.append(title, preview); audit.append(row);
-			}
-			article.append(auditButton, audit);
-		}
-		if (message.error) { let error = doc.createElement("div"); error.className = "library-ai-error"; error.innerHTML = `<span>${this.escape(message.error)}</span>${message.state === "error" ? `<button type="button" data-retry-message="${message.id}">重试</button>` : ""}`; article.append(error); }
-		return article;
-	}
-
-	claimReviewPanel(doc, message) {
-		let html = name => doc.createElementNS("http://www.w3.org/1999/xhtml", name);
-		let artifact = message.artifact;
-		let reviewEnabled = message.state === "done" && artifact.validation.structuralPassed;
-		let panel = html("details"); panel.className = "library-ai-claim-review";
-		let reviewed = new Set(artifact.decisions.map(decision => decision.claimID)).size;
-		let summary = html("summary"); summary.textContent = `复核候选主张 · ${reviewed}/${artifact.claims.length}`;
-		panel.append(summary);
-		let list = html("div"); list.className = "library-ai-claim-list";
-		if (!reviewEnabled) {
-			let notice = html("p"); notice.className = "library-ai-claim-disabled";
-			notice.textContent = message.state === "done" ? "研究制品结构校验未通过，仅允许查看。" : "该回答未完整生成，仅允许查看候选主张。";
-			list.append(notice);
-		}
-		let verdictMeta = {
-			accepted: ["已接受", "accepted"], rejected: ["已驳回", "rejected"],
-			edited: ["已修改", "edited"], rebound: ["已重绑", "rebound"],
-		};
-		for (let claim of artifact.claims) {
-			let state = LibraryAIArtifacts.claimReviewState(artifact, claim.id);
-			let verdict = state.currentDecision?.verdict || "pending";
-			let meta = verdictMeta[verdict] || ["待复核", "pending"];
-			let card = html("article"); card.className = `library-ai-claim-card ${meta[1]}`; card.dataset.claimId = claim.id; card.dataset.messageId = message.id;
-			let head = html("header");
-			let title = html("strong"); title.textContent = `候选主张 ${claim.id}`;
-			let badge = html("span"); badge.className = "library-ai-claim-verdict"; badge.textContent = meta[0];
-			head.append(title, badge); card.append(head);
-			let text = html("p"); text.className = "library-ai-claim-text"; text.textContent = state.text; card.append(text);
-			let evidence = html("div"); evidence.className = "library-ai-claim-evidence";
-			if (!state.evidenceIDs.length) {
-				let missing = html("span"); missing.className = "missing"; missing.textContent = "未绑定证据"; evidence.append(missing);
-			}
-			for (let evidenceID of state.evidenceIDs) {
-				let record = artifact.evidence.find(item => item.id === evidenceID);
-				let citation = message.citations?.[evidenceID];
-				let button = html("button"); button.type = "button"; button.dataset.citationId = evidenceID; button.dataset.citationMessageId = message.id;
-				button.textContent = `${evidenceID}${record?.page ? ` · p.${record.page}` : ""}${citation?.title ? ` · ${citation.title}` : ""}`;
-				button.title = record?.locatorStatus === "locatable" ? "打开证据原文" : "该证据缺少稳定定位锚点";
-				button.classList.toggle("unresolved", record?.locatorStatus !== "locatable");
-				evidence.append(button);
-			}
-			card.append(evidence);
-			if (state.currentDecision?.reason) {
-				let reason = html("small"); reason.className = "library-ai-claim-reason"; reason.textContent = `最近记录：${state.currentDecision.reason}`; card.append(reason);
-			}
-			let historyRows = artifact.decisions.filter(decision => decision.claimID === claim.id);
-			if (historyRows.length) {
-				let history = html("details"); history.className = "library-ai-claim-history";
-				let historySummary = html("summary"); historySummary.textContent = `追加式决策记录 · ${historyRows.length}`; history.append(historySummary);
-				let historyList = html("ol");
-				for (let decision of historyRows) {
-					let row = html("li");
-					let timestamp = new Date(decision.createdAt).toLocaleString();
-					row.textContent = `${timestamp} · ${verdictMeta[decision.verdict]?.[0] || decision.verdict}${decision.reason ? ` · ${decision.reason}` : ""}`;
-					historyList.append(row);
-				}
-				history.append(historyList); card.append(history);
-			}
-			let actions = html("footer"); actions.className = "library-ai-claim-actions";
-			let accept = html("button"); accept.type = "button"; accept.dataset.claimAction = "accepted"; accept.dataset.claimId = claim.id; accept.dataset.messageId = message.id;
-			accept.textContent = "接受"; accept.disabled = !reviewEnabled || verdict === "accepted"; accept.setAttribute("aria-label", `接受候选主张 ${claim.id}`); actions.append(accept);
-			let addForm = (action, label, buildFields) => {
-				let details = html("details"); details.className = "library-ai-claim-form";
-				let formSummary = html("summary"); formSummary.textContent = label; formSummary.setAttribute("aria-label", `${label}候选主张 ${claim.id}`); details.append(formSummary);
-				let fields = html("div"); fields.className = "library-ai-claim-form-fields"; buildFields(fields);
-				let submit = html("button"); submit.type = "button"; submit.dataset.claimAction = action; submit.dataset.claimId = claim.id; submit.dataset.messageId = message.id;
-				submit.textContent = `记录${label}`; submit.disabled = !reviewEnabled || verdict === action; fields.append(submit); details.append(fields); actions.append(details);
-			};
-			addForm("rejected", "驳回", fields => {
-				let label = html("label"); label.textContent = "原因（必填）";
-				let input = html("textarea"); input.rows = 2; input.dataset.claimReason = "rejected"; input.placeholder = "事实错误、证据不支持、引用定位错误、范围扩大、术语错误……";
-				label.append(input); fields.append(label);
-			});
-			addForm("edited", "修改", fields => {
-				let textLabel = html("label"); textLabel.textContent = "修订后的完整主张";
-				let input = html("textarea"); input.rows = 3; input.dataset.claimReplacementText = "true"; input.value = state.text; textLabel.append(input); fields.append(textLabel);
-				let reasonLabel = html("label"); reasonLabel.textContent = "修改原因";
-				let reason = html("input"); reason.type = "text"; reason.dataset.claimReason = "edited"; reason.value = "缩小范围或纠正表述"; reasonLabel.append(reason); fields.append(reasonLabel);
-			});
-			addForm("rebound", "重绑证据", fields => {
-				let evidenceList = html("fieldset");
-				let legend = html("legend"); legend.textContent = "选择当前回答已有证据"; evidenceList.append(legend);
-				for (let record of artifact.evidence) {
-					let option = html("label");
-					let checkbox = html("input"); checkbox.type = "checkbox"; checkbox.dataset.claimEvidenceId = record.id; checkbox.checked = state.evidenceIDs.includes(record.id);
-					let caption = html("span"); caption.textContent = `${record.id}${record.page ? ` · p.${record.page}` : " · 无页码"} · ${record.quote.slice(0, 80)}`;
-					option.append(checkbox, caption); evidenceList.append(option);
-				}
-				fields.append(evidenceList);
-				let reasonLabel = html("label"); reasonLabel.textContent = "重绑原因";
-				let reason = html("input"); reason.type = "text"; reason.dataset.claimReason = "rebound"; reason.value = "纠正证据关联"; reasonLabel.append(reason); fields.append(reasonLabel);
-			});
-			card.append(actions); list.append(card);
-		}
-		panel.append(list);
-		return panel;
-	}
 
 	async handleClaimAction(window, trigger) {
 		let conversation = this.repository.active;
@@ -927,29 +824,6 @@ LibraryAIViewHost = class LibraryAIViewHost {
 		finally { this.reviewLocks.delete(lockKey); }
 	}
 
-	renderMarkdown(markdown, citations = {}, messageID = "") {
-		let text = String(markdown || ""), codeBlocks = [];
-		text = text.replace(/```([^\n]*)\n([\s\S]*?)```/g, (_, language, code) => { let id = codeBlocks.length; codeBlocks.push(`<pre><code>${this.escape(code)}</code></pre>`); return `\n@@CODE${id}@@\n`; });
-		let messageAttribute = messageID ? ` data-citation-message-id="${this.escape(messageID)}"` : "";
-		let inline = value => {
-			let claimAttribute = ` data-citation-claim="${this.escape(String(value || "").replace(/\[\[[A-Z]\d+-C\d+\]\]/g, "").slice(0, 500))}"`;
-			return this.escape(value)
-			.replace(/`([^`]+)`/g, "<code>$1</code>").replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>").replace(/\*([^*]+)\*/g, "<em>$1</em>")
-			.replace(/\[\[([A-Z]\d+-C\d+)\]\]/g, (all, id) => citations[id] ? `<span class="library-ai-citation-wrap"><button type="button" class="library-ai-citation" data-citation-id="${id}"${messageAttribute}${claimAttribute} title="打开原文">${this.escape(citations[id].title || "来源")}${citations[id].page ? ` · p.${citations[id].page}` : ""}</button><button type="button" class="library-ai-citation-preview-button" data-preview-citation="${id}" title="预览引用原文">⌄</button><span class="library-ai-citation-preview" hidden><strong>${this.escape(id)}</strong>${this.escape(citations[id].text || "暂无原文预览")}</span></span>` : all);
-		};
-		let lines = text.split(/\r?\n/), html = [], list = [], table = [];
-		let flushList = () => { if (list.length) { html.push(`<ul>${list.map(item => `<li>${inline(item)}</li>`).join("")}</ul>`); list = []; } };
-		let flushTable = () => { if (table.length) { html.push(`<table><tbody>${table.map(row => `<tr>${row.map(cell => `<td>${inline(cell)}</td>`).join("")}</tr>`).join("")}</tbody></table>`); table = []; } };
-		for (let raw of lines) {
-			let line = raw.trim(); if (!line) { flushList(); flushTable(); continue; }
-			let code = line.match(/^@@CODE(\d+)@@$/); if (code) { flushList(); flushTable(); html.push(codeBlocks[Number(code[1])]); continue; }
-			let heading = line.match(/^(#{1,4})\s+(.+)/); if (heading) { flushList(); flushTable(); html.push(`<h${heading[1].length + 1}>${inline(heading[2])}</h${heading[1].length + 1}>`); continue; }
-			let bullet = line.match(/^[-*]\s+(.+)/); if (bullet) { flushTable(); list.push(bullet[1]); continue; }
-			if (line.startsWith("|") && line.endsWith("|") && !/^\|[-: |]+\|$/.test(line)) { flushList(); table.push(line.slice(1, -1).split("|").map(cell => cell.trim())); continue; }
-			flushList(); flushTable(); html.push(`<p>${inline(line)}</p>`);
-		}
-		flushList(); flushTable(); return html.join("");
-	}
 
 	toggleMessageAudit(button) {
 		let article = button.closest(".library-ai-message"); let audit = article?.querySelector(".library-ai-audit"); if (!audit) return;
@@ -1068,7 +942,7 @@ LibraryAIViewHost = class LibraryAIViewHost {
 				}).join("");
 				reviewedMarkup = `<h2>人工复核主张</h2><ol>${rows}</ol><h2>原始回答（只读）</h2>`;
 			}
-			note.setNote(`<h1>${this.escape(conversation.title)}</h1>${reviewedMarkup}${this.renderMarkdown(answer.content, {})}<h2>引用</h2><pre>${this.escape(citations)}</pre>`); await note.saveTx(); this.setStatus(window, "已保存到当前文献的笔记");
+			note.setNote(`<h1>${this.escape(conversation.title)}</h1>${reviewedMarkup}${this.chat.renderMarkdown(answer.content, {})}<h2>引用</h2><pre>${this.escape(citations)}</pre>`); await note.saveTx(); this.setStatus(window, "已保存到当前文献的笔记");
 		} catch (error) { this.setStatus(window, `保存失败：${error.message || error}`); }
 	}
 
@@ -1308,7 +1182,7 @@ LibraryAIViewHost = class LibraryAIViewHost {
 	}
 
 	markdownToNoteHTML(markdown, newTitle = null) {
-		let body = this.renderMarkdown(markdown, {});
+		let body = this.chat.renderMarkdown(markdown, {});
 		let header = newTitle ? `<h1>${this.escape(newTitle)}</h1>` : "";
 		return `${header}${body}`;
 	}
@@ -1678,7 +1552,9 @@ LibraryAIViewHost = class LibraryAIViewHost {
 				onDelta: delta => { summary += delta; },
 				onReasoning: () => {},
 			});
-			conversation.messages = [{ id: Zotero.Utilities.randomString(8), role: "assistant", content: summary, citations: {}, compacted: true, createdAt: new Date().toISOString() }];
+			// 压缩后整棵树被单条摘要替代
+			conversation.nodes = {}; conversation.rootId = null; conversation.activeLeafId = null;
+			this.repository.appendNode(conversation, { id: Zotero.Utilities.randomString(8), role: "assistant", content: summary, citations: {}, compacted: true, createdAt: new Date().toISOString() });
 			this.repository.update(conversation);
 			await this.repository.save();
 			this.setStatus(window, `上下文已压缩：${history.length} 条消息 → 1 条摘要`);

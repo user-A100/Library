@@ -536,6 +536,34 @@
 .library-ai-thinking[open] summary { margin-bottom:4px; }
 .library-ai-thinking-body { max-height:180px; overflow:auto; white-space:pre-wrap; overflow-wrap:anywhere; line-height:1.55; opacity:.85; scrollbar-width:thin; }
 
+/* 气泡结构：模型名在气泡内、meta 行在气泡外（复制/存笔记/编辑/重试/变体导航） */
+.library-ai-bubble { min-width:0; }
+.library-ai-bubble .library-ai-message-body { margin:0; }
+.library-ai-model-name { margin-bottom:4px; color:var(--fill-secondary); font-size:9px; font-weight:650; letter-spacing:.03em; }
+.library-ai-message-meta { display:flex; align-items:center; justify-content:flex-end; gap:8px; min-height:20px; margin-top:3px; opacity:0; transition:opacity 140ms ease; }
+.library-ai-message:hover .library-ai-message-meta,.library-ai-message-meta:focus-within { opacity:1; }
+.library-ai-message-actions { display:flex; gap:2px; }
+.library-ai-message-actions button { padding:2px 6px; border:0; border-radius:5px; background:transparent; color:var(--fill-secondary); font-size:9px; }
+.library-ai-message-actions button:hover { background:var(--library-ai-hover); color:var(--fill-primary); }
+.library-ai-message-time { color:var(--fill-secondary); font-size:8.5px; }
+.library-ai-variant-nav { display:inline-flex; align-items:center; gap:3px; margin-inline-end:auto; }
+.library-ai-variant-nav span { color:var(--fill-secondary); font-size:9px; font-variant-numeric:tabular-nums; }
+.library-ai-variant-nav button { width:18px; height:18px; padding:0; border:0; border-radius:5px; background:transparent; color:var(--fill-secondary); font-size:11px; line-height:1; }
+.library-ai-variant-nav button:hover:not(:disabled) { background:var(--library-ai-hover); color:var(--fill-primary); }
+.library-ai-variant-nav button:disabled { opacity:.3; cursor:default; }
+.library-ai-edit-input { box-sizing:border-box; width:100%; min-height:60px; padding:8px 10px; border:1px solid color-mix(in srgb,var(--library-ai-accent) 52%,var(--library-ai-border)); border-radius:var(--library-ai-radius-sm); background:var(--material-button); color:var(--fill-primary); font:inherit; font-size:11.5px; resize:vertical; }
+.library-ai-bubble .library-ai-edit-input + button { margin-top:6px; margin-inline-end:6px; padding:4px 10px; border:0; border-radius:7px; font-size:10px; }
+.library-ai-bubble [data-edit-save] { background:var(--library-ai-accent); color:#fff; font-weight:650; }
+.library-ai-bubble [data-edit-cancel] { background:var(--library-ai-hover); color:var(--fill-secondary); }
+
+/* 流式骨架屏：无内容时的 shimmer 占位（替代旧的整段 progress 文案） */
+.library-ai-streaming-skeleton { display:grid; gap:7px; padding:4px 0 6px; }
+.library-ai-streaming-skeleton i { display:block; height:11px; border-radius:6px; background:color-mix(in srgb,var(--fill-primary) 9%,transparent); transform-origin:left; animation:library-ai-shimmer 1.35s var(--library-ai-ease) infinite; }
+.library-ai-streaming-skeleton i:nth-child(2) { width:86%; animation-delay:140ms; }
+.library-ai-streaming-skeleton i:nth-child(3) { width:62%; animation-delay:280ms; }
+@keyframes library-ai-shimmer { 0%,100% { opacity:.45; transform:scaleX(.96);} 50% { opacity:1; transform:scaleX(1);} }
+@media (prefers-reduced-motion: reduce) { .library-ai-streaming-skeleton i { animation:none; } }
+
 .library-ai-composer-shell { position:relative; margin:0 10px 10px; padding:8px; border:1px solid color-mix(in srgb,var(--library-ai-border) 84%,transparent); border-radius:var(--library-ai-radius-lg); background:color-mix(in srgb,var(--material-button) 88%,transparent); box-shadow:0 1px 2px rgba(18,30,25,.06),0 8px 24px rgba(18,30,25,.075); backdrop-filter:blur(18px) saturate(1.08); transition:border-color 150ms ease,box-shadow 200ms var(--library-ai-ease),transform 220ms var(--library-ai-spring),background-color 150ms ease; }
 .library-ai-composer-shell:focus-within { border-color:color-mix(in srgb,var(--library-ai-accent) 52%,var(--library-ai-border)); background:color-mix(in srgb,var(--material-button) 94%,transparent); box-shadow:0 0 0 3px color-mix(in srgb,var(--library-ai-accent) 13%,transparent),0 12px 32px rgba(18,30,25,.11); transform:translateY(-1px); }
 
