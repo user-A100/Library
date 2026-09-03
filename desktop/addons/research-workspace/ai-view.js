@@ -7,6 +7,7 @@ LibraryAIViewHost = class LibraryAIViewHost {
 		this.commands = new LibraryAISlashCommands();
 		this.chat = new LibraryAIChatRenderer(this);
 		this.shortcuts = new LibraryAIShortcuts(this.workspace.aiPrefRoot);
+		this.settingsTab = new LibraryAISettingsTab(this);
 		this.windows = new Map();
 		this.abortController = null;
 		this.notifierID = null;
@@ -301,6 +302,7 @@ LibraryAIViewHost = class LibraryAIViewHost {
 		for (let button of view.querySelectorAll(".library-ai-tab-nav [data-tab]")) button.classList.toggle("active", button.dataset.tab === tab);
 		view.querySelector(".library-ai-composer-shell").hidden = tab !== "discussion";
 		this.toggleHistoryMenu(window, false);
+		if (tab === "setting") this.settingsTab.render(window);
 		this.render(window);
 	}
 
@@ -616,7 +618,7 @@ LibraryAIViewHost = class LibraryAIViewHost {
 				? `\n\n用户选中的参考片段（这些内容来自用户主动复制或在阅读器中框选，请优先围绕它们理解与作答）：\n${references.map((ref, index) => `[参考${index + 1}] ${ref.label}\n${ref.text}`).join("\n\n")}`
 				: "";
 			assistant.references = references.map(ref => ref.label);
-			let messages = [{ role: "system", content: "你是 Library 的论文阅读助手。优先依据提供的论文片段回答；每个可核验结论后使用形如 [[S1-C1]] 的引用标记。只能使用给定 citation ID；没有可靠页码时不要猜测页码。涉及某一节的内容、方法或结论时，必须引用该节正文片段，不得用引言中的目录、结构预告或摘要代替。若没有该节正文证据，应明确说明材料不足。使用清晰的中文 Markdown。" }, ...conversation.messages.filter(message => message !== assistant).slice(-12).map(message => ({ role: message.role, content: message.role === "user" && message.prompt ? message.prompt : message.content })), { role: "user", content: `问题：${question}\n\n可用论文片段：\n${snippets.join("\n\n") || "当前未添加论文来源，请按普通对话回答，并说明没有论文来源。"}${referenceBlock}` }];
+			let messages = [{ role: "system", content: this.settingsTab.systemPrompt() }, ...conversation.messages.filter(message => message !== assistant).slice(-12).map(message => ({ role: message.role, content: message.role === "user" && message.prompt ? message.prompt : message.content })), { role: "user", content: `问题：${question}\n\n可用论文片段：\n${snippets.join("\n\n") || "当前未添加论文来源，请按普通对话回答，并说明没有论文来源。"}${referenceBlock}` }];
 			artifactContext.requestMessages = messages;
 			setActivity("waiting", `正在等待 ${this.provider.config.model || "模型"} 响应…`);
 			await this.provider.stream(messages, {
