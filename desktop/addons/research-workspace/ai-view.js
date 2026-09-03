@@ -316,9 +316,13 @@ LibraryAIViewHost = class LibraryAIViewHost {
 		if (!menu.hidden) {
 			menu.textContent = "";
 			for (let item of this.repository.list()) {
-				let button = menu.ownerDocument.createElement("button");
+				let button = menu.ownerDocument.createElementNS("http://www.w3.org/1999/xhtml", "button");
 				button.type = "button"; button.dataset.openHistory = item.id;
-				button.innerHTML = `<strong>${item.pinned ? "📌 " : ""}${this.escape(item.title)}</strong><small>${new Date(item.updatedAt).toLocaleString()}</small>`;
+				let strong = menu.ownerDocument.createElementNS("http://www.w3.org/1999/xhtml", "strong");
+				strong.textContent = `${item.pinned ? "📌 " : ""}${item.title}`;
+				let small = menu.ownerDocument.createElementNS("http://www.w3.org/1999/xhtml", "small");
+				small.textContent = new Date(item.updatedAt).toLocaleString();
+				button.append(strong, small);
 				menu.append(button);
 			}
 			if (!menu.children.length) { let empty = menu.ownerDocument.createElement("small"); empty.textContent = "暂无历史会话"; menu.append(empty); }
@@ -446,7 +450,13 @@ LibraryAIViewHost = class LibraryAIViewHost {
 	async send(window, retryQuestion = null, displayOverride = null) {
 		let state = this.windows.get(window), conversation = this.repository.active;
 		let input = state.view.querySelector(".library-ai-composer textarea"), question = (retryQuestion || input.value).trim();
-		if (!question || this.abortController) return;
+		if (!question) return;
+		// 卡死自愈：abortController 残留但会话里已无流式节点（上次请求异常挂起）时清掉重试
+		if (this.abortController && !conversation?.messages.some(message => message.state === "streaming")) {
+			Zotero.debug("Library AI send: clearing stale abortController");
+			this.abortController = null;
+		}
+		if (this.abortController) { this.setStatus(window, "正在生成回答，请等待完成或点击 ■ 停止"); return; }
 		// 斜杠命令（Claudian 式）：消息以 / 开头时先查注册中心；
 		// 动作命令直接执行，提示词命令展开 $ARGUMENTS 后作为真实提问发送
 		if (!retryQuestion) {
@@ -474,9 +484,18 @@ LibraryAIViewHost = class LibraryAIViewHost {
 		await this.runGeneration(window, conversation, assistant, question);
 	}
 
+	// 卡死自愈：请求挂起残留的 abortController（会话中已无流式节点）在下次操作前清掉
+	clearStaleAbort(conversation) {
+		if (this.abortController && !conversation?.messages.some(message => message.state === "streaming")) {
+			Zotero.debug("Library AI: clearing stale abortController");
+			this.abortController = null;
+		}
+	}
+
 	// 重试：旧回答的兄弟分支（父节点同为提问），产生后可用 ‹ n/m › 导航切换
 	async retryAssistant(window, assistantID) {
 		let conversation = this.repository.active;
+		this.clearStaleAbort(conversation);
 		if (!conversation || this.abortController) return;
 		let old = conversation.nodes[assistantID];
 		let parent = old?.parentId ? conversation.nodes[old.parentId] : null;
@@ -494,6 +513,7 @@ LibraryAIViewHost = class LibraryAIViewHost {
 		let state = this.windows.get(window); if (!state) return;
 		let conversation = this.repository.active;
 		let node = conversation?.nodes[userID];
+		this.clearStaleAbort(conversation);
 		if (!node || node.role !== "user" || this.abortController) return;
 		let wrapper = state.view.querySelector(`.library-ai-message[data-message-id="${userID}"] .library-ai-bubble`);
 		if (!wrapper || wrapper.querySelector("textarea")) return;
@@ -751,7 +771,8 @@ LibraryAIViewHost = class LibraryAIViewHost {
 			if (source.insight?.state === "done" && source.insight.content) {
 				let details = view.ownerDocument.createElement("details"); details.className = "library-ai-source-insight";
 				let summary = view.ownerDocument.createElement("summary"); summary.textContent = "来源洞察";
-				let content = view.ownerDocument.createElement("div"); content.innerHTML = this.chat.renderMarkdown(source.insight.content, {});
+				let content = view.ownerDocument.createElement("div");
+				this.chat.setBodyHTML(content, this.chat.renderMarkdown(source.insight.content, {}));
 				details.append(summary, content); wrapper.append(details);
 			}
 			sourceHost.append(wrapper);

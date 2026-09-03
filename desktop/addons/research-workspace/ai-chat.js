@@ -30,15 +30,21 @@ LibraryAIChatRenderer = class LibraryAIChatRenderer {
 	}
 
 	emptyState(doc) {
-		let node = doc.createElement("section"); node.className = "library-ai-empty";
+		let html = name => doc.createElementNS("http://www.w3.org/1999/xhtml", name);
+		let node = html("section"); node.className = "library-ai-empty";
 		node.append(this.host.createRobotIcon(doc));
-		let content = doc.createElement("div");
-		content.innerHTML = `<h2>和论文一起思考</h2><p>当前论文会自动成为来源。回答中的引用可直接定位回原文。</p><div><button type="button">概括本文的核心贡献</button><button type="button">解释作者的方法与证据</button><button type="button">列出可继续追问的问题</button></div>`;
-		while (content.firstChild) node.append(content.firstChild);
-		for (let button of node.querySelectorAll("button")) button.addEventListener("click", () => {
-			let view = node.closest(".library-ai-view"); let composer = view.querySelector(".library-ai-composer textarea");
-			composer.value = button.textContent; composer.focus();
-		});
+		let heading = html("h2"); heading.textContent = "和论文一起思考";
+		let blurb = html("p"); blurb.textContent = "当前论文会自动成为来源。回答中的引用可直接定位回原文。";
+		let suggestions = html("div");
+		for (let label of ["概括本文的核心贡献", "解释作者的方法与证据", "列出可继续追问的问题"]) {
+			let button = html("button"); button.type = "button"; button.textContent = label;
+			button.addEventListener("click", () => {
+				let view = node.closest(".library-ai-view"); let composer = view.querySelector(".library-ai-composer textarea");
+				composer.value = button.textContent; composer.focus();
+			});
+			suggestions.append(button);
+		}
+		node.append(heading, blurb, suggestions);
 		return node;
 	}
 
@@ -187,8 +193,14 @@ LibraryAIChatRenderer = class LibraryAIChatRenderer {
 			article.append(auditButton, audit);
 		}
 		if (message.error) {
-			let error = doc.createElement("div"); error.className = "library-ai-error";
-			error.innerHTML = `<span>${host.escape(message.error)}</span>${message.state === "error" ? `<button type="button" data-retry-message="${message.id}">重试</button>` : ""}`;
+			let html = name => doc.createElementNS("http://www.w3.org/1999/xhtml", name);
+			let error = html("div"); error.className = "library-ai-error";
+			let text = html("span"); text.textContent = message.error;
+			error.append(text);
+			if (message.state === "error") {
+				let retry = html("button"); retry.type = "button"; retry.dataset.retryMessage = message.id; retry.textContent = "重试";
+				error.append(retry);
+			}
 			article.append(error);
 		}
 		article.append(this.metaNode(doc, message, { conversation, isLastAssistant }));
@@ -197,32 +209,36 @@ LibraryAIChatRenderer = class LibraryAIChatRenderer {
 
 	// 消息 meta 行：变体导航（树分支 >1 时）、复制、存为笔记、编辑（user）、重试（末条 assistant）
 	metaNode(doc, message, { conversation = null, isLastAssistant = false } = {}) {
-		let meta = doc.createElement("div"); meta.className = "library-ai-message-meta";
+		let html = name => doc.createElementNS("http://www.w3.org/1999/xhtml", name);
+		let meta = html("div"); meta.className = "library-ai-message-meta";
 		if (conversation) {
 			let info = this.host.repository.variantInfo(conversation, message.id);
 			if (info.count > 1) {
-				let nav = doc.createElement("span"); nav.className = "library-ai-variant-nav";
-				nav.innerHTML = `<button type="button" data-variant-prev="${message.id}" title="上一个变体" ${info.index <= 1 ? "disabled" : ""}>‹</button><span>${info.index}/${info.count}</span><button type="button" data-variant-next="${message.id}" title="下一个变体" ${info.index >= info.count ? "disabled" : ""}>›</button>`;
+				let nav = html("span"); nav.className = "library-ai-variant-nav";
+				let prev = html("button"); prev.type = "button"; prev.dataset.variantPrev = message.id; prev.title = "上一个变体"; prev.textContent = "‹"; prev.disabled = info.index <= 1;
+				let label = html("span"); label.textContent = `${info.index}/${info.count}`;
+				let next = html("button"); next.type = "button"; next.dataset.variantNext = message.id; next.title = "下一个变体"; next.textContent = "›"; next.disabled = info.index >= info.count;
+				nav.append(prev, label, next);
 				meta.append(nav);
 			}
 		}
-		let actions = doc.createElement("span"); actions.className = "library-ai-message-actions";
-		let time = doc.createElement("small"); time.className = "library-ai-message-time";
+		let actions = html("span"); actions.className = "library-ai-message-actions";
+		let time = html("small"); time.className = "library-ai-message-time";
 		time.textContent = new Date(message.createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 		if (message.content) {
-			let copy = doc.createElement("button"); copy.type = "button"; copy.dataset.copyMessage = message.id; copy.title = "复制原文（Markdown）"; copy.textContent = "复制";
+			let copy = html("button"); copy.type = "button"; copy.dataset.copyMessage = message.id; copy.title = "复制原文（Markdown）"; copy.textContent = "复制";
 			actions.append(copy);
 			if (message.role === "assistant") {
-				let note = doc.createElement("button"); note.type = "button"; note.dataset.noteMessage = message.id; note.title = "把这条回答保存为笔记"; note.textContent = "存为笔记";
+				let note = html("button"); note.type = "button"; note.dataset.noteMessage = message.id; note.title = "把这条回答保存为笔记"; note.textContent = "存为笔记";
 				actions.append(note);
 			}
 		}
 		if (message.role === "user") {
-			let edit = doc.createElement("button"); edit.type = "button"; edit.dataset.editMessage = message.id; edit.title = "编辑并重新生成"; edit.textContent = "编辑";
+			let edit = html("button"); edit.type = "button"; edit.dataset.editMessage = message.id; edit.title = "编辑并重新生成"; edit.textContent = "编辑";
 			actions.append(edit);
 		}
 		else if (isLastAssistant && message.state !== "streaming") {
-			let retry = doc.createElement("button"); retry.type = "button"; retry.dataset.retryMessage = message.id; retry.title = "重新生成"; retry.textContent = "重试";
+			let retry = html("button"); retry.type = "button"; retry.dataset.retryMessage = message.id; retry.title = "重新生成"; retry.textContent = "重试";
 			actions.append(retry);
 		}
 		meta.append(actions, time);
