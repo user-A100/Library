@@ -1,0 +1,47 @@
+{
+	"$schema": "../gen/schemas/desktop-schema.json",
+	"identifier": "default",
+	"description": "Capability for Agentero windows (main + ⌘N + settings + feature/doc popouts)",
+	"windows": ["main", "agentero-*", "settings", "feature-*", "doc-*"],
+	"permissions": [
+		"core:default",
+		"core:window:allow-start-dragging",
+		"core:window:allow-set-focus",
+		"core:window:allow-set-title",
+		"core:window:allow-minimize",
+		"core:window:allow-toggle-maximize",
+		"core:window:allow-close",
+		"core:window:allow-is-maximized",
+		"core:window:allow-is-visible",
+		"core:webview:allow-create-webview-window",
+		"core:webview:allow-get-all-webviews",
+		"opener:default",
+		{
+			"identifier": "opener:allow-open-path",
+			"allow": [{ "path": "$APPLOG" }]
+		},
+		"fs:default",
+		"fs:allow-read-dir",
+		"fs:allow-read-file",
+		"fs:allow-read-text-file",
+		"fs:allow-write-text-file",
+		"fs:allow-write-file",
+		"fs:allow-mkdir",
+		"fs:allow-remove",
+		"fs:allow-stat",
+		"fs:allow-exists",
+		{
+			"identifier": "fs:scope",
+			"allow": [
+				{ "path": "$HOME/**" },
+				{ "path": "$DOCUMENT/**" },
+				{ "path": "$DESKTOP/**" },
+				{ "path": "$DOWNLOAD/**" }
+			]
+		},
+		"shell:default",
+		"store:default",
+		"dialog:default",
+		"log:default"
+	]
+}

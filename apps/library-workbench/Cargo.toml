@@ -1,0 +1,10 @@
+[workspace]
+members = ["src-tauri", "cli"]
+resolver = "2"
+
+# Profiles only take effect from the workspace root. Shipped binaries were
+# unstripped and non-LTO (#320): GUI 76MB, headless CLI 31MB.
+[profile.release]
+strip = true
+lto = true
+codegen-units = 1

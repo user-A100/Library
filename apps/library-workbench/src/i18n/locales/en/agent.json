@@ -1,0 +1,180 @@
+{
+	"acpStatus": {
+		"ready": "ACP ready",
+		"failed": "ACP failed",
+		"notLoggedIn": "Not logged in",
+		"notProbed": "Not probed",
+		"notInstalled": "Not installed"
+	},
+	"defaultName": "Agent",
+	"permission": {
+		"title": "Agent permission",
+		"deny": "Deny",
+		"kind": {
+			"allowOnce": "Allow once",
+			"allowAlways": "Always allow",
+			"rejectOnce": "Reject once",
+			"rejectAlways": "Always reject"
+		}
+	},
+	"elicitation": {
+		"title": "Agent needs your input",
+		"submit": "Submit answers",
+		"cancel": "Cancel"
+	},
+	"missing": " (missing)",
+	"switchAgent": "Switch ACP agent",
+	"configBar": {
+		"label": "Model and session options"
+	},
+	"suggestions": {
+		"summarizePaper": "Summarize the open paper",
+		"askLibrary": "Ask a question across my library",
+		"listClaims": "List key claims and evidence",
+		"draftRelatedWork": "Draft a Related Work section"
+	},
+	"history": {
+		"aria": "Open chat history",
+		"label": "History",
+		"title": "Session history",
+		"description": "Recent ACP sessions in this chat.",
+		"empty": "No sessions yet.",
+		"includeExternal": "External",
+		"includeExternalToggle": "Include all sessions",
+		"status": {
+			"running": "Running",
+			"completed": "Completed",
+			"cancelled": "Cancelled",
+			"failed": "Failed"
+		}
+	},
+	"tabs": {
+		"open": "Open conversation {{number}}",
+		"new": "Start a new conversation"
+	},
+	"agentMenu": {
+		"title": "ACP backend",
+		"empty": "No ready ACP agents. Configure one in Settings.",
+		"openSettings": "Open Agent settings"
+	},
+	"composer": {
+		"placeholder": "How can I help you today?",
+		"interruptHint": "Press Esc to interrupt",
+		"queueHint": "Type a follow-up — it waits until the current reply finishes (Esc to stop)",
+		"queueLabel": "Queued",
+		"queueRemove": "Remove from queue",
+		"contextInstruction": "Read these Vault files before answering when relevant:",
+		"resizeHandle": "Resize composer height",
+		"removeContext": "Remove {{path}} from context",
+		"removeSkill": "Remove ${{skill}} from context",
+		"removeSelection": "Remove selected text from context",
+		"selection": "Selection",
+		"removeVisualDraft": "Remove visual annotation from context",
+		"visualAnnotation": "Visual annotation",
+		"visualAnnotationPage": "p.{{page}}",
+		"visualAnnotationsTitle": "Visual annotations ({{count}})",
+		"visualAnnotationOpen": "View crop and comment",
+		"visualAnnotationOpenAria": "Open visual annotation {{index}}: {{label}}",
+		"visualAnnotationDetailTitle": "Visual annotation {{index}}",
+		"visualAnnotationCommentLabel": "Your note",
+		"visualAnnotationNoComment": "(no note)",
+		"visualAnnotationPreviewAlt": "Cropped PDF region from page {{page}}",
+		"attachImage": "Attach image",
+		"imageFilter": "Images",
+		"attachedImage": "Image",
+		"attachedImagesTitle": "Images ({{count}})",
+		"removeAttachedImage": "Remove image",
+		"attachedImageOpen": "View image",
+		"attachedImageOpenAria": "Open attached image {{index}}",
+		"attachedImageDetailTitle": "Image {{index}}",
+		"attachedImagePreviewAlt": "Attached image {{index}}",
+		"dropImageHint": "Drop image to attach",
+		"imageAcceptError": "Only image files can be attached (PNG, JPEG, WebP, GIF, …).",
+		"imageMaxFilesError": "Too many images. Remove one before adding more.",
+		"imageMaxSizeError": "One or more images exceed the 10 MB size limit.",
+		"imagePickFailed": "Could not open the image picker.",
+		"imageOnlyPrompt": "Please analyze the attached image(s).",
+		"currentFileRemove": "Remove current file from context",
+		"mentionEnterFolder": "Open {{name}}",
+		"mentionBack": "Back to parent folder",
+		"mentionEmptyFolder": "No items in this folder",
+		"fast": "Fast",
+		"fastToggle": "Toggle Fast mode",
+		"collaborationTooltip": "Session mode",
+		"collaboration": {
+			"label": "Mode"
+		},
+		"effortTooltip": "Select reasoning effort",
+		"effort": {
+			"label": "Effort",
+			"max": "Max",
+			"xhigh": "XHigh",
+			"high": "High",
+			"medium": "Medium",
+			"low": "Low"
+		}
+	},
+	"empty": {
+		"title": "Chat with your vault",
+		"description": "Messages go to your ACP agent. Click the agent name above to switch backends.",
+		"waiting": "Waiting for agent…"
+	},
+	"thinking": "Thinking…",
+	"copy": "Copy",
+	"copied": "Copied",
+	"edit": {
+		"action": "Edit",
+		"resend": "Resend",
+		"cancel": "Cancel"
+	},
+	"plan": {
+		"title": "Plan",
+		"steps": "{{completed}}/{{total}} steps"
+	},
+	"tool": {
+		"defaultTitle": "Tool",
+		"failed": "Tool failed"
+	},
+	"askUserQuestion": {
+		"submit": "Submit",
+		"submitted": "Submitted",
+		"cancel": "Cancel",
+		"prev": "Back",
+		"next": "Next",
+		"progress": "{{current}} / {{total}}",
+		"freeTextPlaceholder": "Type your answer",
+		"pendingInComposer": "Answer in the questionnaire below",
+		"keyboardHint": "↑↓ options · Space select · Enter confirm",
+		"keyboardHintMulti": "↑↓ options · Space select · Enter next · ←→ pages",
+		"collapse": "Collapse questionnaire",
+		"expand": "Expand questionnaire"
+	},
+	"citation": {
+		"vaultPath": "Vault path referenced by agent"
+	},
+	"models": {
+		"defaultGroup": "Models",
+		"favorites": "Favorites",
+		"addToFavorites": "Add to favorites",
+		"removeFromFavorites": "Remove from favorites",
+		"selectTooltip": "Select model (ACP)",
+		"reportedTooltip": "Models appear after your agent reports them",
+		"customOrReportedTooltip": "Search or type a custom model id (third-party / gateway)",
+		"loading": "Loading…",
+		"button": "Model",
+		"searchPlaceholder": "Search models…",
+		"searchOrCustomPlaceholder": "Search or type a model id…",
+		"customGroup": "Custom",
+		"useCustom": "Use “{{id}}”",
+		"emptyNone": "No models yet. Run once so the ACP agent can advertise models.",
+		"emptyNoneCustom": "No models yet. Type a model id above to use a third-party model.",
+		"emptyNoMatch": "No match. Type a full model id to use it as custom."
+	},
+	"messages": {
+		"cancelled": "Stopped the current run.",
+		"switchedTo": "Switched to {{name}}",
+		"desktopOnly": "Open the desktop app to run agents.",
+		"noAgent": "No available agent. Open Settings → Agent to configure one.",
+		"sessionUnavailable": "Could not restore this Agent session. Showing the saved answer snapshot when available."
+	}
+}

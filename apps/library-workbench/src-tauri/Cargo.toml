@@ -1,0 +1,148 @@
+[package]
+name = "agentero"
+version = "0.9.4"
+description = "A Tauri App"
+authors = ["you"]
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[lib]
+# The `_lib` suffix may seem redundant but it is necessary
+# to make the lib name unique and wouldn't conflict with the bin name.
+# This seems to be only an issue on Windows, see https://github.com/rust-lang/cargo/issues/8519
+name = "agentero_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[[bin]]
+name = "agentero"
+path = "src/main.rs"
+# The desktop GUI binary needs the desktop stack; headless builds
+# (`--no-default-features`, e.g. for agentero-cli) skip it.
+required-features = ["desktop"]
+
+[features]
+default = ["desktop"]
+desktop = [
+  "dep:agent-client-protocol",
+  "dep:axum",
+  "dep:tauri",
+  "dep:tauri-plugin-deep-link",
+  "dep:tauri-plugin-dialog",
+  "dep:tauri-plugin-fs",
+  "dep:tauri-plugin-log",
+  "dep:tauri-plugin-opener",
+  "dep:tauri-plugin-shell",
+  "dep:tauri-plugin-store",
+  "dep:tauri-plugin-updater",
+  "dep:tauri-plugin-process",
+  "dep:tauri-plugin-single-instance",
+  "dep:tauri-specta",
+  "dep:specta-typescript",
+  "dep:posthog-rs",
+  "dep:rmcp",
+  "dep:schemars",
+]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dev-dependencies]
+# `start_paused` virtual clock for stream coalescer / throttle unit tests.
+tokio = { version = "1", features = ["test-util", "macros"] }
+tempfile = "3"
+
+[dependencies]
+tauri = { version = "2", features = [], optional = true }
+tauri-plugin-opener = { version = "2", optional = true }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+tauri-plugin-fs = { version = "2.5.1", optional = true }
+tauri-plugin-shell = { version = "2.3.5", optional = true }
+tauri-plugin-store = { version = "2.4.3", optional = true }
+tauri-plugin-dialog = { version = "2.7.1", optional = true }
+tauri-plugin-deep-link = { version = "2.4.9", optional = true }
+agent-client-protocol = { version = "1.2.0", features = ["unstable_elicitation"], optional = true }
+tokio = { version = "1", features = ["sync", "rt", "rt-multi-thread", "macros", "time", "process", "io-util", "net"] }
+axum = { version = "0.8", default-features = false, features = ["http1", "json", "query", "tokio"], optional = true }
+# Streamable HTTP MCP server (Settings toggle; loopback only).
+rmcp = { version = "3.1", optional = true, default-features = false, features = [
+  "server",
+  "macros",
+  "schemars",
+  "transport-streamable-http-server",
+] }
+schemars = { version = "1", optional = true }
+uuid = { version = "1", features = ["v4", "serde"] }
+dirs = "6"
+thiserror = "2"
+which = "7"
+rusqlite = { version = "0.32", features = ["bundled"] }
+feed-rs = "2.3"
+reqwest = { version = "0.12", default-features = false, features = ["json", "rustls-tls", "socks", "multipart", "cookies"] }
+chrono = { version = "0.4", default-features = false, features = ["clock", "std", "serde"] }
+flate2 = "1.1.9"
+tar = "0.4.46"
+zip = { version = "2.4", default-features = false, features = ["deflate"] }
+htmd = "0.5.4"
+dom_smoothie = "0.18"
+pulldown-cmark = { version = "0.13", default-features = false, features = ["html"] }
+notify-debouncer-full = "0.3"
+log = "0.4"
+tauri-plugin-log = { version = "2.9.0", optional = true }
+async-trait = "0.1.91"
+bitflags = "2"
+sha2 = "0.11.0"
+hex = "0.4.3"
+walkdir = "2.5.0"
+base64 = "0.22"
+encoding_rs = "0.8"
+urlencoding = "2"
+url = "2"
+os_info = "3"
+crypto_box = "0.9"
+ed25519-dalek = "2"
+# Used by lookup batch import (all platforms); also needed by Unix remote vault.
+futures-util = "0.3.33"
+tokio-tungstenite = { version = "0.26", features = ["rustls-tls-webpki-roots"] }
+rustls = { version = "0.23", default-features = false, features = ["ring", "logging", "std", "tls12"] }
+tauri-specta = { version = "2.0.0-rc.25", features = ["derive", "typescript"], optional = true }
+specta = { version = "2.0.0-rc.22", features = ["derive"] }
+specta-typescript = { version = "0.0.12", optional = true }
+fontdb = "0.23"
+
+# Updates and process relaunch are desktop-only. Mobile distribution is owned by
+# its app stores, not the in-app updater.
+[target.'cfg(not(any(target_os = "android", target_os = "ios")))'.dependencies]
+tauri-plugin-updater = { version = "2", optional = true }
+tauri-plugin-process = { version = "2", optional = true }
+tauri-plugin-single-instance = { version = "2", features = ["deep-link"], optional = true }
+# Blocking client: telemetry flush happens in the synchronous RunEvent::Exit callback.
+posthog-rs = { version = "0.23", default-features = false, optional = true }
+
+# LiteParse relies on a desktop PDFium binary. Mobile (iOS/Android) uses the
+# paired desktop Host for PDF parsing instead of packaging PDFium in the app.
+# Keep this cfg in sync with the gates in src/features/import/pdf_parse/mod.rs
+# — desktop (incl. Windows) needs it.
+[target.'cfg(not(any(target_os = "ios", target_os = "android")))'.dependencies]
+liteparse = "2.13"
+# The PDFium binding liteparse itself sits on (shared dylib, one global loader).
+# `features/pdf_locate` uses the text engine directly for quote → page rects,
+# bypassing liteparse's layout pass.
+liteparse-pdfium = "1.7"
+
+
+[target.'cfg(target_os = "ios")'.dependencies]
+security-framework = "3.7"
+security-framework-sys = "2.17"
+
+# openssh / sendfd are Unix-only (ControlMaster fd passing). Remote vault SFTP
+# is therefore unavailable on Windows until a portable backend lands.
+[target.'cfg(unix)'.dependencies]
+openssh = { version = "0.11.6", features = ["native-mux"] }
+openssh-sftp-client = { version = "0.15.7", features = ["openssh"] }
+
+# Windows CLI install: add the shim dir to the user PATH (HKCU\Environment) so
+# new terminals can run `agentero-cli` without manual setup.
+[target.'cfg(windows)'.dependencies]
+winreg = "0.55"

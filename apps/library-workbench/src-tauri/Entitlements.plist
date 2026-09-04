@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+  Hardened Runtime entitlements for Developer ID / notarized builds
+  (outside the Mac App Store). Do NOT enable App Sandbox here — MAS
+  distribution uses a separate profile (see docs/development/macos-signing.md).
+-->
+<plist version="1.0">
+<dict>
+	<!-- WKWebView / JS engine under Hardened Runtime -->
+	<key>com.apple.security.cs.allow-jit</key>
+	<true/>
+	<key>com.apple.security.cs.allow-unsigned-executable-memory</key>
+	<true/>
+	<!-- BYOA / plugins may load host-installed tooling libraries -->
+	<key>com.apple.security.cs.disable-library-validation</key>
+	<true/>
+</dict>
+</plist>

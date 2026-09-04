@@ -1,0 +1,101 @@
+diff --git a/dist/react/index.js b/dist/react/index.js
+index 52e594b7e89dd516c5bb67e8eee07ddb0ef7c48f..229ab5509d55869bc94e38f38075dcb14b719c2e 100644
+--- a/dist/react/index.js
++++ b/dist/react/index.js
+@@ -63,12 +63,16 @@ function TilingLayer({
+   documentId,
+   pageIndex,
+   scale: scaleOverride,
++  dpr: dprOverride,
+   style,
+   ...props
+ }) {
+   const { provides: tilingProvides } = useTilingCapability();
+   const documentState = useDocumentState(documentId);
+   const [tiles, setTiles] = useState([]);
++  const [staleTiles, setStaleTiles] = useState([]);
++  const prevSetRef = useRef({ ids: "", tiles: [] });
++  const dropTimerRef = useRef(null);
+   useEffect(() => {
+     if (tilingProvides) {
+       return tilingProvides.onTileRendering((event) => {
+@@ -78,10 +82,49 @@ function TilingLayer({
+       });
+     }
+   }, [tilingProvides, documentId, pageIndex]);
++  // Zoom/refresh swaps every tile id at once; the fresh set only paints as
++  // each async raster arrives, which flashes the page. Keep the previous set
++  // mounted as stretched placeholders (TileImg rescales by scale/srcScale)
++  // until the new rasters land, with a timeout so failed renders cannot pin
++  // stale content forever.
++  useEffect(() => {
++    const ids = tiles.map((t) => t.id).join("|");
++    if (!ids) return;
++    if (prevSetRef.current.ids !== ids) {
++      setStaleTiles(prevSetRef.current.tiles);
++      prevSetRef.current = { ids, tiles };
++      if (dropTimerRef.current) clearTimeout(dropTimerRef.current);
++      dropTimerRef.current = setTimeout(() => {
++        dropTimerRef.current = null;
++        setStaleTiles([]);
++      }, 1500);
++      return;
++    }
++    if (
++      tiles.length > 0 &&
++      tiles.every((t) => t.status === "ready") &&
++      staleTiles.length > 0
++    ) {
++      if (dropTimerRef.current) {
++        clearTimeout(dropTimerRef.current);
++        dropTimerRef.current = null;
++      }
++      setStaleTiles([]);
++    }
++  }, [tiles, staleTiles.length]);
++  useEffect(() => () => {
++    if (dropTimerRef.current) clearTimeout(dropTimerRef.current);
++  }, []);
+   const actualScale = useMemo(() => {
+     if (scaleOverride !== void 0) return scaleOverride;
+     return (documentState == null ? void 0 : documentState.scale) ?? 1;
+   }, [scaleOverride, documentState == null ? void 0 : documentState.scale]);
++  const actualDpr = useMemo(() => {
++    if (dprOverride !== void 0) return dprOverride;
++    return window.devicePixelRatio;
++  }, [dprOverride]);
++  const freshIds = new Set(tiles.map((t) => t.id));
++  const placeholders = staleTiles.filter((t) => !freshIds.has(t.id));
+   return /* @__PURE__ */ jsx(
+     "div",
+     {
+@@ -89,13 +132,13 @@ function TilingLayer({
+         ...style
+       },
+       ...props,
+-      children: tiles == null ? void 0 : tiles.map((tile) => /* @__PURE__ */ jsx(
++      children: [...placeholders, ...tiles].map((tile) => /* @__PURE__ */ jsx(
+         TileImg,
+         {
+           documentId,
+           pageIndex,
+           tile,
+-          dpr: window.devicePixelRatio,
++          dpr: actualDpr,
+           scale: actualScale
+         },
+         tile.id
+diff --git a/dist/shared-react/components/tiling-layer.d.ts b/dist/shared-react/components/tiling-layer.d.ts
+index b2172b0fd95b474eafc75ea8784baaf98f4bf594..4c6980184bf3df214e4ac0f350a8229b47a81166 100644
+--- a/dist/shared-react/components/tiling-layer.d.ts
++++ b/dist/shared-react/components/tiling-layer.d.ts
+@@ -3,7 +3,8 @@ type TilingLayoutProps = Omit<HTMLAttributes<HTMLDivElement>, 'style'> & {
+     documentId: string;
+     pageIndex: number;
+     scale?: number;
++    dpr?: number;
+     style?: CSSProperties;
+ };
+-export declare function TilingLayer({ documentId, pageIndex, scale: scaleOverride, style, ...props }: TilingLayoutProps): import("react/jsx-runtime").JSX.Element;
++export declare function TilingLayer({ documentId, pageIndex, scale: scaleOverride, dpr: dprOverride, style, ...props }: TilingLayoutProps): import("react/jsx-runtime").JSX.Element;
+ export {};

@@ -1,0 +1,102 @@
+{
+	"title": "Welcome to Agentero",
+	"subtitle": "Read papers and take notes alongside your AI assistant. A few quick steps to set up your workspace.",
+	"steps": {
+		"welcome": "Welcome",
+		"theme": "Appearance",
+		"agent": "Agent",
+		"translate": "Translation",
+		"layout": "Figures & formulas",
+		"vault": "Get started"
+	},
+	"welcome": {},
+	"theme": {
+		"title": "Pick your look",
+		"desc": "Choose a color scheme you like — you can change it anytime in Settings.",
+		"modeSystem": "System",
+		"modeLight": "Light",
+		"modeDark": "Dark",
+		"uiThemeSelect": "Select {{name}}"
+	},
+	"agent": {
+		"title": "Choose your AI assistant",
+		"desc": "Agentero plugs into agents already installed on this computer to summarize papers and answer questions — no extra API keys, just pick one.",
+		"rescan": "Rescan",
+		"scanning": "Scanning…",
+		"none": "No agents found yet. Install one on this computer (e.g. opencode or claude-acp), then click Rescan.",
+		"setDefault": "Set as default",
+		"install": "Install",
+		"installAgentAria": "Install {{name}} agent",
+		"installFailed": "Could not install agent",
+		"default": "Default",
+		"probe": "Probe",
+		"ready": "Ready",
+		"missing": "Not installed",
+		"failed": "Probe failed",
+		"notProbed": "Not probed",
+		"scanFailed": "Failed to scan agents"
+	},
+	"translate": {
+		"title": "Set up translation",
+		"desc": "Select text in foreign-language papers to translate it instantly. The built-in option works out of the box.",
+		"configureOwn": "I have my own translation API",
+		"useDefault": "Use the built-in translator",
+		"apiKeyPlaceholder": "API key",
+		"endpointPlaceholder": "Endpoint (optional)",
+		"openDocs": "Open provider website",
+		"test": "Test",
+		"probeIdle": "Not tested yet",
+		"probeProbing": "Testing…",
+		"probeOk": "Works",
+		"probeFail": "Check your key and try again"
+	},
+	"layout": {
+		"title": "Spot figures and formulas automatically",
+		"desc": "Automatically locate figures, tables and formulas in your PDFs. The free on-device model works out of the box; a cloud API gets even better results.",
+		"configureOwn": "Use a cloud service (recommended)",
+		"useDefault": "Use the free on-device model",
+		"openDocs": "Open provider website",
+		"test": "Test",
+		"probeIdle": "Not tested yet",
+		"probeProbing": "Testing…",
+		"probeOk": "Works",
+		"probeFail": "Check your key and try again"
+	},
+	"vault": {
+		"title": "Create your library",
+		"desc": "A vault is just a plain folder on your computer where papers and notes live. You can create or switch to another one anytime.",
+		"create": "Create a vault",
+		"zotero": "Import from Zotero"
+	},
+	"actions": {
+		"start": "Start setup",
+		"next": "Next",
+		"back": "Back",
+		"finish": "Finish setup"
+	},
+	"tour": {
+		"sidebar": {
+			"title": "Your vault, your files",
+			"desc": "Each paper is a plain folder with its PDF, notes and LaTeX source — Obsidian, VS Code and Git can take over anytime."
+		},
+		"magicWand": {
+			"title": "One-click import",
+			"desc": "Paste a DOI, arXiv ID or link; metadata, PDF and LaTeX source are fetched automatically. {{magicWandShortcut}} opens it anytime."
+		},
+		"workspace": {
+			"title": "Split-screen reading",
+			"desc": "Papers open with the PDF on the left and notes on the right. Select text to highlight, annotate, translate or ask."
+		},
+		"agent": {
+			"title": "Your agent, ready to help",
+			"desc": "Reuses your locally signed-in agent — no API keys. The current paper joins the context automatically; click a suggested question to summarize it."
+		},
+		"titlebar": {
+			"title": "That's it!",
+			"desc": "Toggle panels here. {{settingsShortcut}} opens Settings, {{quickOpenShortcut}} jumps anywhere. Tutorial notes were created in your vault — start there."
+		},
+		"next": "Next",
+		"back": "Back",
+		"done": "Done"
+	}
+}

@@ -1,0 +1,79 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "Agentero",
+  "version": "0.9.4",
+  "identifier": "com.poco-ai.agentero",
+  "build": {
+    "beforeDevCommand": "pnpm pdfium:stage && pnpm dev",
+    "devUrl": "http://localhost:1420",
+    "beforeBuildCommand": "pnpm pdfium:stage && pnpm build",
+    "frontendDist": "../dist"
+  },
+  "app": {
+    "windows": [
+      {
+        "title": "Agentero",
+        "dragDropEnabled": false,
+        "width": 1280,
+        "height": 800,
+        "minWidth": 960,
+        "minHeight": 520,
+        "visible": true
+      }
+    ],
+    "security": {
+      "csp": null
+    }
+  },
+  "plugins": {
+    "fs": {
+      "requireLiteralLeadingDot": false
+    },
+    "updater": {
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDc4Q0VGREIxQjk3OTBDQkQKUldTOURIbTVzZjNPZUwzVW9OcExLS0VxUTVyOExrTEJ1VmZQcVdmVTBqaUZ0WW8zak53MnpNQ0oK",
+      "endpoints": [
+        "https://github.com/poco-ai/Agentero/releases/latest/download/latest.json"
+      ]
+    },
+    "deep-link": {
+      "desktop": {
+        "schemes": ["agentero"]
+      },
+      "mobile": [
+        {
+          "scheme": [
+            "agentero"
+          ],
+          "appLink": false
+        }
+      ]
+    }
+  },
+  "bundle": {
+    "active": true,
+    "createUpdaterArtifacts": true,
+    "targets": "all",
+    "category": "Productivity",
+    "resources": [
+      "pdfium/*"
+    ],
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/ios/AppIcon-512@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ],
+    "macOS": {
+      "entitlements": "./Entitlements.plist",
+      "minimumSystemVersion": "12.0"
+    },
+    "windows": {
+      "nsis": {
+        "sidebarImage": "icons/nsis-sidebar.bmp",
+        "installerHooks": "nsis/hooks.nsh"
+      }
+    }
+  }
+}
