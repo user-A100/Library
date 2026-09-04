@@ -52,16 +52,16 @@ mod tests {
     /// schema change (e.g. `full.md` renamed) is immediately visible.
     ///
     /// ```sh
-    /// AGENTERO_MINERU_LIVE_PDF=/tmp/x.pdf AGENTERO_MINERU_API_KEY=sk-… \
-    ///   cargo test -p agentero --lib -- live_mineru --ignored --nocapture
+    /// LIBRARY_MINERU_LIVE_PDF=/tmp/x.pdf LIBRARY_MINERU_API_KEY=sk-… \
+    ///   cargo test -p library --lib -- live_mineru --ignored --nocapture
     /// ```
     #[tokio::test]
     #[ignore = "live network + billed API key"]
     async fn live_mineru_body_parse() {
-        let pdf = std::env::var("AGENTERO_MINERU_LIVE_PDF").expect("set AGENTERO_MINERU_LIVE_PDF");
+        let pdf = std::env::var("LIBRARY_MINERU_LIVE_PDF").expect("set LIBRARY_MINERU_LIVE_PDF");
         let api_key =
-            std::env::var("AGENTERO_MINERU_API_KEY").expect("set AGENTERO_MINERU_API_KEY");
-        let base_url = std::env::var("AGENTERO_MINERU_BASE_URL").unwrap_or_default();
+            std::env::var("LIBRARY_MINERU_API_KEY").expect("set LIBRARY_MINERU_API_KEY");
+        let base_url = std::env::var("LIBRARY_MINERU_BASE_URL").unwrap_or_default();
 
         let credentials = HostedProviderCredentials {
             api_key: Some(api_key),

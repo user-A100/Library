@@ -28,7 +28,7 @@ PDFium engine 由窗口共享。默认优先 **worker 引擎**（PDFium WASM 跑
 | 平移 | 放大后拖拽平移（临时抓手，与 Acrobat / Preview 一致）：按住**鼠标中键**拖拽，或按住**空格** + 左键拖拽；页面 1:1 跟随光标（含横向与斜向），armed 时 `grab`、拖拽中 `grabbing`。空格是无修饰裸键，归属规则与 `⌘F` 一致：**指针悬停的 viewer 优先接管**（阅读时焦点常落在 tab / 侧栏 / 笔记面板，不要求它是 dockview 的 active panel），否则由 active viewer 接管（焦点在 host 内，或点击页面后焦点仍停在 body）；输入框 / 按钮 / 链接，以及 `tab` / `option` / `checkbox` / `treeitem` 等可被空格激活的角色聚焦时保持原生行为；`⌘.` 框选模式下左键拖拽让位给 marquee，中键仍可平移；一旦 armed，左键与中键**完全等价**：除输入框等可编辑区域外，任意位置起手都平移，期间工具栏按钮与文中引用命中区的点击被暂时挂起（与 Acrobat 抓手一致），松开空格即恢复；`bindPanDragGesture` 在滚动容器 capture 阶段拦截并抑制兼容 `mousedown`，因此不会触发 EmbedPDF 划词、链接点击或 WebKit / Windows 中键自动滚动 |
 | 大纲 / 参考文献 / 版面解析 | 左侧浮层：书签、参考文献（紧凑列表）、版面解析结果（图/表/算法/公式） |
 | 查找 | `⌘F` + 命中高亮 |
-| 页面背景 | 底部换页栏旁的调色板 popover 单选：**白纸 / 米色 `#faf9de` / 护眼绿 `#e3edcd` / 暗色**，偏好保存在本地（key 仍为 `agentero-pdf-color-scheme`，旧值 `light` 读作白纸），经 `agentero:pdf-color-scheme` 事件跨窗同步，不改变应用全局主题。EmbedPDF 尚无页面 color-scheme API：浅色 tone 在 `RenderLayer` / `TilingLayer` 之上叠一层 `mix-blend-multiply` tint（页面 shell 加 `isolate`，避免混到阅读区底色），白纸 × tint 精确落到目标色、黑字不变、插图仅轻微偏色，比 filter 更能保住图表饱和度；暗色仍对光栅做柔和反相（`PDF_PAGE_RASTER_DARK_CLASS`：`invert(0.84)` + `hue-rotate(180)` + 轻亮度/对比）。tint 层绘制在选区 / 搜索 / 批注层之下，高亮颜色与 Agent 裁剪（`renderPageRect`）均不受影响；全文翻译覆盖层按当前 tone 绘制纸面底色。扫描版/插图在暗色下会被一并反相 |
+| 页面背景 | 底部换页栏旁的调色板 popover 单选：**白纸 / 米色 `#faf9de` / 护眼绿 `#e3edcd` / 暗色**，偏好保存在本地（key 仍为 `library-pdf-color-scheme`，旧值 `light` 读作白纸），经 `library:pdf-color-scheme` 事件跨窗同步，不改变应用全局主题。EmbedPDF 尚无页面 color-scheme API：浅色 tone 在 `RenderLayer` / `TilingLayer` 之上叠一层 `mix-blend-multiply` tint（页面 shell 加 `isolate`，避免混到阅读区底色），白纸 × tint 精确落到目标色、黑字不变、插图仅轻微偏色，比 filter 更能保住图表饱和度；暗色仍对光栅做柔和反相（`PDF_PAGE_RASTER_DARK_CLASS`：`invert(0.84)` + `hue-rotate(180)` + 轻亮度/对比）。tint 层绘制在选区 / 搜索 / 批注层之下，高亮颜色与 Agent 裁剪（`renderPageRect`）均不受影响；全文翻译覆盖层按当前 tone 绘制纸面底色。扫描版/插图在暗色下会被一并反相 |
 | 沉浸 | 底部换页栏旁切换；全屏 + 限宽居中 |
 | 位置 | 记忆阅读位置 |
 | 文中链接 | Link annotation 覆盖层：citation / 图表·公式交叉引用 / 章节 GoTo 点击跳页，URI 开系统浏览器；未带 Link annotation 的纯文本 `http(s)` URL 与 `arXiv:<id>` 也会根据现有 PDFium 文字矩形生成外链命中区，并跳过与原生链接重叠的区域。打开论文后（主线程空闲时）在 Worker 里解析命名目标（`lib/pdf/citation-dest-keys.ts`），字节优先复用 `tab.pdfBytes`，按 `pdfPath:size` 缓存。**Citation hover**：hyperref `cite.<key>` 走 `pageIndex:pdfY → key → sidecar.rawKey`；ACS `mk:refN` 因 `/FitR` 整页冲突改走 **Link rect → mk:refN → sidecar id `ref-N`**。同一上标簇内按间距区分逗号与连字符：`14-18` 展开为 14…18 多条列表，`7,9` 保持两条。**Crossref hover**（`Fig. 3` / `Table 1` / `Eq. (2)`）：同理先 dest 坐标，冲突时 **Link rect → mk:tbl1 / mk:fig3**，再配 layout region 裁剪。索引 / layout / sidecar 未就绪或无法消歧时不弹卡片；章节等非 float 内部链接只保留导航。**浮动卡互斥（#430）**：citation 与 crossref 预览互斥；划词菜单 / 视觉草稿 / pin 卡（ask·translate·visual）打开时压制链接预览；预览卡与 pin 卡共用 sticky hover（指针在卡上不收起，离开后短延迟关闭；link 命中区用 pointer 事件与卡片对齐） |
@@ -38,7 +38,7 @@ PDFium engine 由窗口共享。默认优先 **worker 引擎**（PDFium WASM 跑
 
 选区后：高亮 / 批注 / 提问 / 加入对话 / 翻译。Settings → 翻译开启「划词自动翻译」后，选区文本提取完成即自动启动翻译并打开结果卡；关闭时保留手动翻译入口。
 
-**远程 PDF**（`agentero:arxiv:*`，如 arXiv Daily 预览）：无本地 sidecar。划词菜单只保留 **复制 / 提问 / 加入对话**（Ask 内存 ephemeral，关 tab 即丢，不写 `marks/`）；高亮 / 批注 / 翻译隐藏。底栏显示 Remote mode 徽标（`SiArxiv`，与 Info 面板同色）。引用 hover 可从 PDF dest key 生成只读条目，导入按钮走整篇入库。
+**远程 PDF**（`library:arxiv:*`，如 arXiv Daily 预览）：无本地 sidecar。划词菜单只保留 **复制 / 提问 / 加入对话**（Ask 内存 ephemeral，关 tab 即丢，不写 `marks/`）；高亮 / 批注 / 翻译隐藏。底栏显示 Remote mode 徽标（`SiArxiv`，与 Info 面板同色）。引用 hover 可从 PDF dest key 生成只读条目，导入按钮走整篇入库。
 
 | 动作 | 落盘 | UI |
 |---|---|---|
@@ -65,7 +65,7 @@ PDFium engine 由窗口共享。默认优先 **worker 引擎**（PDFium WASM 跑
 
 ## CLI / Agent 写入的标注
 
-`agentero mark add` 用 PDFium 文字引擎按 quote 定位后直接写盘（见 [backend/cli.md](../backend/cli.md)）：
+`library mark add` 用 PDFium 文字引擎按 quote 定位后直接写盘（见 [backend/cli.md](../backend/cli.md)）：
 高亮/批注追加到 `marks/annotations.json`，ask / translate 落 per-id `marks/<id>.json`。
 
 阅读器两条吸收路径：

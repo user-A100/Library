@@ -54,7 +54,7 @@ export function MoveDestinationPicker({
 				<p className="font-medium text-xs text-foreground">
 					{t("fileTree.moveToFolder", { count: sourcePaths.length })}
 				</p>
-				<div className="agentero-scroll max-h-[min(50vh,18rem)] space-y-0.5 overflow-y-auto overscroll-contain rounded-md border p-1">
+				<div className="library-scroll max-h-[min(50vh,18rem)] space-y-0.5 overflow-y-auto overscroll-contain rounded-md border p-1">
 					{folders.map((folder) => {
 						const active = !typed && selectedFolder === folder;
 						return (

@@ -397,7 +397,7 @@ export function PlazaArxivRecView({ className }: { className?: string }) {
 				</span>
 			</div>
 
-			<div className="agentero-scroll min-h-0 flex-1 overflow-y-auto p-2.5">
+			<div className="library-scroll min-h-0 flex-1 overflow-y-auto p-2.5">
 				{showEmpty ? (
 					<EmptyState
 						reason={emptyReason}

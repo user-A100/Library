@@ -74,7 +74,7 @@ jobs:
       matrix:
         task:
           - quality
-          - agentero-tests
+          - library-tests
           - cli-tests
     steps:
       - uses: actions/checkout@v5
@@ -119,12 +119,12 @@ jobs:
               cargo fmt --all --check
               cargo clippy --workspace --all-targets -- -D warnings
               ;;
-            agentero-tests)
-              cargo test -p agentero
+            library-tests)
+              cargo test -p library
               ;;
             cli-tests)
-              cargo test -p agentero-cli
-              cargo build -p agentero-cli
+              cargo test -p library-cli
+              cargo build -p library-cli
               ;;
             *)
               echo "::error::Unknown Rust CI task: ${{ matrix.task }}"

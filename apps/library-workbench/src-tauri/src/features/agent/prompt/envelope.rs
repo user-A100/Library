@@ -3,7 +3,7 @@ use crate::features::agent::prompt::skills::{format_skill_mention, SkillMentionS
 /// Build a workflow-oriented prompt. Vault-relative guidance is progressive-disclosure oriented.
 ///
 /// `skill_style` / `skill_ids` shape wording for skill activation — different CLIs use
-/// different triggers (Codex `$id`, Claude `/id`, others Agentero-injected body only).
+/// different triggers (Codex `$id`, Claude `/id`, others Library-injected body only).
 pub fn build_prompt(
     workflow: Option<&str>,
     user_prompt: &str,
@@ -40,7 +40,7 @@ pub fn build_prompt(
         "paper_reader" => {
             let skill_line = paper_reader_skill_line(skill_style, skill_ids);
             format!(
-                "You are running the Agentero paper-reader workflow. {skill_line} \
+                "You are running the Library paper-reader workflow. {skill_line} \
                  Target is a paper folder under papers/. Prefer TeX under source/, else PAPER.md, \
                  else local PDF. Write structured lecture notes into that paper's NOTES.md. Keep [[wikilinks]]. \
                  End with `## Sources` of Vault-relative paths you read."
@@ -61,7 +61,7 @@ pub fn build_prompt(
         }
         _ => {
             format!(
-                "You are an assistant working inside a Agentero research Vault (cwd is the vault root). \
+                "You are an assistant working inside a Library research Vault (cwd is the vault root). \
                  Prefer progressive disclosure of local Markdown. End substantial answers with `## Sources`.{skill_hint}"
             )
         }
@@ -69,7 +69,7 @@ pub fn build_prompt(
 
     let system = format!(
         "{system}{}{}{}",
-        agentero_cli_directive(),
+        library_cli_directive(),
         language_directive(response_language),
         personal_preference_directive(personal_prompt)
     );
@@ -78,17 +78,17 @@ pub fn build_prompt(
 }
 
 /// Keep structured Vault mutations on the public CLI, even when the optional
-/// `agentero-cli` skill was not explicitly selected in the Composer.
-fn agentero_cli_directive() -> &'static str {
-    "\n\nAgentero CLI policy: for Vault/catalog operations, prefer the `agentero` CLI \
+/// `library-cli` skill was not explicitly selected in the Composer.
+fn library_cli_directive() -> &'static str {
+    "\n\nLibrary CLI policy: for Vault/catalog operations, prefer the `library` CLI \
      with `--json` instead of manually creating paper folders or editing catalog data. \
-     When asked to add/import a paper, run `agentero import id <arxiv|doi|url> --json`; \
-     when asked to download a paper's assets, run `agentero paper download <path|id> --json`; \
-     when asked to produce PAPER.md, run `agentero paper parse <path|id> --json`; \
-     use `agentero paper list|get|paths --json` to discover catalog records and \
-     `agentero paper tag ...` or `agentero paper set-read ...` for those catalog updates. \
+     When asked to add/import a paper, run `library import id <arxiv|doi|url> --json`; \
+     when asked to download a paper's assets, run `library paper download <path|id> --json`; \
+     when asked to produce PAPER.md, run `library paper parse <path|id> --json`; \
+     use `library paper list|get|paths --json` to discover catalog records and \
+     `library paper tag ...` or `library paper set-read ...` for those catalog updates. \
      Read and edit the Markdown/source paths returned by the CLI directly when doing \
-     research or notes. If `agentero` is unavailable, say so and fall back to the \
+     research or notes. If `library` is unavailable, say so and fall back to the \
      Vault files; never invent catalog records."
 }
 
@@ -137,7 +137,7 @@ fn looks_like_machine_only_user_turn(text: &str) -> bool {
     false
 }
 
-/// Recover the human-visible user text from a stored Agentero / Codex turn body.
+/// Recover the human-visible user text from a stored Library / Codex turn body.
 /// Codex transcripts store environment_context turns and Host `build_prompt` envelopes;
 /// the chat UI must show only the human request (or empty → skip the line).
 pub fn strip_prompt_envelope_for_display(text: &str) -> String {
@@ -157,7 +157,7 @@ pub fn strip_prompt_envelope_for_display(text: &str) -> String {
             "\n\n<skill",
             "\n\nActive skills use the $ trigger",
             "\n\nActive skills use the / trigger",
-            "\n\nAgentero injects skill instructions",
+            "\n\nLibrary injects skill instructions",
         ] {
             if let Some(cut) = text.find(marker) {
                 text = text[..cut].trim().to_string();
@@ -167,9 +167,9 @@ pub fn strip_prompt_envelope_for_display(text: &str) -> String {
     }
     // Older / partial envelopes without the exact marker.
     for prefix in [
-        "You are an assistant working inside a Agentero research Vault",
+        "You are an assistant working inside a Library research Vault",
         "You are an assistant working inside a Motif research Vault",
-        "You are running the Agentero paper-reader workflow",
+        "You are running the Library paper-reader workflow",
         "You are helping with a research vault",
         "You are answering questions about a local research vault",
         "Draft a Related Work section from local papers",
@@ -231,13 +231,13 @@ fn skill_follow_hint(style: SkillMentionStyle, skill_ids: &[String]) -> String {
         .join(", ");
     match style {
         SkillMentionStyle::Dollar => format!(
-            " Active skills use the $ trigger on this agent ({list}); also honor any Agentero-injected SKILL.md body."
+            " Active skills use the $ trigger on this agent ({list}); also honor any Library-injected SKILL.md body."
         ),
         SkillMentionStyle::Slash => format!(
-            " Active skills use the / trigger on this agent ({list}); also honor any Agentero-injected SKILL.md body."
+            " Active skills use the / trigger on this agent ({list}); also honor any Library-injected SKILL.md body."
         ),
         SkillMentionStyle::InjectedOnly => format!(
-            " Agentero injects skill instructions for ({list}) into this prompt — follow them; do not expect a separate $ or / activation."
+            " Library injects skill instructions for ({list}) into this prompt — follow them; do not expect a separate $ or / activation."
         ),
     }
 }
@@ -251,15 +251,15 @@ fn paper_reader_skill_line(style: SkillMentionStyle, skill_ids: &[String]) -> St
     match style {
         SkillMentionStyle::Dollar => format!(
             "Activate the skill with `{mention}` (this agent uses the **$skill-id** syntax). \
-             Follow that skill strictly; Agentero also injects the full SKILL.md below if the runtime does not resolve it natively."
+             Follow that skill strictly; Library also injects the full SKILL.md below if the runtime does not resolve it natively."
         ),
         SkillMentionStyle::Slash => format!(
             "Activate the skill with `{mention}` (this agent uses the **/skill-id** syntax). \
-             Follow that skill strictly; Agentero also injects the full SKILL.md below if the runtime does not resolve it natively."
+             Follow that skill strictly; Library also injects the full SKILL.md below if the runtime does not resolve it natively."
         ),
         SkillMentionStyle::InjectedOnly => format!(
-            "Follow the **paper-reader** skill instructions Agentero injects in this prompt (label `{mention}`). \
-             This agent does not use Agentero Composer `$` as a runtime skill trigger — do not wait for a separate $ or / command."
+            "Follow the **paper-reader** skill instructions Library injects in this prompt (label `{mention}`). \
+             This agent does not use Library Composer `$` as a runtime skill trigger — do not wait for a separate $ or / command."
         ),
     }
 }
@@ -540,9 +540,9 @@ mod tests {
             None,
             None,
         );
-        assert!(p.contains("agentero import id <arxiv|doi|url> --json"));
-        assert!(p.contains("agentero paper download <path|id> --json"));
-        assert!(p.contains("agentero paper parse <path|id> --json"));
+        assert!(p.contains("library import id <arxiv|doi|url> --json"));
+        assert!(p.contains("library paper download <path|id> --json"));
+        assert!(p.contains("library paper parse <path|id> --json"));
     }
 
     #[test]
@@ -559,7 +559,7 @@ mod tests {
         );
         assert!(p.contains("Return only the translation"));
         assert!(!p.contains("## Sources"));
-        assert!(!p.contains("Agentero CLI policy"));
+        assert!(!p.contains("Library CLI policy"));
         assert!(!p.contains("Simplified Chinese"));
         assert!(!p.contains("User preference instructions"));
     }
@@ -606,7 +606,7 @@ mod tests {
             None,
             None,
         );
-        assert!(p.contains("Agentero injects") || p.contains("does not use Agentero Composer `$`"));
+        assert!(p.contains("Library injects") || p.contains("does not use Library Composer `$`"));
         // Should not tell the agent to activate with $paper-reader as a runtime command
         assert!(!p.contains("Activate the skill with `$paper-reader`"));
     }
@@ -709,7 +709,7 @@ mod tests {
   <cwd>/tmp</cwd>
 </environment_context>
 
-You are an assistant working inside a Agentero research Vault.
+You are an assistant working inside a Library research Vault.
 
 User request:
 hello world"#;

@@ -1,6 +1,6 @@
-name: agentero
+name: library
 options:
-  bundleIdPrefix: com.poco-ai.agentero
+  bundleIdPrefix: workbench.library.app
   deploymentTarget:
     iOS: 15.0
 fileGroups: [../../src]
@@ -10,8 +10,8 @@ configs:
 settingGroups:
   app:
     base:
-      PRODUCT_NAME: Agentero
-      PRODUCT_BUNDLE_IDENTIFIER: com.poco-ai.agentero
+      PRODUCT_NAME: Library
+      PRODUCT_BUNDLE_IDENTIFIER: workbench.library.app
 targetTemplates:
   app:
     type: application
@@ -24,27 +24,27 @@ targetTemplates:
     settings:
       groups: [app]
 targets:
-  agentero_iOS:
+  library_iOS:
     type: application
     platform: iOS
     sources:
       - path: Sources
       - path: Assets.xcassets
       - path: Externals
-      - path: agentero_iOS
+      - path: library_iOS
       - path: assets
         buildPhase: resources
         type: folder
       - path: LaunchScreen.storyboard
     info:
-      path: agentero_iOS/Info.plist
+      path: library_iOS/Info.plist
       properties:
         LSRequiresIPhoneOS: true
         UILaunchStoryboardName: LaunchScreen
-        NSCameraUsageDescription: Agentero uses the camera to scan a pairing QR code from your computer.
+        NSCameraUsageDescription: Library uses the camera to scan a pairing QR code from your computer.
         CFBundleURLTypes:
-          - CFBundleURLName: com.poco-ai.agentero
-            CFBundleURLSchemes: [agentero]
+          - CFBundleURLName: workbench.library.app
+            CFBundleURLSchemes: [library]
         UIRequiredDeviceCapabilities: [arm64, metal]
         UISupportedInterfaceOrientations:
           - UIInterfaceOrientationPortrait
@@ -58,7 +58,7 @@ targets:
         CFBundleShortVersionString: 0.9.4
         CFBundleVersion: "0.9.4"
     entitlements:
-      path: agentero_iOS/agentero_iOS.entitlements
+      path: library_iOS/library_iOS.entitlements
     scheme:
       environmentVariables:
         RUST_BACKTRACE: full
@@ -79,7 +79,7 @@ targets:
         release:
           CODE_SIGN_STYLE: Manual
           CODE_SIGN_IDENTITY: Apple Distribution
-          PROVISIONING_PROFILE_SPECIFIER: Agentero App Store
+          PROVISIONING_PROFILE_SPECIFIER: Library App Store
       groups: [app]
     dependencies:
       - framework: libapp.a

@@ -239,7 +239,7 @@ export function FrontmatterPanel({
 					</Tooltip>
 				</TooltipProvider>
 			</div>
-			<div className="agentero-scroll min-h-0 overflow-y-auto pr-1">
+			<div className="library-scroll min-h-0 overflow-y-auto pr-1">
 				{showSource ? (
 					<>
 						{!formAvailable && hasContent ? (
@@ -258,7 +258,7 @@ export function FrontmatterPanel({
 							placeholder={t("frontmatter.placeholder")}
 							rows={Math.min(12, Math.max(4, value.split("\n").length + 1))}
 							className={cn(
-								"agentero-scroll w-full min-h-[5.5rem] resize-y rounded-md border border-input",
+								"library-scroll w-full min-h-[5.5rem] resize-y rounded-md border border-input",
 								"bg-background px-2.5 py-2 font-mono text-[12px] leading-relaxed text-foreground",
 								"outline-none placeholder:text-muted-foreground/70",
 								"focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50",

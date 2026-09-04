@@ -56,7 +56,7 @@ export type RecentRemoteVault = {
 	label: string;
 };
 
-const RECENT_REMOTE_KEY = "agentero-recent-remote-vaults";
+const RECENT_REMOTE_KEY = "library-recent-remote-vaults";
 const MAX_RECENT = 8;
 
 export function getRecentRemoteVaults(): RecentRemoteVault[] {
@@ -415,7 +415,7 @@ export async function remoteCacheClear(
 }
 
 /** Session-scoped display metadata (not the handle itself). */
-const SESSION_META_KEY = "agentero-remote-session-meta";
+const SESSION_META_KEY = "library-remote-session-meta";
 
 export function saveRemoteSessionMeta(info: RemoteSessionInfo): void {
 	try {

@@ -39,7 +39,7 @@ const EN: MenuLabels = MenuLabels {
     toggle_sidebar: "Toggle Sidebar",
     split_pane: "Split Pane Right",
     toggle_chat: "Toggle Chat",
-    app: "Agentero",
+    app: "Library",
     file: "File",
     edit: "Edit",
     view: "View",
@@ -57,7 +57,7 @@ const ZH_CN: MenuLabels = MenuLabels {
     toggle_sidebar: "切换侧边栏",
     split_pane: "向右分栏",
     toggle_chat: "切换对话",
-    app: "Agentero",
+    app: "Library",
     file: "文件",
     edit: "编辑",
     view: "视图",
@@ -80,7 +80,7 @@ pub fn build_menu(
 ) -> tauri::Result<tauri::menu::Menu<tauri::Wry>> {
     let labels = menu_labels(lang);
 
-    // Appears under the app name menu on macOS (e.g. "Agentero").
+    // Appears under the app name menu on macOS (e.g. "Library").
     let settings = MenuItemBuilder::with_id("settings", labels.settings)
         .accelerator("CmdOrCtrl+,")
         .build(app)?;

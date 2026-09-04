@@ -25,11 +25,11 @@ Host commands：`mcp_get_status` / `mcp_set_enabled` / `mcp_set_port` / `mcp_set
 
 ## ChatGPT Secure MCP Tunnel
 
-App 开着且 MCP 开关打开后，可在同一设置区填写 Tunnel ID 与 Runtime API key，点 **Start** 让 Agentero 直接 spawn 并持有 `tunnel-client run`。按钮旁绿点表示隧道已连通控制平面；**注意 `/readyz` 返回 200 不代表认证成功**，真正的 ready 信号是 `tunnel-client health --require-control-plane-poll` 的 `control_plane_poll.ok=true`。
+App 开着且 MCP 开关打开后，可在同一设置区填写 Tunnel ID 与 Runtime API key，点 **Start** 让 Library 直接 spawn 并持有 `tunnel-client run`。按钮旁绿点表示隧道已连通控制平面；**注意 `/readyz` 返回 200 不代表认证成功**，真正的 ready 信号是 `tunnel-client health --require-control-plane-poll` 的 `control_plane_poll.ok=true`。
 
-隧道子进程随 Agentero 退出而停止（`RunEvent::Exit` 里 kill）。找不到 `tunnel-client` 时按钮禁用，并提示可复制安装命令 `brew install openai/tools/tunnel-client`，不会自动安装。
+隧道子进程随 Library 退出而停止（`RunEvent::Exit` 里 kill）。找不到 `tunnel-client` 时按钮禁用，并提示可复制安装命令 `brew install openai/tools/tunnel-client`，不会自动安装。
 
-Agentero 用独立 `--profile-dir`（`$XDG_CACHE_HOME/agentero/mcp-tunnel`）运行 tunnel-client，避免串到用户已有的 `~/.config/tunnel-client/*.yaml`；API key 只通过子进程 env `CONTROL_PLANE_API_KEY` 注入，不出现在命令行参数或 UI 日志。
+Library 用独立 `--profile-dir`（`$XDG_CACHE_HOME/library/mcp-tunnel`）运行 tunnel-client，避免串到用户已有的 `~/.config/tunnel-client/*.yaml`；API key 只通过子进程 env `CONTROL_PLANE_API_KEY` 注入，不出现在命令行参数或 UI 日志。
 
 Codex / Inspector 也可直接打 loopback URL。stdio 子进程不是这条通路。详细逐步教程见 [用 MCP 连接外部 Agent](../usage/mcp.md)。
 
@@ -39,7 +39,7 @@ Vault 概况不是 tool，是文档：
 
 | URI | MIME | 内容 |
 |---|---|---|
-| `agentero://vault` | Markdown | 路径、schemaVersion、papers、unread |
+| `library://vault` | Markdown | 路径、schemaVersion、papers、unread |
 
 无 Vault 时 resource 仍列出，`resources/read` 返回「未打开 Vault」正文。`initialize` instructions 提示先读这份文档，再 `paper_list` / `paper_get`。
 

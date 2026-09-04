@@ -9,7 +9,7 @@
 
 ## 1. 结论
 
-Agentero 已按调研结论实现两个相互独立的能力：
+Library 已按调研结论实现两个相互独立的能力：
 
 1. 显式“重命名当前标题”命令：负责精确改写来源 Markdown 中的标题双链与嵌入，是关系正确性的实现。
 2. 可持久化 Metadata Cache：负责加速索引恢复、反链、补全和图谱查询，是性能优化，不替代 Markdown 改写。
@@ -72,7 +72,7 @@ Obsidian 社区的受限模式复现表明，手工改标题不会更新来源�
 
 ## 4. 已放弃的自动推断方案
 
-曾尝试在每次 Agentero Markdown 自动保存时比较保存前后的 heading 序列，并在满足以下条件时推断一次标题改名：
+曾尝试在每次 Library Markdown 自动保存时比较保存前后的 heading 序列，并在满足以下条件时推断一次标题改名：
 
 - heading 数量不变；
 - level 序列不变；
@@ -146,10 +146,10 @@ wiki_rename_heading {
 `WikiIndex` 仍是 Rust Host 中的内存查询结构；`graph_rebuild` 优先校验 warm snapshot，未命中时从 Vault 文件全量生成。持久化层位于：
 
 ```text
-agentero_cache_dir()/wiki/<vault-key>.sqlite
+library_cache_dir()/wiki/<vault-key>.sqlite
 ```
 
-缓存不写入 Vault，不参与同步，也不进入 `.agentero/catalog.sqlite`。`catalog.sqlite` 是论文 metadata 的权威存储，Wiki Cache 只能是可删除的派生数据。
+缓存不写入 Vault，不参与同步，也不进入 `.library/catalog.sqlite`。`catalog.sqlite` 是论文 metadata 的权威存储，Wiki Cache 只能是可删除的派生数据。
 
 当前 snapshot 保存：
 

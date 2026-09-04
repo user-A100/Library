@@ -1,6 +1,6 @@
 # Markdown 与双链
 
-Agentero 的笔记就是普通 Markdown 文件。你可以在应用内编辑，也可以用任何外部编辑器打开。
+Library 的笔记就是普通 Markdown 文件。你可以在应用内编辑，也可以用任何外部编辑器打开。
 
 ## 基础 Markdown
 
@@ -63,7 +63,7 @@ $$\int_a^b f(x) dx$$
 编辑器支持标准 Markdown 外链：
 
 ```markdown
-[Agentero 官网](https://example.com)
+[Library 官网](https://example.com)
 ```
 
 手写完整的 `[文字](链接)`（打完最后的 `)` 会变成链接）、直接粘贴同格式，或用右键 / Slash 的 **新增外部链接**（会插入带占位文字的链接节点并打开编辑气泡，填写显示文字与地址）均可。单击已有链接可再编辑；**⌘/Ctrl+单击**、中键或右键用系统浏览器打开。指向 Vault 内其它笔记的相对路径仍走应用内跳转。
@@ -112,7 +112,7 @@ graph LR
 - `#` 标题 · `^` 文本块 · `|` 显示名 · `@` 批注；`tab` 补全 · `enter` 确认。
 - 批注 target 用路径（`NOTES` / `paper.pdf` / `papers/…/NOTES`），不要只用论文展示标题。
 
-Agentero 会索引所有 `[[...]]` 双链，用于 **Backlinks** 面板和 **Graph** 视图。
+Library 会索引所有 `[[...]]` 双链，用于 **Backlinks** 面板和 **Graph** 视图。
 
 ## 嵌入
 
@@ -134,7 +134,7 @@ Agentero 会索引所有 `[[...]]` 双链，用于 **Backlinks** 面板和 **Gra
 
 ## 图片
 
-在 Markdown 笔记中粘贴图片，Agentero 会自动把它存到该笔记的 `assets/` 文件夹：
+在 Markdown 笔记中粘贴图片，Library 会自动把它存到该笔记的 `assets/` 文件夹：
 
 ```markdown
 ![示意图](./assets/diagram.png)

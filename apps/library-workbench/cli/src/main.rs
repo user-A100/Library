@@ -1,4 +1,4 @@
-//! Agentero headless CLI (`agentero`).
+//! Library headless CLI (`library`).
 //!
 //! Vault / Catalog machine interface — no BYOA, no paper-reader.
 //! See `docs/development/cli.md`.
@@ -110,12 +110,12 @@ fn color_choice(when: ColorWhen) -> ColorChoice {
 
 #[derive(Debug, Parser)]
 #[command(
-    name = "agentero",
+    name = "library",
     version,
-    about = "Agentero headless CLI — Vault / Catalog machine interface (no BYOA)",
-    long_about = "Discover, manage, and expose a local Agentero research vault and catalog.\n\
+    about = "Library headless CLI — Vault / Catalog machine interface (no BYOA)",
+    long_about = "Discover, manage, and expose a local Library research vault and catalog.\n\
                   Does not run agents or paper-reader. Prefer --json for scripts and external agents.\n\
-                  Open a vault in the desktop app: `agentero open <PATH>` or `agentero <PATH>`.\n\
+                  Open a vault in the desktop app: `library open <PATH>` or `library <PATH>`.\n\
                   Design: docs/backend/cli.md",
     styles = clap_styles(),
     propagate_version = true
@@ -256,7 +256,7 @@ enum Commands {
     },
     /// Open a local directory as a Vault in the desktop App.
     ///
-    /// Shorthand: bare `agentero <PATH>` rewrites to this when `<PATH>` looks like
+    /// Shorthand: bare `library <PATH>` rewrites to this when `<PATH>` looks like
     /// a directory path and is not a known subcommand.
     Open {
         /// Local directory to open (absolute, relative, or `~`).
@@ -273,7 +273,7 @@ enum Commands {
         /// Write the script to the user completion directory.
         #[arg(long = "install")]
         install: bool,
-        /// Command name to complete (`agentero` or `agentero-cli`).
+        /// Command name to complete (`library` or `library-cli`).
         #[arg(long = "bin-name", value_name = "NAME")]
         bin_name: Option<String>,
     },
@@ -282,19 +282,19 @@ enum Commands {
 fn init_logging() {
     // Logs go to stderr so `--json` stdout stays a pure business envelope.
     // Default is quiet (warn+ only): everyday CLI use should not print op start/end.
-    // Opt in: `RUST_LOG=info agentero …` or `RUST_LOG=agentero::op=info,agentero_lib=debug`.
+    // Opt in: `RUST_LOG=info library …` or `RUST_LOG=library::op=info,library_lib=debug`.
     let _ = env_logger::Builder::from_env(env_logger::Env::default().default_filter_or("warn"))
         .format_timestamp_secs()
         .try_init();
 }
 
 fn main() -> StdExitCode {
-    if let Some(status) = agentero_lib::features::import::pdf_parse::try_run_pdf_parse_worker() {
+    if let Some(status) = library_lib::features::import::pdf_parse::try_run_pdf_parse_worker() {
         return StdExitCode::from(status as u8);
     }
     init_logging();
 
-    // `agentero <dir>` → `agentero open <dir>` before clap (subcommand names win).
+    // `library <dir>` → `library open <dir>` before clap (subcommand names win).
     let argv = args_rewrite::rewrite_path_shorthand(std::env::args_os().collect());
 
     // Apply color choice before parse so `--help` / usage errors use the same styles.
@@ -313,7 +313,7 @@ fn main() -> StdExitCode {
         Err(err) => err.exit(),
     };
 
-    // Honor AGENTERO_OUTPUT when -o / --json not set explicitly via env default later.
+    // Honor LIBRARY_OUTPUT when -o / --json not set explicitly via env default later.
     let format = resolve_format(&cli);
     // JSON must never carry ANSI; text paints when --color allows + TTY (auto).
     let style = match format {
@@ -332,7 +332,7 @@ fn main() -> StdExitCode {
 
     let cmd_name = command_label(&cli.command);
     let start = std::time::Instant::now();
-    log::info!(target: "agentero::op", "op start {cmd_name}");
+    log::info!(target: "library::op", "op start {cmd_name}");
 
     // Completion scripts must be raw stdout — never wrap in the JSON/text envelope.
     if let Commands::Completion {
@@ -350,7 +350,7 @@ fn main() -> StdExitCode {
         ) {
             Ok(None) => {
                 log::info!(
-                    target: "agentero::op",
+                    target: "library::op",
                     "op end {cmd_name} ok=true duration_ms={}",
                     start.elapsed().as_millis()
                 );
@@ -388,7 +388,7 @@ fn finish_ok(
 ) -> StdExitCode {
     if let Err(e) = emit_ok(globals, value) {
         log::error!(
-            target: "agentero::op",
+            target: "library::op",
             "op end {cmd_name} ok=false duration_ms={} error={}",
             start.elapsed().as_millis(),
             e
@@ -397,7 +397,7 @@ fn finish_ok(
         return StdExitCode::from(ExitCode::Business as u8);
     }
     log::info!(
-        target: "agentero::op",
+        target: "library::op",
         "op end {cmd_name} ok=true duration_ms={}",
         start.elapsed().as_millis()
     );
@@ -411,7 +411,7 @@ fn finish_err(
     err: CliError,
 ) -> StdExitCode {
     log::error!(
-        target: "agentero::op",
+        target: "library::op",
         "op end {cmd_name} ok=false duration_ms={} error_code={} error={}",
         start.elapsed().as_millis(),
         err.code,
@@ -456,7 +456,7 @@ fn resolve_format(cli: &Cli) -> OutputFormat {
     if matches!(cli.output, OutputFormat::Json) {
         return OutputFormat::Json;
     }
-    match std::env::var("AGENTERO_OUTPUT")
+    match std::env::var("LIBRARY_OUTPUT")
         .unwrap_or_default()
         .to_ascii_lowercase()
         .as_str()

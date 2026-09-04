@@ -1,6 +1,6 @@
 # 移动端
 
-Agentero iOS 移动端是桌面 Agentero 的远程客户端，不在手机上创建 Vault，也不在手机上运行 ACP Agent。论文文件、笔记、Catalog 和 Agent 进程都保留在已配对的桌面电脑上。
+Library iOS 移动端是桌面 Library 的远程客户端，不在手机上创建 Vault，也不在手机上运行 ACP Agent。论文文件、笔记、Catalog 和 Agent 进程都保留在已配对的桌面电脑上。
 
 ## 连接电脑
 
@@ -12,13 +12,13 @@ Agentero iOS 移动端是桌面 Agentero 的远程客户端，不在手机上创
 
 ### 手机配对
 
-1. 打开 Agentero iOS。
+1. 打开 Library iOS。
 2. 点击 **扫码连接**，扫描桌面端二维码。
 3. 检查手机和桌面端显示的确认码。
 4. 在桌面端允许本次设备配对。
 5. 配对成功后，手机会进入论文库。
 
-无法使用相机时，可以选择 **粘贴配对链接**，粘贴以 `agentero://pair#offer=` 开头的链接。配对凭据保存在 iOS Keychain；之后启动 App 会尝试自动恢复连接。
+无法使用相机时，可以选择 **粘贴配对链接**，粘贴以 `library://pair#offer=` 开头的链接。配对凭据保存在 iOS Keychain；之后启动 App 会尝试自动恢复连接。
 
 ## 论文库与阅读
 
@@ -63,7 +63,7 @@ PDF 通过 Bridge 分块传输并缓存到手机。缓存不是事实来源；�
 
 ## 数据与安全边界
 
-- Vault 文件和 `.agentero/catalog.sqlite` 始终以桌面端为准。
+- Vault 文件和 `.library/catalog.sqlite` 始终以桌面端为准。
 - 手机只保存设备密钥、配对信息和可丢弃的 PDF/内容缓存。
 - Bridge 使用 Relay 转发加密数据，Relay 不负责解密 Vault 或 Agent 内容。
 - 新设备首次连接必须在桌面端人工确认；已配对设备可在桌面端远程访问设置中吊销。

@@ -206,7 +206,7 @@ pub(crate) async fn recognize_pdf(
             return Err(e)
         }
         Err(e) => {
-            log::debug!(target: "agentero::recognize", "probe failed for {}: {e}", pdf_path.display());
+            log::debug!(target: "library::recognize", "probe failed for {}: {e}", pdf_path.display());
             return Ok(None);
         }
     };
@@ -227,9 +227,9 @@ pub(crate) async fn recognize_pdf(
     let client = crate::core::http::client_builder()
         .timeout(RECOGNIZE_TIMEOUT)
         .user_agent(concat!(
-            "Agentero/",
+            "Library/",
             env!("CARGO_PKG_VERSION"),
-            " (paper metadata recognition; +https://github.com/poco-ai/agentero)"
+            " (paper metadata recognition; +https://github.com/poco-ai/library)"
         ))
         .build()
         .map_err(|e| AppError::message(format!("recognizer http client: {e}")))?;
@@ -242,13 +242,13 @@ pub(crate) async fn recognize_pdf(
     let response = match response {
         Ok(r) => r,
         Err(e) => {
-            log::debug!(target: "agentero::recognize", "recognizer request failed: {e}");
+            log::debug!(target: "library::recognize", "recognizer request failed: {e}");
             return Ok(None);
         }
     };
     if !response.status().is_success() {
         log::debug!(
-            target: "agentero::recognize",
+            target: "library::recognize",
             "recognizer HTTP {}",
             response.status()
         );
@@ -257,7 +257,7 @@ pub(crate) async fn recognize_pdf(
     let hit: RecognizeHit = match response.json().await {
         Ok(hit) => hit,
         Err(e) => {
-            log::debug!(target: "agentero::recognize", "recognizer body decode: {e}");
+            log::debug!(target: "library::recognize", "recognizer body decode: {e}");
             return Ok(None);
         }
     };
@@ -386,7 +386,7 @@ pub(crate) async fn recognize_and_resolve(
                 return PdfIdentProbe::from_meta(&file_path, &meta, source);
             }
             Err(e) => {
-                log::debug!(target: "agentero::recognize", "doi {doi} resolve failed: {e}");
+                log::debug!(target: "library::recognize", "doi {doi} resolve failed: {e}");
                 // Fall through to arXiv / title fallback with the DOI kept.
                 let mut probe = title_fallback(&file_path, &hit);
                 probe.doi = Some(doi.to_string());
@@ -403,7 +403,7 @@ pub(crate) async fn recognize_and_resolve(
         match fetch_arxiv_metadata(arxiv, task_id).await {
             Ok(meta) => return PdfIdentProbe::from_meta(&file_path, &meta, "arxiv"),
             Err(e) => {
-                log::debug!(target: "agentero::recognize", "arXiv {arxiv} resolve failed: {e}");
+                log::debug!(target: "library::recognize", "arXiv {arxiv} resolve failed: {e}");
                 let mut probe = title_fallback(&file_path, &hit);
                 probe.arxiv_id = Some(arxiv.to_string());
                 return probe;
@@ -578,20 +578,20 @@ mod tests {
     /// Live end-to-end check against the real Zotero recognizer:
     /// liteparse probe → payload builder → HTTP 200 with identifiers.
     /// Run manually with a real PDF:
-    /// `AGENTERO_RECOGNIZE_LIVE_PDF=<path> cargo test -p agentero --lib live_recognize -- --ignored --nocapture`
+    /// `LIBRARY_RECOGNIZE_LIVE_PDF=<path> cargo test -p library --lib live_recognize -- --ignored --nocapture`
     #[cfg(all(test, not(any(target_os = "ios", target_os = "android"))))]
     #[tokio::test]
-    #[ignore = "network test; requires AGENTERO_RECOGNIZE_LIVE_PDF"]
+    #[ignore = "network test; requires LIBRARY_RECOGNIZE_LIVE_PDF"]
     async fn live_recognize_payload_round_trip() {
-        let Ok(pdf) = std::env::var("AGENTERO_RECOGNIZE_LIVE_PDF") else {
-            panic!("set AGENTERO_RECOGNIZE_LIVE_PDF to a real PDF path");
+        let Ok(pdf) = std::env::var("LIBRARY_RECOGNIZE_LIVE_PDF") else {
+            panic!("set LIBRARY_RECOGNIZE_LIVE_PDF to a real PDF path");
         };
         let pages = crate::features::import::pdf_parse::run_liteparse_probe_direct(Path::new(&pdf))
             .await
             .expect("probe");
         assert!(!pages.is_empty() && pages.iter().any(|p| !p.lines.is_empty()));
         let payload = build_recognizer_payload(&pages, "live-test.pdf");
-        if std::env::var_os("AGENTERO_RECOGNIZE_DEBUG").is_some() {
+        if std::env::var_os("LIBRARY_RECOGNIZE_DEBUG").is_some() {
             for (pi, page) in payload["pages"].as_array().unwrap().iter().enumerate() {
                 let lines = &page[2][0][0][0][4];
                 for (li, line) in lines.as_array().unwrap().iter().take(40).enumerate() {

@@ -1,4 +1,4 @@
-//! Pre-parse rewrite: `agentero <dir>` → `agentero open <dir>`.
+//! Pre-parse rewrite: `library <dir>` → `library open <dir>`.
 //!
 //! Known subcommands always win. Only a single bare path-like argument (not a
 //! known command name) is rewritten so clap keeps normal parsing for everything
@@ -26,7 +26,7 @@ const KNOWN_COMMANDS: &[&str] = &[
     "help",
 ];
 
-/// Rewrite `agentero <path>` into `agentero open <path>` when safe.
+/// Rewrite `library <path>` into `library open <path>` when safe.
 ///
 /// `args` is the full argv including program name at index 0.
 pub fn rewrite_path_shorthand(args: Vec<OsString>) -> Vec<OsString> {
@@ -49,7 +49,7 @@ pub fn rewrite_path_shorthand(args: Vec<OsString>) -> Vec<OsString> {
         return args;
     }
     // Only rewrite when this is the sole positional (no extra bare words).
-    // Flags after the path are fine (`agentero . --json`).
+    // Flags after the path are fine (`library . --json`).
     if has_extra_positionals(&args[1..], first_pos) {
         return args;
     }
@@ -91,7 +91,7 @@ fn looks_like_path(text: &str) -> bool {
     if text.contains('/') || text.contains('\\') {
         return true;
     }
-    // Bare name that already exists as a directory (e.g. `agentero myvault`).
+    // Bare name that already exists as a directory (e.g. `library myvault`).
     Path::new(text).is_dir()
 }
 
@@ -166,52 +166,52 @@ mod tests {
 
     #[test]
     fn rewrites_dot_to_open() {
-        let out = rewrite_path_shorthand(os(&["agentero", "."]));
-        assert_eq!(as_str(&out), vec!["agentero", "open", "."]);
+        let out = rewrite_path_shorthand(os(&["library", "."]));
+        assert_eq!(as_str(&out), vec!["library", "open", "."]);
     }
 
     #[test]
     fn rewrites_absolute_path() {
-        let out = rewrite_path_shorthand(os(&["agentero", "/tmp/research"]));
-        assert_eq!(as_str(&out), vec!["agentero", "open", "/tmp/research"]);
+        let out = rewrite_path_shorthand(os(&["library", "/tmp/research"]));
+        assert_eq!(as_str(&out), vec!["library", "open", "/tmp/research"]);
     }
 
     #[test]
     fn leaves_known_subcommands() {
-        let out = rewrite_path_shorthand(os(&["agentero", "paper", "list"]));
-        assert_eq!(as_str(&out), vec!["agentero", "paper", "list"]);
+        let out = rewrite_path_shorthand(os(&["library", "paper", "list"]));
+        assert_eq!(as_str(&out), vec!["library", "paper", "list"]);
     }
 
     #[test]
     fn leaves_completion_subcommand() {
-        let out = rewrite_path_shorthand(os(&["agentero", "completion", "zsh"]));
-        assert_eq!(as_str(&out), vec!["agentero", "completion", "zsh"]);
+        let out = rewrite_path_shorthand(os(&["library", "completion", "zsh"]));
+        assert_eq!(as_str(&out), vec!["library", "completion", "zsh"]);
     }
 
     #[test]
     fn leaves_vault_flag_then_command() {
-        let out = rewrite_path_shorthand(os(&["agentero", "--vault", "/v", "paper", "list"]));
+        let out = rewrite_path_shorthand(os(&["library", "--vault", "/v", "paper", "list"]));
         assert_eq!(
             as_str(&out),
-            vec!["agentero", "--vault", "/v", "paper", "list"]
+            vec!["library", "--vault", "/v", "paper", "list"]
         );
     }
 
     #[test]
     fn rewrites_path_with_trailing_json_flag() {
-        let out = rewrite_path_shorthand(os(&["agentero", "./vault", "--json"]));
-        assert_eq!(as_str(&out), vec!["agentero", "open", "./vault", "--json"]);
+        let out = rewrite_path_shorthand(os(&["library", "./vault", "--json"]));
+        assert_eq!(as_str(&out), vec!["library", "open", "./vault", "--json"]);
     }
 
     #[test]
     fn does_not_rewrite_multi_positionals() {
-        let out = rewrite_path_shorthand(os(&["agentero", "./a", "extra"]));
-        assert_eq!(as_str(&out), vec!["agentero", "./a", "extra"]);
+        let out = rewrite_path_shorthand(os(&["library", "./a", "extra"]));
+        assert_eq!(as_str(&out), vec!["library", "./a", "extra"]);
     }
 
     #[test]
     fn does_not_rewrite_bare_unknown_word() {
-        let out = rewrite_path_shorthand(os(&["agentero", "notacommand"]));
-        assert_eq!(as_str(&out), vec!["agentero", "notacommand"]);
+        let out = rewrite_path_shorthand(os(&["library", "notacommand"]));
+        assert_eq!(as_str(&out), vec!["library", "notacommand"]);
     }
 }

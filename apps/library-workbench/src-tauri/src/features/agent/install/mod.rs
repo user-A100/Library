@@ -5,8 +5,8 @@
 //! (or uses a local/dev runnable binary when present). PATH entry is a user-bin
 //! shim; shell rc files are never edited.
 //!
-//! Dev note: the cargo bin is named `agentero-cli` so it never collides with
-//! the GUI binary `agentero` in `target/{debug,release}/`.
+//! Dev note: the cargo bin is named `library-cli` so it never collides with
+//! the GUI binary `library` in `target/{debug,release}/`.
 
 mod download;
 #[cfg(windows)]
@@ -25,28 +25,28 @@ use tauri::{AppHandle, Manager, Runtime};
 
 pub mod commands;
 
-// Windows: shim is `agentero-cli.cmd` so the installed command matches the
-// actual binary name on PATH (`agentero-cli`); POSIX keeps the bare `agentero`
+// Windows: shim is `library-cli.cmd` so the installed command matches the
+// actual binary name on PATH (`library-cli`); POSIX keeps the bare `library`
 // symlink for muscle memory and Homebrew-style usage.
 const SHIM_NAME: &str = if cfg!(windows) {
-    "agentero-cli.cmd"
+    "library-cli.cmd"
 } else {
-    "agentero"
+    "library"
 };
 
 /// The command a user types after install (platform-consistent with the shim).
 pub(crate) fn cli_command_name() -> &'static str {
     if cfg!(windows) {
-        "agentero-cli"
+        "library-cli"
     } else {
-        "agentero"
+        "library"
     }
 }
 
 const BUNDLED_CLI_NAME: &str = if cfg!(windows) {
-    "agentero-cli.exe"
+    "library-cli.exe"
 } else {
-    "agentero-cli"
+    "library-cli"
 };
 
 /// Reject placeholder files: empty stubs, and on Windows anything that is not
@@ -86,7 +86,7 @@ pub struct CliInstallStatus {
     pub preferred_bin_on_path: bool,
     /// Whether a `brew` executable is available (PATH or standard Homebrew roots).
     pub brew_available: bool,
-    /// Command users type after install (`agentero-cli` on Windows, `agentero` elsewhere).
+    /// Command users type after install (`library-cli` on Windows, `library` elsewhere).
     pub command_name: &'static str,
     /// Human-readable note (e.g. PATH hint).
     pub message: Option<String>,
@@ -145,13 +145,13 @@ fn is_runnable_cli(path: &Path) -> bool {
 /// Directory for the downloaded/managed CLI binary (outside the App bundle).
 pub(crate) fn managed_cli_dir() -> PathBuf {
     if let Some(base) = dirs::data_local_dir() {
-        return base.join("Agentero").join("cli");
+        return base.join("Library").join("cli");
     }
     dirs::home_dir()
         .unwrap_or_else(|| PathBuf::from("."))
         .join(".local")
         .join("share")
-        .join("Agentero")
+        .join("Library")
         .join("cli")
 }
 
@@ -210,7 +210,7 @@ pub(crate) fn resolve_local_cli<R: Runtime>(app: &AppHandle<R>) -> Option<Resolv
         }
     }
 
-    // src-tauri/binaries/agentero-cli-$TRIPLE from prepare-bundled-cli.mjs
+    // src-tauri/binaries/library-cli-$TRIPLE from prepare-bundled-cli.mjs
     if let Ok(cwd) = std::env::current_dir() {
         for ancestor in cwd.ancestors().take(6) {
             let bin_dir = ancestor.join("src-tauri/binaries");
@@ -218,7 +218,7 @@ pub(crate) fn resolve_local_cli<R: Runtime>(app: &AppHandle<R>) -> Option<Resolv
                 for entry in rd.flatten() {
                     let name = entry.file_name();
                     let s = name.to_string_lossy();
-                    if s.starts_with("agentero-cli-") {
+                    if s.starts_with("library-cli-") {
                         candidates.push((entry.path(), "dev"));
                     }
                 }
@@ -245,7 +245,7 @@ fn read_cli_version(bin: &Path) -> Option<String> {
         return None;
     }
     let text = String::from_utf8_lossy(&output.stdout);
-    // clap: `agentero-cli 0.5.1` or `agentero 0.5.1`
+    // clap: `library-cli 0.5.1` or `library 0.5.1`
     let line = text.lines().next()?.trim();
     if line.is_empty() {
         return None;
@@ -275,7 +275,7 @@ fn preferred_bin_dir() -> PathBuf {
     #[cfg(windows)]
     {
         if let Some(base) = dirs::data_local_dir() {
-            return base.join("Agentero").join("bin");
+            return base.join("Library").join("bin");
         }
     }
     dirs::home_dir()
@@ -289,7 +289,7 @@ pub(crate) fn managed_shim_path() -> PathBuf {
 }
 
 /// Windows: add the shim dir to the user PATH (HKCU\Environment) so a fresh
-/// terminal can run `agentero-cli`. POSIX: no-op — the symlink shim lives in a
+/// terminal can run `library-cli`. POSIX: no-op — the symlink shim lives in a
 /// bin dir the user normally already has on PATH (e.g. `~/.local/bin`).
 #[cfg(windows)]
 pub(crate) fn add_shim_dir_to_user_path() -> Result<(), AppError> {
@@ -344,13 +344,13 @@ fn is_on_path(dir: &Path) -> bool {
     })
 }
 
-/// Whether `shim` is a managed Agentero CLI entry pointing at `target` (or same file).
+/// Whether `shim` is a managed Library CLI entry pointing at `target` (or same file).
 fn shim_points_to(shim: &Path, target: Option<&Path>) -> bool {
     if !shim.exists() {
         return false;
     }
     let Some(target) = target else {
-        return is_agentero_shim(shim);
+        return is_library_shim(shim);
     };
     #[cfg(unix)]
     {
@@ -372,26 +372,26 @@ fn shim_points_to(shim: &Path, target: Option<&Path>) -> bool {
             return true;
         }
     }
-    is_agentero_shim(shim)
+    is_library_shim(shim)
 }
 
-fn is_agentero_shim(shim: &Path) -> bool {
+fn is_library_shim(shim: &Path) -> bool {
     #[cfg(unix)]
     {
         if let Ok(target) = fs::read_link(shim) {
             let s = target.to_string_lossy();
-            return s.contains("agentero-cli")
-                || s.contains("Agentero")
-                || s.ends_with("agentero")
-                || s.contains("/cli/agentero");
+            return s.contains("library-cli")
+                || s.contains("Library")
+                || s.ends_with("library")
+                || s.contains("/cli/library");
         }
     }
     #[cfg(windows)]
     {
         if let Ok(text) = fs::read_to_string(shim) {
-            return text.contains("agentero-cli")
-                || text.contains("Agentero")
-                || text.contains("agentero.exe");
+            return text.contains("library-cli")
+                || text.contains("Library")
+                || text.contains("library.exe");
         }
     }
     false
@@ -409,7 +409,7 @@ pub fn collect_status<R: Runtime>(app: &AppHandle<R>) -> CliInstallStatus {
     let cli_path = local.as_ref().map(|r| r.path.clone());
     let shim = managed_shim_path();
     let installed =
-        shim.exists() && (is_agentero_shim(&shim) || shim_points_to(&shim, cli_path.as_deref()));
+        shim.exists() && (is_library_shim(&shim) || shim_points_to(&shim, cli_path.as_deref()));
     let version_matches = cli_version
         .as_deref()
         .map(|v| versions_equal(v, &app_ver))
@@ -440,7 +440,7 @@ pub fn collect_status<R: Runtime>(app: &AppHandle<R>) -> CliInstallStatus {
             )
         } else {
             format!(
-                "CLI installed at {} but that directory is not on PATH. Add it to your shell PATH (do not edit rc from Agentero).",
+                "CLI installed at {} but that directory is not on PATH. Add it to your shell PATH (do not edit rc from Library).",
                 bin_dir.display()
             )
         });
@@ -488,9 +488,9 @@ pub(crate) fn install_shim(binary: &Path, shim: &Path) -> Result<(), AppError> {
     }
     // Never clobber a user-owned binary/symlink that we did not create.
     if shim.exists() {
-        if !is_agentero_shim(shim) && !shim_points_to(shim, Some(binary)) {
+        if !is_library_shim(shim) && !shim_points_to(shim, Some(binary)) {
             return Err(AppError::message(format!(
-                "refusing to overwrite {}: not an Agentero-managed CLI entry",
+                "refusing to overwrite {}: not an Library-managed CLI entry",
                 shim.display()
             )));
         }
@@ -541,9 +541,9 @@ pub(crate) fn uninstall_shim(shim: &Path, binary: Option<&Path>) -> Result<bool,
     if !shim.exists() {
         return Ok(false);
     }
-    if !shim_points_to(shim, binary) && !is_agentero_shim(shim) {
+    if !shim_points_to(shim, binary) && !is_library_shim(shim) {
         return Err(AppError::message(format!(
-            "refusing to remove {}: not an Agentero-managed shim",
+            "refusing to remove {}: not an Library-managed shim",
             shim.display()
         )));
     }
@@ -605,7 +605,7 @@ mod tests {
 
     fn test_dir(tag: &str) -> PathBuf {
         let dir =
-            std::env::temp_dir().join(format!("agentero-cli-install-{tag}-{}", std::process::id()));
+            std::env::temp_dir().join(format!("library-cli-install-{tag}-{}", std::process::id()));
         let _ = fs::remove_dir_all(&dir);
         fs::create_dir_all(&dir).unwrap();
         dir
@@ -638,7 +638,7 @@ mod tests {
         // The historical externalBin stub body: batch text with an .exe name.
         fs::write(
             &stub,
-            b"@echo off\r\necho agentero-cli stub\r\nexit /b 1\r\n",
+            b"@echo off\r\necho library-cli stub\r\nexit /b 1\r\n",
         )
         .unwrap();
         assert!(!is_plausible_cli_file(&stub));
@@ -651,7 +651,7 @@ mod tests {
         let dir = test_dir("refuse");
         let foreign = dir.join(SHIM_NAME);
         let bundled = dir.join(BUNDLED_CLI_NAME);
-        fs::write(&foreign, b"not-agentero").unwrap();
+        fs::write(&foreign, b"not-library").unwrap();
         // Passes size check but --version fails → install_shim errors first
         // (on Windows the non-PE body trips the plausibility check instead).
         fs::write(&bundled, b"not-a-real-binary").unwrap();
@@ -662,7 +662,7 @@ mod tests {
                 || err.to_string().contains("missing or empty"),
             "{err}"
         );
-        assert_eq!(fs::read(&foreign).unwrap(), b"not-agentero");
+        assert_eq!(fs::read(&foreign).unwrap(), b"not-library");
         let _ = fs::remove_dir_all(&dir);
     }
 
@@ -670,11 +670,11 @@ mod tests {
     #[test]
     fn install_replaces_managed_symlink_when_version_ok() {
         let dir = test_dir("replace");
-        let bundled_old = dir.join("agentero-cli-old");
+        let bundled_old = dir.join("library-cli-old");
         let bundled_new = dir.join(BUNDLED_CLI_NAME);
         let shim = dir.join(SHIM_NAME);
         // Shell scripts that implement --version.
-        let script = "#!/bin/sh\nif [ \"$1\" = \"--version\" ]; then echo 'agentero-cli 9.9.9'; exit 0; fi\nexit 0\n";
+        let script = "#!/bin/sh\nif [ \"$1\" = \"--version\" ]; then echo 'library-cli 9.9.9'; exit 0; fi\nexit 0\n";
         fs::write(&bundled_old, script).unwrap();
         fs::write(&bundled_new, script).unwrap();
         use std::os::unix::fs::PermissionsExt;

@@ -1,8 +1,8 @@
-//! `agentero feed *` — XDG `feeds.sqlite` subscriptions (same store as Plaza).
+//! `library feed *` — XDG `feeds.sqlite` subscriptions (same store as Plaza).
 
 use crate::error::CliError;
 use crate::resolve::GlobalOpts;
-use agentero_lib::features::feeds::{add_and_fetch, list, remove_by_ref};
+use library_lib::features::feeds::{add_and_fetch, list, remove_by_ref};
 use clap::{Subcommand, ValueHint};
 use serde_json::{json, Value};
 

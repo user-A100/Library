@@ -33,7 +33,7 @@ export function ImageViewer({ source, alt, className }: ImageViewerProps) {
 	return (
 		<div
 			className={cn(
-				"agentero-scroll-both relative flex h-full min-h-0 w-full min-w-0 items-center justify-center overflow-auto bg-muted/20 p-4",
+				"library-scroll-both relative flex h-full min-h-0 w-full min-w-0 items-center justify-center overflow-auto bg-muted/20 p-4",
 				className,
 			)}
 		>

@@ -1,4 +1,4 @@
-//! `agentero completion` — generate / install shell tab-completion scripts.
+//! `library completion` — generate / install shell tab-completion scripts.
 
 use crate::error::CliError;
 use crate::resolve::GlobalOpts;
@@ -83,9 +83,9 @@ fn resolve_bin_name(explicit: Option<&str>) -> String {
         return name.to_string();
     }
     match invoked_name().as_str() {
-        "agentero" | "agentero-cli" => invoked_name(),
-        _ if cfg!(windows) => "agentero-cli".into(),
-        _ => "agentero".into(),
+        "library" | "library-cli" => invoked_name(),
+        _ if cfg!(windows) => "library-cli".into(),
+        _ => "library".into(),
     }
 }
 
@@ -96,7 +96,7 @@ fn invoked_name() -> String {
         .map(Path::new)
         .and_then(Path::file_stem)
         .and_then(|s| s.to_str())
-        .unwrap_or("agentero")
+        .unwrap_or("library")
         .to_string()
 }
 

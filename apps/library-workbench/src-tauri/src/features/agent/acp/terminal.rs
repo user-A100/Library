@@ -55,7 +55,7 @@ impl AcpTerminalManager {
         request: CreateTerminalRequest,
     ) -> Result<CreateTerminalResponse, String> {
         log::debug!(
-            target: "agentero::agent::terminal",
+            target: "library::agent::terminal",
             "create: command={} args={:?} cwd={:?} env_count={}",
             request.command,
             request.args,

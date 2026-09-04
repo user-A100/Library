@@ -23,7 +23,7 @@ import { setTree, setTreeLoading } from "@/lib/vault/store";
 
 export function useAppBootstrap(): void {
 	const { setTheme } = useTheme();
-	// CLI / deep-link: agentero open <path> → vault:open-request
+	// CLI / deep-link: library open <path> → vault:open-request
 	useVaultOpenRequest();
 
 	const theme = useSettings((s) => s.theme);

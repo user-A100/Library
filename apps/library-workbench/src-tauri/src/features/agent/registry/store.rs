@@ -31,7 +31,7 @@ impl AgentRegistry {
         if migrated_codex || migrated_grok || migrated_env {
             if let Err(error) = persist(&path, &state) {
                 log::error!(
-                    target: "agentero::agent",
+                    target: "library::agent",
                     "failed to persist agent registration migration: {error}"
                 );
             }
@@ -754,7 +754,7 @@ fn apply_proxy_to_agent(agent: &mut AgentDescriptor, proxy_enabled: bool, proxy_
 }
 
 /// Env key set on every ACP child when a custom User-Agent is configured.
-pub const AGENTERO_USER_AGENT_ENV: &str = "AGENTERO_USER_AGENT";
+pub const LIBRARY_USER_AGENT_ENV: &str = "LIBRARY_USER_AGENT";
 /// Claude Code / Claude ACP recognizes this multi-line header map (cindy/cc pattern).
 pub const ANTHROPIC_CUSTOM_HEADERS_ENV: &str = "ANTHROPIC_CUSTOM_HEADERS";
 
@@ -769,7 +769,7 @@ fn apply_user_agent_settings(state: &mut AgentRegistryState) {
 fn apply_user_agent_to_agent(agent: &mut AgentDescriptor, user_agent: &str, provider_ids: &str) {
     // Snapshot always starts from persisted env (no prior injection). Only clear
     // our env key here so empty UA is a no-op for CODEX_CONFIG on disk.
-    agent.env.remove(AGENTERO_USER_AGENT_ENV);
+    agent.env.remove(LIBRARY_USER_AGENT_ENV);
 
     let ua = user_agent.trim();
     if ua.is_empty() {
@@ -777,7 +777,7 @@ fn apply_user_agent_to_agent(agent: &mut AgentDescriptor, user_agent: &str, prov
     }
     agent
         .env
-        .insert(AGENTERO_USER_AGENT_ENV.to_string(), ua.to_string());
+        .insert(LIBRARY_USER_AGENT_ENV.to_string(), ua.to_string());
 
     match agent.template {
         // Codex ACP merges CODEX_CONFIG into session config; model_providers.*.http_headers
@@ -790,7 +790,7 @@ fn apply_user_agent_to_agent(agent: &mut AgentDescriptor, user_agent: &str, prov
         AgentTemplate::ClaudeAcp => {
             merge_anthropic_custom_headers_user_agent(&mut agent.env, ua);
         }
-        // Other ACP templates: only AGENTERO_USER_AGENT today (agent may ignore it).
+        // Other ACP templates: only LIBRARY_USER_AGENT today (agent may ignore it).
         AgentTemplate::Opencode
         | AgentTemplate::Gemini
         | AgentTemplate::QoderCli
@@ -925,7 +925,7 @@ mod tests {
     use super::{
         apply_user_agent_to_agent, merge_anthropic_custom_headers_user_agent,
         merge_codex_config_user_agent, migrate_legacy_codex_agents, migrate_legacy_grok_agents,
-        AGENTERO_USER_AGENT_ENV, ANTHROPIC_CUSTOM_HEADERS_ENV,
+        LIBRARY_USER_AGENT_ENV, ANTHROPIC_CUSTOM_HEADERS_ENV,
     };
     use crate::features::agent::models::{AgentDescriptor, AgentRegistryState, AgentTemplate};
     use std::collections::HashMap;
@@ -1050,7 +1050,7 @@ mod tests {
         };
         apply_user_agent_to_agent(&mut agent, "codex-cli/1.2.3", "custom");
         assert_eq!(
-            agent.env.get(AGENTERO_USER_AGENT_ENV).map(String::as_str),
+            agent.env.get(LIBRARY_USER_AGENT_ENV).map(String::as_str),
             Some("codex-cli/1.2.3")
         );
         let raw = agent.env.get("CODEX_CONFIG").expect("CODEX_CONFIG");
@@ -1061,7 +1061,7 @@ mod tests {
         );
         // Empty UA only clears our env key; snapshot always restarts from disk.
         apply_user_agent_to_agent(&mut agent, "", "");
-        assert!(!agent.env.contains_key(AGENTERO_USER_AGENT_ENV));
+        assert!(!agent.env.contains_key(LIBRARY_USER_AGENT_ENV));
     }
 
     #[test]
@@ -1137,7 +1137,7 @@ mod tests {
         };
         apply_user_agent_to_agent(&mut agent, "claude-code/1.0.0", "");
         assert_eq!(
-            agent.env.get(AGENTERO_USER_AGENT_ENV).map(String::as_str),
+            agent.env.get(LIBRARY_USER_AGENT_ENV).map(String::as_str),
             Some("claude-code/1.0.0")
         );
         assert_eq!(

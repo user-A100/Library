@@ -45,7 +45,7 @@ import type {
 import { isKnownUiTheme } from "@/lib/ui/theme";
 
 /** Legacy browser key — only used once to migrate into Host `settings.json`. */
-const LEGACY_SETTINGS_KEY = "agentero-settings";
+const LEGACY_SETTINGS_KEY = "library-settings";
 
 type SettingsGetResult = {
 	settings: AppSettings;

@@ -447,7 +447,7 @@ async fn unpaywall_pdf_url(doi: &str) -> Option<String> {
     use crate::features::scholar_api::traits::PdfUrlSource;
     use crate::features::scholar_api::ApiQuery;
 
-    let source = UnpaywallApi::new("agentero@users.noreply.github.com");
+    let source = UnpaywallApi::new("library@users.noreply.github.com");
     source
         .pdf_url(&ApiQuery::Doi(doi.trim().to_string()))
         .await
@@ -923,7 +923,7 @@ mod tests {
 
     #[test]
     fn unpack_plain_and_gzipped_tex() {
-        let paper = std::env::temp_dir().join(format!("agentero-paper-{}", std::process::id()));
+        let paper = std::env::temp_dir().join(format!("library-paper-{}", std::process::id()));
         let source = paper.join("source");
         let _ = fs::remove_dir_all(&paper);
         fs::create_dir_all(&source).unwrap();
@@ -944,7 +944,7 @@ mod tests {
     #[test]
     fn unpack_pdf_only_eprint_to_paper_root() {
         let paper =
-            std::env::temp_dir().join(format!("agentero-pdf-eprint-{}", std::process::id()));
+            std::env::temp_dir().join(format!("library-pdf-eprint-{}", std::process::id()));
         let source = paper.join("source");
         let _ = fs::remove_dir_all(&paper);
         fs::create_dir_all(&source).unwrap();
@@ -979,7 +979,7 @@ mod tests {
     #[test]
     fn pdf_only_eprint_does_not_overwrite_existing_pdf() {
         let paper = std::env::temp_dir().join(format!(
-            "agentero-pdf-race-{}-{}-existing",
+            "library-pdf-race-{}-{}-existing",
             std::process::id(),
             uuid::Uuid::new_v4().simple()
         ));
@@ -1001,7 +1001,7 @@ mod tests {
     #[test]
     fn pdf_only_eprint_writes_when_no_existing_pdf() {
         let paper = std::env::temp_dir().join(format!(
-            "agentero-pdf-race-{}-{}-new",
+            "library-pdf-race-{}-{}-new",
             std::process::id(),
             uuid::Uuid::new_v4().simple()
         ));

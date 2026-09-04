@@ -18,7 +18,7 @@
 2. 点击该链接；
 3. 外部浏览器没有打开，应用内部反而弹出一个空白标签页 / Webview 窗口。
 
-GitHub Issue: [#358](https://github.com/poco-ai/Agentero/issues/358)
+GitHub Issue: [#358](https://github.com/poco-ai/Library/issues/358)
 
 ---
 

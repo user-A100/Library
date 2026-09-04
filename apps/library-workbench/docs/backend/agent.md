@@ -1,6 +1,6 @@
 # Agent（ACP Host）
 
-Agentero 作为 **ACP Client**，stdio JSON-RPC 连接用户本机或远端 Agent（BYOA，不托管模型 Key）。
+Library 作为 **ACP Client**，stdio JSON-RPC 连接用户本机或远端 Agent（BYOA，不托管模型 Key）。
 
 ## 协议与运行时
 
@@ -13,7 +13,7 @@ Agentero 作为 **ACP Client**，stdio JSON-RPC 连接用户本机或远端 Agen
 - 统一接口：OpenCode、OpenClaw、Hermes、Gemini、Claude ACP、Codex ACP、Qoder、Grok、Pi、Dsh（DeepSeek Harness）、Kimi Code、自定义 `command`/`args`/`env`。
 - Dsh：ACP 服务端是 `@deepseek-ai/dsh-acp-demo`（npm 包），与依赖插件一起固定
   `0.1.1-rc.2`。安装/启动三处入口，检测按序回退：
-  1. App 管理目录 `~/.agentero/dsh-acp/node_modules/.bin/dsh-acp-demo`（设置页「安装」按钮，
+  1. App 管理目录 `~/.library/dsh-acp/node_modules/.bin/dsh-acp-demo`（设置页「安装」按钮，
      Rust 写入默认 `cordis.yml` + 最小 `package.json` 后执行 `npm i`；`package.json`
      防止 npm 沿目录树向上找到用户 `~/package.json` 把包装进 `~/node_modules`）；
   2. 用户 home npm 根 `~/node_modules/.bin/dsh-acp-demo`（手动 `npm i` 且 home 有
@@ -36,7 +36,7 @@ Agentero 作为 **ACP Client**，stdio JSON-RPC 连接用户本机或远端 Agen
   `update` 重跑幂等的官方 installer。登录在终端完成（`kimi` → `/login`，OAuth 或
   Moonshot API key），skill 走 slash mention。
 - Pi：无原生 ACP，走社区适配器 `pi-acp`（内部 spawn `pi --mode rpc`）；detect 用 host `pi`、
-  ACP 入口用 `pi-acp`。pi 的 skill 以 `/skill:<name>` 暴露，故 Agentero 不发 `/<name>`
+  ACP 入口用 `pi-acp`。pi 的 skill 以 `/skill:<name>` 暴露，故 Library 不发 `/<name>`
   mention，只注入 `SKILL.md` 正文。
 - Pi 启动横幅：`pi-acp` 在 `session/new` 后把 pi 的启动信息（`pi vX.Y.Z` +
   `## Context` / `## Skills` / `## Extensions` 清单）当作普通 agent message 推送。Host
@@ -81,9 +81,9 @@ Kimi Code ACP 会把 `Bash`/`Glob`/`Grep` 等工具实现为 `terminal/create`�
 `/bin/bash -c "cd '<cwd>' && <cmd>"`，Host 按收到的 `cwd` 直接 spawn 该 bash
 进程即可。若 Host 没有声明 `terminal` 能力，或 Kimi Code 版本过旧，这些工具会
 直接失败并报 `ACP runtime only supports interactive Bash tool processes`。
-此外 Kimi Code 的权限请求目前只返回通用 `"bash"` 字符串（[MoonshotAI/kimi-code#800](https://github.com/MoonshotAI/kimi-code/issues/800)），不会给出具体命令，因此 Agentero 默认的 Restricted 策略会拒绝、Ask 模式也只能看到 `bash`，需要用户在 Kimi 侧或 Agentero 侧开启自动批准（YOLO）才能静默执行。
+此外 Kimi Code 的权限请求目前只返回通用 `"bash"` 字符串（[MoonshotAI/kimi-code#800](https://github.com/MoonshotAI/kimi-code/issues/800)），不会给出具体命令，因此 Library 默认的 Restricted 策略会拒绝、Ask 模式也只能看到 `bash`，需要用户在 Kimi 侧或 Library 侧开启自动批准（YOLO）才能静默执行。
 
-多轮续聊必须传 **provider session id**（不是 Agentero runtime id）。Grok Build ACP
+多轮续聊必须传 **provider session id**（不是 Library runtime id）。Grok Build ACP
 声明 `loadSession: true`、**不**声明 `resume`；对 Grok 调用 `session/resume` 会
 `Method not found`，Host 应改走 `session/load`。
 
@@ -123,12 +123,12 @@ cursor 不再推进（`next == prev`）时视为走完，避免死循环。
 | `agent_respond_permission` | 回答权限请求 |
 | `agent_respond_elicitation` | 回答 form elicitation（Codex `request_user_input`） |
 | `agent_respond_ask_user` | 回答 Grok `_x.ai/ask_user_question` |
-| `agent_run_tool_lifecycle` | 静默安装/升级/卸载 catalog CLI（及 Claude/Codex ACP 适配器）；本机 lifecycle 串行执行，设置页在对应 Agent 行内展示安装 / 扫描 / 探测进度（#250），Windows 使用唯一临时 `.bat` 并按 UTF-8/GBK 解码错误输出；`uninstall` 做 best-effort npm 卸载 + 受管目录删除（不改 shell rc），成功后联动删除 catalog 注册项；见 [api.md](api.md) 与 [#225](https://github.com/poco-ai/Agentero/issues/225) |
+| `agent_run_tool_lifecycle` | 静默安装/升级/卸载 catalog CLI（及 Claude/Codex ACP 适配器）；本机 lifecycle 串行执行，设置页在对应 Agent 行内展示安装 / 扫描 / 探测进度（#250），Windows 使用唯一临时 `.bat` 并按 UTF-8/GBK 解码错误输出；`uninstall` 做 best-effort npm 卸载 + 受管目录删除（不改 shell rc），成功后联动删除 catalog 注册项；见 [api.md](api.md) 与 [#225](https://github.com/poco-ai/Library/issues/225) |
 | `agent_tool_lifecycle_supported` / `agent_tool_install_commands` / `agent_tool_uninstall_info` | 是否支持静默安装；平台手动安装文案；卸载清理项清单（确认对话框展示） |
 
 ACP slash command 不是独立的 `session/compact` RPC。Host 转发 Agent 广播的
 `available_commands_update`；前端提交命令时设置 `isAcpCommand`，Host 跳过
-Agentero prompt envelope、skill/context 注入，并将原始 `/command` 作为
+Library prompt envelope、skill/context 注入，并将原始 `/command` 作为
 `session/prompt` 发送到当前 provider session。
 
 ## 权限
@@ -149,7 +149,7 @@ Agentero prompt envelope、skill/context 注入，并将原始 `/command` 作为
 
 ## 结构化提问（多 harness）
 
-ACP **没有**统一的 ask-user tool 规范：各 harness 的字段名、挂载点（tool / elicitation / ext method）都不一样。Agentero 作为 ACP Client 做三件事：
+ACP **没有**统一的 ask-user tool 规范：各 harness 的字段名、挂载点（tool / elicitation / ext method）都不一样。Library 作为 ACP Client 做三件事：
 
 1. **打开交互能力**：`initialize` 声明 `elicitation.form`（依赖 crate feature `unstable_elicitation`）；否则 Codex 等对 `request_user_input` 会直接空答。
 2. **Client adapter 归一**：把不同 rawInput / 事件解析成同一套 `AskUserQuestion` 页（`parseAskUserQuestions` 等），前端只渲染一张表。
@@ -188,18 +188,18 @@ ACP **没有**统一的 ask-user tool 规范：各 harness 的字段名、挂载
 
 部分中转站用 `User-Agent` 做客户端亲和（new-api Codex 通道常见 `codex-cli/<version>`；Claude 侧常见 `claude-cli/*` / `claude-code/*`）。
 
-Agentero 是 ACP **Client**：模型 HTTP **不**经 Host 转发，因此只能在 **spawn ACP 子进程时** 注入 env/config（与 bb 等 Host 一致），不能像 cc-switch 本地代理那样中途改头。
+Library 是 ACP **Client**：模型 HTTP **不**经 Host 转发，因此只能在 **spawn ACP 子进程时** 注入 env/config（与 bb 等 Host 一致），不能像 cc-switch 本地代理那样中途改头。
 
 - 设置 → Agent → **User-Agent**（预设下拉 + 可手填）+ **Codex Provider id**（可选）。
 - Host 在 registry snapshot 时按模板注入：
-  - 所有模板：`AGENTERO_USER_AGENT=<value>`
+  - 所有模板：`LIBRARY_USER_AGENT=<value>`
   - `codex-acp` / `custom`：`CODEX_CONFIG.model_providers.<id>.http_headers.User-Agent`
   - `claude-acp`：`ANTHROPIC_CUSTOM_HEADERS` 中 upsert `User-Agent: …` 行
 - Codex Provider 目标：显式列表；否则 `CODEX_CONFIG` 已有 keys、`MODEL_PROVIDER`、或回退 `openai`。
-- 远程 SSH 转发：`AGENTERO_USER_AGENT` / `CODEX_CONFIG` / `MODEL_PROVIDER` / `ANTHROPIC_CUSTOM_HEADERS`。
+- 远程 SSH 转发：`LIBRARY_USER_AGENT` / `CODEX_CONFIG` / `MODEL_PROVIDER` / `ANTHROPIC_CUSTOM_HEADERS`。
 - 命令：`agent_set_user_agent`；`agent_scan_catalog` 回传当前值。
 
-说明：是否生效取决于底层 Agent 是否认上述 env/config；OpenCode/Gemini/Grok 目前仅带 `AGENTERO_USER_AGENT`（多数忽略）。
+说明：是否生效取决于底层 Agent 是否认上述 env/config；OpenCode/Gemini/Grok 目前仅带 `LIBRARY_USER_AGENT`（多数忽略）。
 
 **new-api 侧（源码）在做什么：**
 

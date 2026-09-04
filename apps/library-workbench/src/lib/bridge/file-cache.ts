@@ -1,4 +1,4 @@
-const DB_NAME = "agentero-bridge-files";
+const DB_NAME = "library-bridge-files";
 const STORE_NAME = "files";
 const MAX_CACHE_BYTES = 512 * 1024 * 1024;
 

@@ -3,7 +3,7 @@
 //!
 //! | Kind | Env | Default (Unix) | Contents |
 //! |------|-----|----------------|----------|
-//! | config | `$XDG_CONFIG_HOME` | `~/.config` | `agentero/settings.json`, `agents.json` |
+//! | config | `$XDG_CONFIG_HOME` | `~/.config` | `library/settings.json`, `agents.json` |
 //! | cache | `$XDG_CACHE_HOME` | `~/.cache` | remote work mirrors, PDF blobs |
 //! | data | `$XDG_DATA_HOME` | `~/.local/share` | `usage.sqlite` (device-local activity), `feeds.sqlite` |
 //! | state | `$XDG_STATE_HOME` | `~/.local/state` | reserved |
@@ -45,9 +45,9 @@ pub fn xdg_cache_home() -> PathBuf {
     }
 }
 
-/// `$XDG_CONFIG_HOME/agentero` (created on demand by callers).
-pub fn agentero_config_dir() -> PathBuf {
-    xdg_config_home().join("agentero")
+/// `$XDG_CONFIG_HOME/library` (created on demand by callers).
+pub fn library_config_dir() -> PathBuf {
+    xdg_config_home().join("library")
 }
 
 /// Resolve XDG data home (`$XDG_DATA_HOME` or platform default).
@@ -65,57 +65,57 @@ pub fn xdg_data_home() -> PathBuf {
     }
 }
 
-/// `$XDG_CACHE_HOME/agentero` (created on demand by callers).
-pub fn agentero_cache_dir() -> PathBuf {
-    xdg_cache_home().join("agentero")
+/// `$XDG_CACHE_HOME/library` (created on demand by callers).
+pub fn library_cache_dir() -> PathBuf {
+    xdg_cache_home().join("library")
 }
 
-/// `$XDG_DATA_HOME/agentero` (created on demand by callers).
-pub fn agentero_data_dir() -> PathBuf {
-    xdg_data_home().join("agentero")
+/// `$XDG_DATA_HOME/library` (created on demand by callers).
+pub fn library_data_dir() -> PathBuf {
+    xdg_data_home().join("library")
 }
 
-/// Device-local activity log: `…/agentero/usage.sqlite`.
+/// Device-local activity log: `…/library/usage.sqlite`.
 pub fn usage_db_path() -> PathBuf {
-    agentero_data_dir().join("usage.sqlite")
+    library_data_dir().join("usage.sqlite")
 }
 
-/// Plaza feed subscriptions + item cache: `…/agentero/feeds.sqlite`.
+/// Plaza feed subscriptions + item cache: `…/library/feeds.sqlite`.
 pub fn feeds_db_path() -> PathBuf {
-    agentero_data_dir().join("feeds.sqlite")
+    library_data_dir().join("feeds.sqlite")
 }
 
-/// ONNX / other large assets: `$XDG_CACHE_HOME/agentero/models`.
-pub fn agentero_models_dir() -> PathBuf {
-    agentero_cache_dir().join("models")
+/// ONNX / other large assets: `$XDG_CACHE_HOME/library/models`.
+pub fn library_models_dir() -> PathBuf {
+    library_cache_dir().join("models")
 }
 
 /// Owned by the built-in ChatGPT tunnel supervisor:
-/// `$XDG_CACHE_HOME/agentero/mcp-tunnel` (private `--profile-dir`, health url, log).
+/// `$XDG_CACHE_HOME/library/mcp-tunnel` (private `--profile-dir`, health url, log).
 pub fn mcp_tunnel_dir() -> PathBuf {
-    agentero_cache_dir().join("mcp-tunnel")
+    library_cache_dir().join("mcp-tunnel")
 }
 
-/// App settings file: `…/agentero/settings.json`.
+/// App settings file: `…/library/settings.json`.
 pub fn settings_path() -> PathBuf {
-    agentero_config_dir().join("settings.json")
+    library_config_dir().join("settings.json")
 }
 
-/// Agent registry file: `…/agentero/agents.json`.
+/// Agent registry file: `…/library/agents.json`.
 pub fn agents_path() -> PathBuf {
-    agentero_config_dir().join("agents.json")
+    library_config_dir().join("agents.json")
 }
 
 /// Long-lived desktop Bridge identity and paired-device registry.
 pub fn bridge_config_dir() -> PathBuf {
-    agentero_config_dir().join("bridge")
+    library_config_dir().join("bridge")
 }
 
-/// Pre-XDG path used by older builds (`dirs::config_dir()/agentero`).
+/// Pre-XDG path used by older builds (`dirs::config_dir()/library`).
 /// On Linux this often equals the XDG path; on macOS it was
-/// `~/Library/Application Support/agentero`.
+/// `~/Library/Application Support/library`.
 pub fn legacy_config_dir() -> Option<PathBuf> {
-    dirs::config_dir().map(|p| p.join("agentero"))
+    dirs::config_dir().map(|p| p.join("library"))
 }
 
 /// If `target` is missing but a legacy file exists, copy it once (best-effort).
@@ -127,7 +127,7 @@ pub fn migrate_legacy_file(file_name: &str, target: &std::path::Path) {
         return;
     };
     // Same directory as the new path — nothing to migrate.
-    if legacy_dir == agentero_config_dir() {
+    if legacy_dir == library_config_dir() {
         return;
     }
     let src = legacy_dir.join(file_name);
@@ -140,7 +140,7 @@ pub fn migrate_legacy_file(file_name: &str, target: &std::path::Path) {
     match std::fs::copy(&src, target) {
         Ok(_) => {
             log::info!(
-                target: "agentero::paths",
+                target: "library::paths",
                 "migrated {file_name} from {} → {}",
                 src.display(),
                 target.display()
@@ -148,7 +148,7 @@ pub fn migrate_legacy_file(file_name: &str, target: &std::path::Path) {
         }
         Err(e) => {
             log::warn!(
-                target: "agentero::paths",
+                target: "library::paths",
                 "failed to migrate {file_name} from {}: {e}",
                 src.display()
             );
@@ -175,9 +175,9 @@ mod tests {
     use super::*;
 
     #[test]
-    fn config_dir_ends_with_agentero() {
-        let p = agentero_config_dir();
-        assert_eq!(p.file_name().and_then(|s| s.to_str()), Some("agentero"));
+    fn config_dir_ends_with_library() {
+        let p = library_config_dir();
+        assert_eq!(p.file_name().and_then(|s| s.to_str()), Some("library"));
     }
 
     #[test]
@@ -186,42 +186,42 @@ mod tests {
     }
 
     #[test]
-    fn cache_dir_ends_with_agentero() {
-        let p = agentero_cache_dir();
-        assert_eq!(p.file_name().and_then(|s| s.to_str()), Some("agentero"));
+    fn cache_dir_ends_with_library() {
+        let p = library_cache_dir();
+        assert_eq!(p.file_name().and_then(|s| s.to_str()), Some("library"));
     }
 
     #[test]
     fn models_dir_under_cache() {
-        let p = agentero_models_dir();
+        let p = library_models_dir();
         assert_eq!(p.file_name().and_then(|s| s.to_str()), Some("models"));
-        assert_eq!(p.parent(), Some(agentero_cache_dir().as_path()));
+        assert_eq!(p.parent(), Some(library_cache_dir().as_path()));
     }
 
     #[test]
     fn mcp_tunnel_dir_under_cache() {
         let p = mcp_tunnel_dir();
         assert_eq!(p.file_name().and_then(|s| s.to_str()), Some("mcp-tunnel"));
-        assert_eq!(p.parent(), Some(agentero_cache_dir().as_path()));
+        assert_eq!(p.parent(), Some(library_cache_dir().as_path()));
     }
 
     #[test]
-    fn data_dir_ends_with_agentero() {
-        let p = agentero_data_dir();
-        assert_eq!(p.file_name().and_then(|s| s.to_str()), Some("agentero"));
+    fn data_dir_ends_with_library() {
+        let p = library_data_dir();
+        assert_eq!(p.file_name().and_then(|s| s.to_str()), Some("library"));
     }
 
     #[test]
     fn usage_db_under_data_dir() {
         let p = usage_db_path();
         assert_eq!(p.file_name().and_then(|s| s.to_str()), Some("usage.sqlite"));
-        assert_eq!(p.parent(), Some(agentero_data_dir().as_path()));
+        assert_eq!(p.parent(), Some(library_data_dir().as_path()));
     }
 
     #[test]
     fn feeds_db_under_data_dir() {
         let p = feeds_db_path();
         assert_eq!(p.file_name().and_then(|s| s.to_str()), Some("feeds.sqlite"));
-        assert_eq!(p.parent(), Some(agentero_data_dir().as_path()));
+        assert_eq!(p.parent(), Some(library_data_dir().as_path()));
     }
 }

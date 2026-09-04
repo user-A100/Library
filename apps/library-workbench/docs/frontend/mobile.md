@@ -1,8 +1,8 @@
 # 移动端前端与 iOS 远程连接
 
 > 状态：**M1 已实现，M2 已提交 TestFlight（内测中）**。当前移动端已包含二维码/配对链接连接、连接状态恢复、论文库搜索、PDF 分块缓存、NOTES 编辑、桌面 Agent 流式输出与权限应答、ACP Agent 切换、历史会话恢复和移动端侧栏；多主机/LAN 回退仍在后续范围。面向用户的操作说明见 [移动端](../usage/mobile.md)。
-> 决策：iOS **不做本地 Vault**，App 是桌面端的纯远程客户端 —— 扫码配对后经 **relay + 端到端加密** 连接电脑上的 Agentero，读写电脑上的库，并驱动电脑上的 BYOA Agent。
-> Android：已初始化 Tauri Android 目标（`src-tauri/gen/android`，包名 `com.poco_ai.agentero`）。定位与 iOS 相同——纯远程客户端，`src/main.tsx` 经 `isMobileApp()`（`src/lib/core/tauri.ts`，iOS/Android UA 检测）加载同一移动壳；liteparse、菜单事件等桌面能力用 `cfg(not(any(target_os = "ios", target_os = "android")))` 一并排除。本地调试：`pnpm tauri android dev` / `pnpm tauri android build --apk`（需 ANDROID_HOME + NDK）。发布：`.github/workflows/release.yml` 的 `android` job（与 `installers`/`cli` 并行，同一 draft release）在 tag 推送时构建签名 APK `Agentero_<版本>_aarch64.apk`；需 `ANDROID_KEYSTORE*` secrets，缺失则跳过该 job 而不阻塞桌面发布。
+> 决策：iOS **不做本地 Vault**，App 是桌面端的纯远程客户端 —— 扫码配对后经 **relay + 端到端加密** 连接电脑上的 Library，读写电脑上的库，并驱动电脑上的 BYOA Agent。
+> Android：已初始化 Tauri Android 目标（`src-tauri/gen/android`，包名 `com.poco_ai.library`）。定位与 iOS 相同——纯远程客户端，`src/main.tsx` 经 `isMobileApp()`（`src/lib/core/tauri.ts`，iOS/Android UA 检测）加载同一移动壳；liteparse、菜单事件等桌面能力用 `cfg(not(any(target_os = "ios", target_os = "android")))` 一并排除。本地调试：`pnpm tauri android dev` / `pnpm tauri android build --apk`（需 ANDROID_HOME + NDK）。发布：`.github/workflows/release.yml` 的 `android` job（与 `installers`/`cli` 并行，同一 draft release）在 tag 推送时构建签名 APK `Library_<版本>_aarch64.apk`；需 `ANDROID_KEYSTORE*` secrets，缺失则跳过该 job 而不阻塞桌面发布。
 
 ---
 
@@ -20,7 +20,7 @@
 
 ### 1.2 新定位
 
-**iOS = 电脑端 Agentero 的远程遥控器 + 阅读器**：
+**iOS = 电脑端 Library 的远程遥控器 + 阅读器**：
 
 - 文件与 catalog 权威**始终在电脑**；iOS 只有缓存，没有事实来源；
 - Agent 全部在电脑上运行（复用现有 ACP/BYOA 链路），iOS 只发指令、看流式输出、答权限弹窗；
@@ -32,7 +32,7 @@
 
 调研对象：**源码仓库** [`getpaseo/paseo`](https://github.com/getpaseo/paseo)（monorepo，clone 于 `~/f/paseo`，约 0.2.3）+ 本机 `@getpaseo/cli` 0.1.53 发行产物 + 本机 `~/.paseo/` 运行时数据。下文路径均相对 `~/f/paseo`。
 
-> **许可证约束（重要）**：当前 `getpaseo/paseo-relay` 仓库为 **Apache-2.0**；Agentero 是 **MIT**（`LICENSE`）。Relay 的维护 fork 为 [`poco-ai/paseo-relay`](https://github.com/poco-ai/paseo-relay)，保留上游许可证、归属与 fork 关联。Bridge 与应用协议仍由 Agentero 独立实现，不能把 Paseo 的其他 AGPL 组件或源码带入本仓库。
+> **许可证约束（重要）**：当前 `getpaseo/paseo-relay` 仓库为 **Apache-2.0**；Library 是 **MIT**（`LICENSE`）。Relay 的维护 fork 为 [`poco-ai/paseo-relay`](https://github.com/poco-ai/paseo-relay)，保留上游许可证、归属与 fork 关联。Bridge 与应用协议仍由 Library 独立实现，不能把 Paseo 的其他 AGPL 组件或源码带入本仓库。
 
 ### 2.1 三方架构
 
@@ -108,7 +108,7 @@ QR = App URL + fragment 中的 offer；解析入口 `parseConnectionOfferFromUrl
 
 ```
 ┌─────────────┐   wss (E2EE 密文)   ┌──────────────┐   wss (出站)   ┌───────────────────────┐
-│  iOS App    │ ◄────────────────► │    Relay      │ ◄───────────► │  桌面 Agentero (Host)  │
+│  iOS App    │ ◄────────────────► │    Relay      │ ◄───────────► │  桌面 Library (Host)  │
 │  (Tauri 2,  │                    │ (Elixir/OTP,  │               │  features/bridge/      │
 │   复用 src/) │                    │  仅密文转发)  │               │   ├ RPC → 现有命令面    │
 └─────────────┘                    └──────────────┘               │   ├ 事件转发 agent:* 等 │
@@ -117,7 +117,7 @@ QR = App URL + fragment 中的 offer；解析入口 `parseConnectionOfferFromUrl
 ```
 
 - **桌面 Bridge**（新 feature `src-tauri/src/features/bridge/`）：桌面 App 内的连接端点，不是独立进程。开关在 Settings → 远程访问（默认关）。开启后向 relay 建立控制通道，并为每个已配对设备的连接建数据通道。
-- **Relay**：**自建**（决策已定，见 §3.1）。当前采用 [`poco-ai/paseo-relay`](https://github.com/poco-ai/paseo-relay) 的 Apache-2.0 Paseo-compatible fork，部署于 `relay.philfan.cn`；拓扑沿用 `serverId` 路由 + 纯密文转发，Agentero 的 Bridge/E2EE 仍独立实现。
+- **Relay**：**自建**（决策已定，见 §3.1）。当前采用 [`poco-ai/paseo-relay`](https://github.com/poco-ai/paseo-relay) 的 Apache-2.0 Paseo-compatible fork，部署于 `relay.philfan.cn`；拓扑沿用 `serverId` 路由 + 纯密文转发，Library 的 Bridge/E2EE 仍独立实现。
 - **iOS App**：Tauri 2 iOS 壳 + 复用现有 React 前端；不注册任何本地 Vault 命令，所有数据经 Bridge RPC。
 
 ### 3.1 Relay 服务（自建）
@@ -163,7 +163,7 @@ Rust 侧密码学选型：`crypto_box`（X25519 + XSalsa20-Poly1305，与 NaCl b
 - Settings 开启「远程访问」→ Bridge 随桌面 App 启动/停止；桌面 App 退出即失联（iOS 端显示「电脑离线」）。
 - 控制通道：`wss://<relay>/ws?v=2&serverId=…&role=server`，应用层 ping 10s 保活，断线指数退避重连。
 - relay 经控制通道下发 `{type:"connected", connectionId}` → Bridge 建对应数据通道并做 E2EE 握手。
-- 后续（0.8+）：可选「无界面常驻」模式复用 `agentero-cli`（`agentero bridge serve`），电脑不开 GUI 也能连——依赖 CLI 侧补 agent 能力，暂不承诺。
+- 后续（0.8+）：可选「无界面常驻」模式复用 `library-cli`（`library bridge serve`），电脑不开 GUI 也能连——依赖 CLI 侧补 agent 能力，暂不承诺。
 
 ### 4.3 与 Vault 的绑定
 
@@ -176,7 +176,7 @@ Bridge 服务的是**桌面当前打开的 Vault**（多窗口时取发起开关
 ### 5.1 Offer 格式
 
 ```jsonc
-// QR 内容：agentero://pair#offer=base64url(JSON)
+// QR 内容：library://pair#offer=base64url(JSON)
 {
   "v": 1,
   "serverId": "agt_…",
@@ -187,7 +187,7 @@ Bridge 服务的是**桌面当前打开的 Vault**（多窗口时取发起开关
 }
 ```
 
-- 主 scheme 用 `agentero://pair`（App 已安装场景，Universal Link 域名后置）；桌面同时提供**可复制配对链接**，iOS 侧支持「粘贴链接」与深链直接入库（照 paseo 的三入口：扫码 / 粘贴 / 手动直连）。
+- 主 scheme 用 `library://pair`（App 已安装场景，Universal Link 域名后置）；桌面同时提供**可复制配对链接**，iOS 侧支持「粘贴链接」与深链直接入库（照 paseo 的三入口：扫码 / 粘贴 / 手动直连）。
 - 与 paseo 同构：offer 不含 token、不含局域网 IP；但拿到 offer ≠ 拿到访问权（见 5.3，与 paseo 的关键差异）。
 
 ### 5.2 UX 流程
@@ -313,7 +313,7 @@ iPad 后续可回到双栏（Library + 阅读/Agent 分屏）。
 | `mobile-library-page.tsx` / `mobile-reader-page.tsx` | 论文列表 / PDF+NOTES 阅读页 |
 | `mobile-header.tsx` / `mobile-header-actions.tsx` / `mobile-nav.tsx` / `mobile-sidebar.tsx` / `mobile-gestures.tsx` | header 壳、header 动作区（阅读模式切换、Agent 后端切换）、导航、侧栏、手势 |
 | `hooks/use-bridge-status.ts` | bridge 状态订阅、启动恢复、回前台重连 |
-| `hooks/use-pair-offer-links.ts` | `agentero://pair` deep-link 配对入口 |
+| `hooks/use-pair-offer-links.ts` | `library://pair` deep-link 配对入口 |
 | `hooks/use-mobile-papers.ts` | 论文列表拉取与轮询 |
 | `hooks/use-mobile-agents.ts` | Agent 列表合并（注册列表 + catalog 扫描）与默认选择 |
 | `hooks/use-mobile-agent-chat.ts` | 聊天状态机：事件订阅、时间线恢复、发送与权限应答 |
@@ -353,7 +353,7 @@ Agent **只在桌面**运行：iOS 发 `agent_run_once` RPC → 桌面走完全�
 
 | | `remote:` (现有) | `bridge:` (本方案) |
 |---|---|---|
-| 拓扑 | 桌面 Agentero → SSH → 服务器 | iOS → relay → 桌面 Agentero |
+| 拓扑 | 桌面 Library → SSH → 服务器 | iOS → relay → 桌面 Library |
 | 传输 | 系统 OpenSSH/SFTP | WS + E2EE（自实现） |
 | catalog | work mirror + push-back | 无镜像，RPC 直查桌面 |
 | Agent | 远端 SSH spawn | 桌面本机 spawn |
@@ -378,7 +378,7 @@ Agent **只在桌面**运行：iOS 发 `agent_run_once` RPC → 桌面走完全�
 | M1 Bridge 内核 | `features/bridge/`：身份/密钥、v2 `server` 控制+数据通道、E2EE、设备配对与验签、RPC 白名单映射；Settings 开关 + 二维码 | **已完成**：已对 `wss://relay.philfan.cn/ws` 完成加密双向帧联调，Bridge 单元测试覆盖协议、加密、认证与 Agent 会话过滤 |
 | M2 iOS MVP | 扫码配对 + Library / 阅读（PDF+NOTES）/ Agent 对话 + 权限应答 | **功能已实现**：扫码/粘贴链接、Library 搜索、NOTES 编辑、Agent 切换、流式输出与权限应答、PDF 分块缓存、会话恢复（`agent_list_sessions` / `agent_load_session` 已入 Bridge 白名单，iOS 回前台自动补齐时间线）；下一步进入 TestFlight 内测 |
 | M3 打磨 | NOTES 编辑（含保存冲突检查）、标签/已读、wiki backlinks、多主机切换、iPad 双栏 | — |
-| P2 之后 | APNs 推送、LAN 直连兜底（含 Tailscale 手动地址）、headless `agentero bridge serve`、`remote:` Vault 透传 | — |
+| P2 之后 | APNs 推送、LAN 直连兜底（含 Tailscale 手动地址）、headless `library bridge serve`、`remote:` Vault 透传 | — |
 
 ## 12. 开放问题
 
@@ -415,7 +415,7 @@ pnpm tauri ios dev "iPhone 17 Pro"
 
 开发模式使用 Vite 的 `http://localhost:1420`。开发服务器必须在 App
 运行期间保持启动；不要使用会在部署完成后退出并关闭 Vite 的一次性命令。
-首次启动时，如果 iOS 请求本地网络权限，需要允许 Agentero 访问本地网络。
+首次启动时，如果 iOS 请求本地网络权限，需要允许 Library 访问本地网络。
 
 ### 13.3 真机开发
 

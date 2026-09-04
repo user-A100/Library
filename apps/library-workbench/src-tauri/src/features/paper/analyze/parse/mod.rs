@@ -30,13 +30,13 @@ const PAPER_MD: &str = "PAPER.md";
 /// keys off this to avoid reporting cancelled work as broken.
 pub(crate) const CANCELLED_MESSAGE: &str = "background task cancelled";
 #[cfg(not(any(target_os = "ios", target_os = "android")))]
-const PDF_PARSE_WORKER_ARG: &str = "--agentero-internal-pdf-parse-worker";
+const PDF_PARSE_WORKER_ARG: &str = "--library-internal-pdf-parse-worker";
 #[cfg(not(any(target_os = "ios", target_os = "android")))]
-const PDF_PROBE_WORKER_ARG: &str = "--agentero-internal-pdf-recognize-worker";
+const PDF_PROBE_WORKER_ARG: &str = "--library-internal-pdf-recognize-worker";
 #[cfg(not(any(target_os = "ios", target_os = "android")))]
-const PDF_RENDER_WORKER_ARG: &str = "--agentero-internal-pdf-render-worker";
+const PDF_RENDER_WORKER_ARG: &str = "--library-internal-pdf-render-worker";
 #[cfg(not(any(target_os = "ios", target_os = "android")))]
-const PDF_LOCATE_WORKER_ARG: &str = "--agentero-internal-pdf-locate-worker";
+const PDF_LOCATE_WORKER_ARG: &str = "--library-internal-pdf-locate-worker";
 #[cfg(not(any(target_os = "ios", target_os = "android")))]
 const PDF_PARSE_TIMEOUT: Duration = Duration::from_secs(120);
 #[cfg(not(any(target_os = "ios", target_os = "android")))]
@@ -559,8 +559,8 @@ fn bundled_pdfium_dir() -> Option<PathBuf> {
     }
     candidates.push(exe_dir.join("pdfium"));
     // deb / AppImage put bundle resources under /usr/lib/<product>/.
-    candidates.push(exe_dir.join("../lib/agentero/pdfium"));
-    candidates.push(exe_dir.join("../lib/Agentero/pdfium"));
+    candidates.push(exe_dir.join("../lib/library/pdfium"));
+    candidates.push(exe_dir.join("../lib/Library/pdfium"));
     candidates.push(exe_dir.to_path_buf());
 
     let name = pdfium_lib_name();
@@ -645,7 +645,7 @@ async fn spawn_pdf_worker_with_dir(
     let executable = std::env::current_exe()
         .map_err(|error| AppError::message(format!("resolve PDF parse worker: {error}")))?;
     let worker_dir = std::env::temp_dir().join(format!(
-        "agentero-pdf-parse-{}-{}",
+        "library-pdf-parse-{}-{}",
         std::process::id(),
         uuid::Uuid::new_v4().simple()
     ));
@@ -1122,11 +1122,11 @@ mod tests {
 
     #[test]
     fn worker_args_are_private_and_exact() {
-        let normal = vec![OsString::from("agentero"), OsString::from("paper")];
+        let normal = vec![OsString::from("library"), OsString::from("paper")];
         assert_eq!(pdf_parse_worker_request_from_args(normal).unwrap(), None);
 
         let request = pdf_parse_worker_request_from_args(vec![
-            OsString::from("agentero"),
+            OsString::from("library"),
             OsString::from(PDF_PARSE_WORKER_ARG),
             OsString::from("input.pdf"),
             OsString::from("response.json"),
@@ -1137,7 +1137,7 @@ mod tests {
         assert_eq!(request.response_path, PathBuf::from("response.json"));
 
         let render = pdf_parse_worker_request_from_args(vec![
-            OsString::from("agentero"),
+            OsString::from("library"),
             OsString::from(PDF_RENDER_WORKER_ARG),
             OsString::from("input.pdf"),
             OsString::from("response.json"),
@@ -1147,7 +1147,7 @@ mod tests {
         assert_eq!(render.worker_arg, PDF_RENDER_WORKER_ARG);
 
         let incomplete = vec![
-            OsString::from("agentero"),
+            OsString::from("library"),
             OsString::from(PDF_PARSE_WORKER_ARG),
             OsString::from("input.pdf"),
         ];

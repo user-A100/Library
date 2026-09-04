@@ -270,7 +270,7 @@ function OnboardingDialog() {
 					className={cn(
 						"px-6 py-5",
 						stepper.current.id !== "agent" &&
-							"agentero-scroll max-h-[24rem] overflow-y-auto",
+							"library-scroll max-h-[24rem] overflow-y-auto",
 					)}
 				>
 					<AnimatePresence mode="wait" initial={false}>

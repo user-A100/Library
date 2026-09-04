@@ -443,7 +443,7 @@ async fn analyze_pdf(ctx: LayoutAnalyzeContext) -> Result<LayoutRemoteAnalyzePdf
     // Extract content_list.json + middle.json and map to page boxes.
     let result = parse_result_zip(&zip_bytes)?;
     log::info!(
-        target: "agentero::layout::hosted",
+        target: "library::layout::hosted",
         "mineru result: pages={} boxes={}",
         result.pages.len(),
         result.pages.iter().map(|p| p.boxes.len()).sum::<usize>()

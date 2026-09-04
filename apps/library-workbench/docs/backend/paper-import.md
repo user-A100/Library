@@ -11,7 +11,7 @@
 | Connector | 浏览器扩展 items JSON | `features/connector` → commit |
 | Zotero 迁移 | `zotero.sqlite` + storage | `zotero_scan` / `zotero_migrate` |
 | Library 导入 | Bib/RIS 等 | `paper_import` |
-| CLI | 同库函数 | `agentero import` / `paper …` |
+| CLI | 同库函数 | `library import` / `paper …` |
 
 路径分配：`import::allocate_paper_path`（盘 + catalog 双查，撞名改写 id）。
 
@@ -29,7 +29,7 @@ Skill 安装管线位于 `features/import/skill_import.rs`：
 3. 扫描并校验 `SKILL.md` frontmatter；
 4. 将压缩包和候选 metadata 保存为一次性 discovery，返回 `skillCandidates`；
 5. `skill_install` 仅安装前端确认的 Skill 名称，复制整个 Skill 目录到 `.agents/skills/<name>/`；
-6. 写入 `agentero-skill.json` 来源记录；取消操作由 `skill_discard` 清理 discovery。
+6. 写入 `library-skill.json` 来源记录；取消操作由 `skill_discard` 清理 discovery。
 
 Skill 不写入 catalog、不创建 `papers/` 条目、不执行 `scripts/`。已有目录跳过，
 不会覆盖用户文件。批量候选通过 `LookupImportBatchResult.skillCandidates` 返回。远程 Vault
@@ -64,7 +64,7 @@ Skill 不写入 catalog、不创建 `papers/` 条目、不执行 `scripts/`。�
 - 错误：全局 Toast；重复不破坏用户 NOTES。
 - 标识符去重（#406）：批量预检之外，commit 阶段再按 `id` / `arxiv_id` / `doi` / `pmid` / `isbn` 查 catalog（`DedupePolicy::ByIdentifiers`），任一命中即 `Deduped`，不新建文件夹。
 - 新建壳会写论文全称 alias，并在元数据足够时写确定性短 alias；历史笔记由 [Doctor](doctor.md) 诊断和确认迁移。`created` 不属于入库壳或 Doctor 的职责。
-- 壳内容由设置 `paper_note_mode` 决定（`standard` / `title-only` / `blank` / `custom`，默认 `standard`，见 [settings.md](../frontend/settings.md)）；`custom` 模板位于 `{vault}/.agentero/templates/NOTES.md`，缺失或不可读时回退 standard 并 warn。任何模式的产物都会补齐 aliases frontmatter（模板 frontmatter 不可安全改写时留给 Doctor）。Connector 的后台摘要机翻仅对 standard 壳生效，避免改写 custom 模板渲染的原文摘要。
+- 壳内容由设置 `paper_note_mode` 决定（`standard` / `title-only` / `blank` / `custom`，默认 `standard`，见 [settings.md](../frontend/settings.md)）；`custom` 模板位于 `{vault}/.library/templates/NOTES.md`，缺失或不可读时回退 standard 并 warn。任何模式的产物都会补齐 aliases frontmatter（模板 frontmatter 不可安全改写时留给 Doctor）。Connector 的后台摘要机翻仅对 standard 壳生效，避免改写 custom 模板渲染的原文摘要。
 
 ## 可读正文
 
@@ -98,12 +98,12 @@ Skill 不写入 catalog、不创建 `papers/` 条目、不执行 `scripts/`。�
 - **Live 验证**（`#[ignore]`，需自备 key，密钥只走环境变量）：
 
   ```bash
-  AGENTERO_VLM_LIVE_PDF=<pdf> AGENTERO_VLM_API_KEY=<key> [AGENTERO_VLM_MODEL=… AGENTERO_VLM_PROMPT=…] \
-    cargo test -p agentero --lib -- live_openai_vlm --ignored --nocapture
-  AGENTERO_MINERU_LIVE_PDF=<pdf> AGENTERO_MINERU_API_KEY=<key> \
-    cargo test -p agentero --lib -- live_mineru --ignored --nocapture
-  AGENTERO_PADDLE_LIVE_PDF=<pdf> AGENTERO_PADDLE_API_KEY=<key> [AGENTERO_PADDLE_MODEL=…] \
-    cargo test -p agentero --lib -- live_paddle --ignored --nocapture
+  LIBRARY_VLM_LIVE_PDF=<pdf> LIBRARY_VLM_API_KEY=<key> [LIBRARY_VLM_MODEL=… LIBRARY_VLM_PROMPT=…] \
+    cargo test -p library --lib -- live_openai_vlm --ignored --nocapture
+  LIBRARY_MINERU_LIVE_PDF=<pdf> LIBRARY_MINERU_API_KEY=<key> \
+    cargo test -p library --lib -- live_mineru --ignored --nocapture
+  LIBRARY_PADDLE_LIVE_PDF=<pdf> LIBRARY_PADDLE_API_KEY=<key> [LIBRARY_PADDLE_MODEL=…] \
+    cargo test -p library --lib -- live_paddle --ignored --nocapture
   ```
 
   VLM live 测试在进程内直接渲染（worker 子进程会重入 test 二进制），其余与线上路径一致。
@@ -120,7 +120,7 @@ liteparse 在**运行时 `dlopen`** PDFium，而 `liteparse-pdfium-sys` 的 buil
 | 暂存 | `scripts/prepare-pdfium.mjs` → `src-tauri/pdfium/{libpdfium.dylib \| pdfium.dll \| libpdfium.so}`（gitignore；`beforeDevCommand` / `beforeBuildCommand` 都会跑 `pnpm pdfium:stage`） |
 | 来源优先级 | `PDFIUM_LIB_PATH` → 平台缓存 `<cache>/pdfium-rs/<tag>/<asset>/` → 从 pdfium-binaries release 下载 |
 | macOS 打包 | `bundle.macOS.frameworks` → `Contents/Frameworks/libpdfium.dylib`（tauri-bundler 会把它登记为 codesign target，公证需要） |
-| Windows / Linux 打包 | `bundle.resources: ["pdfium/*"]` → exe 同级 `pdfium/`，deb/AppImage 为 `/usr/lib/agentero/pdfium/` |
+| Windows / Linux 打包 | `bundle.resources: ["pdfium/*"]` → exe 同级 `pdfium/`，deb/AppImage 为 `/usr/lib/library/pdfium/` |
 | 运行时定位 | `pdf_parse::bundled_pdfium_dir()` 从 `current_exe` 探测上述位置，作为 `PDFIUM_LIB_PATH` 传给解析子进程；外部已设置该环境变量时不覆盖 |
 
 - iOS/Android 不打包 PDFium：正文解析走配对的桌面 Host，平台 config 已清空 `resources`。
@@ -158,11 +158,11 @@ liteparse 在**运行时 `dlopen`** PDFium，而 `liteparse-pdfium-sys` 的 buil
 
 时序约定：`paper_commit` 以 `defer_parse_jobs: true` 跳过 commit 期的 ParseBody/ParseRefs spawn，由 RecognizeMetadata runner 在目录名尘埃落定后统一编排 PAPER.md / refs / layout（`LookupImportResult.recognize_pending=true` 时前端也跳过自己的 layout enqueue）。
 
-- 实现：识别链路 `src-tauri/src/features/import/pdf_recognize.rs`（payload 组装 + HTTP client + `map_crossref_work`）；probe worker 变体在 `pdf_parse/mod.rs`（`--agentero-internal-pdf-recognize-worker`）；job 编排 `import/job_runners.rs::recognize_metadata_runner`。
+- 实现：识别链路 `src-tauri/src/features/import/pdf_recognize.rs`（payload 组装 + HTTP client + `map_crossref_work`）；probe worker 变体在 `pdf_parse/mod.rs`（`--library-internal-pdf-recognize-worker`）；job 编排 `import/job_runners.rs::recognize_metadata_runner`。
 - payload 结构复刻 Zotero document-worker `getRecognizerData`：`word = [xMin,yMin,xMax,yMax,fontSize,spaceAfter,baseline,rotation,0,bold,italic,0,fontIndex,text]`，行来自 liteparse 投影行（竖排 arXiv stamp 落到独立行，服务端可重建）。
 - Host 侧 entries 仍支持 `title`/`doi`/`arxivId`/`extra` 覆盖（`meta_source=manual`，走原有同步路径不触发后台识别），供确认对话框/CLI 等调用方使用。
 - 隐私：上传的是前 5 页文本布局 JSON（~200KB），不是 PDF 文件；服务为 Zotero 托管的未公开 API，仅作尽力而为识别，失败无感知。
-- live 验证：`AGENTERO_RECOGNIZE_LIVE_PDF=<pdf> cargo test -p agentero --lib -- live_recognize --include-ignored --nocapture`。
+- live 验证：`LIBRARY_RECOGNIZE_LIVE_PDF=<pdf> cargo test -p library --lib -- live_recognize --include-ignored --nocapture`。
 
 ## Catalog 相关 command（摘要）
 

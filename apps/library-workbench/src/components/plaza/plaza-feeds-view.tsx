@@ -504,7 +504,7 @@ export function PlazaFeedsView({ className }: { className?: string }) {
 			) : (
 				<div className="flex min-h-0 min-w-0 flex-1">
 					<nav className="flex w-52 shrink-0 select-none flex-col border-r">
-						<div className="agentero-scroll min-h-0 flex-1 overflow-y-auto p-2">
+						<div className="library-scroll min-h-0 flex-1 overflow-y-auto p-2">
 							<button
 								type="button"
 								onClick={() => {
@@ -601,7 +601,7 @@ export function PlazaFeedsView({ className }: { className?: string }) {
 						) : (
 							<div
 								ref={listRef}
-								className="agentero-scroll min-h-0 flex-1 overflow-y-auto px-3 py-2"
+								className="library-scroll min-h-0 flex-1 overflow-y-auto px-3 py-2"
 							>
 								<div
 									className="relative w-full"

@@ -1,6 +1,6 @@
 //! Local ephemeral PDF / blob cache for remote vaults with LRU eviction.
 //!
-//! Layout: `~/.cache/agentero/remote/<session-hash>/blobs/{hash}.{ext}`
+//! Layout: `~/.cache/library/remote/<session-hash>/blobs/{hash}.{ext}`
 //! Key = sha256(rel\0size\0mtime). On hit we touch mtime for LRU order.
 
 use crate::core::error::AppError;
@@ -127,7 +127,7 @@ pub fn stats_for_root(blob_root: &Path) -> BlobCacheStats {
     }
 }
 
-/// Aggregate all `agentero/remote/*/blobs` under the user cache dir.
+/// Aggregate all `library/remote/*/blobs` under the user cache dir.
 pub fn stats_all() -> BlobCacheStats {
     let mut bytes = 0u64;
     let mut files = 0u64;
@@ -169,7 +169,7 @@ pub fn clear_all() -> Result<u64, AppError> {
 fn remote_cache_base() -> PathBuf {
     dirs::cache_dir()
         .unwrap_or_else(std::env::temp_dir)
-        .join("agentero")
+        .join("library")
         .join("remote")
 }
 
@@ -221,7 +221,7 @@ mod tests {
     #[test]
     fn lru_evicts_oldest() {
         let dir = env::temp_dir().join(format!(
-            "agentero-blob-lru-{}",
+            "library-blob-lru-{}",
             std::time::SystemTime::now()
                 .duration_since(std::time::UNIX_EPOCH)
                 .unwrap()
@@ -257,7 +257,7 @@ mod tests {
     #[test]
     fn touch_on_hit() {
         let dir = env::temp_dir().join(format!(
-            "agentero-blob-touch-{}",
+            "library-blob-touch-{}",
             std::time::SystemTime::now()
                 .duration_since(std::time::UNIX_EPOCH)
                 .unwrap()

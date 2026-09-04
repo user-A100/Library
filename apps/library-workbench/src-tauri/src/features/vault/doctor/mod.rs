@@ -91,7 +91,7 @@ pub struct AliasDoctorSection {
     pub issues: Vec<DoctorIssue>,
 }
 
-/// Vault-local Doctor preferences (`.agentero/doctor.json`).
+/// Vault-local Doctor preferences (`.library/doctor.json`).
 #[derive(Debug, Clone, Default, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct DoctorVaultState {
@@ -100,7 +100,7 @@ pub struct DoctorVaultState {
     pub ignored_alias_paths: Vec<String>,
 }
 
-const DOCTOR_STATE_REL: &str = ".agentero/doctor.json";
+const DOCTOR_STATE_REL: &str = ".library/doctor.json";
 
 fn normalize_rel_path(raw: &str) -> String {
     raw.replace('\\', "/").trim_matches('/').to_string()
@@ -119,12 +119,12 @@ pub fn load_doctor_state(vault: &Path) -> DoctorVaultState {
     serde_json::from_str(&raw).unwrap_or_default()
 }
 
-/// Persist vault-local Doctor state (creates `.agentero/` if needed).
+/// Persist vault-local Doctor state (creates `.library/` if needed).
 pub fn save_doctor_state(vault: &Path, state: &DoctorVaultState) -> Result<(), AppError> {
     let path = doctor_state_path(vault);
     if let Some(parent) = path.parent() {
         fs::create_dir_all(parent).map_err(|error| {
-            AppError::message(format!("create .agentero for doctor state: {error}"))
+            AppError::message(format!("create .library for doctor state: {error}"))
         })?;
     }
     let mut normalized = state
@@ -385,7 +385,7 @@ fn vault_section(vault: &Path) -> DoctorSection {
             None,
         ));
     } else {
-        for directory in ["papers", "notes", ".agentero"] {
+        for directory in ["papers", "notes", ".library"] {
             if !vault.join(directory).is_dir() {
                 issues.push(issue(
                     "missing_directory",
@@ -636,7 +636,7 @@ pub fn diagnose_with_index(vault: &Path, index: &WikiIndex) -> Result<DoctorRepo
                         catalog::SCHEMA_VERSION
                     ),
                     DoctorSeverity::Error,
-                    Some(".agentero/catalog.sqlite".into()),
+                    Some(".library/catalog.sqlite".into()),
                 ));
                 Vec::new()
             } else {
@@ -684,7 +684,7 @@ pub fn diagnose_with_index(vault: &Path, index: &WikiIndex) -> Result<DoctorRepo
                                     "catalog_duplicate_check_failed",
                                     error.to_string(),
                                     DoctorSeverity::Error,
-                                    Some(".agentero/catalog.sqlite".into()),
+                                    Some(".library/catalog.sqlite".into()),
                                 ));
                             }
                         }
@@ -696,7 +696,7 @@ pub fn diagnose_with_index(vault: &Path, index: &WikiIndex) -> Result<DoctorRepo
                             "catalog_query_failed",
                             error.to_string(),
                             DoctorSeverity::Error,
-                            Some(".agentero/catalog.sqlite".into()),
+                            Some(".library/catalog.sqlite".into()),
                         ));
                         Vec::new()
                     }
@@ -709,7 +709,7 @@ pub fn diagnose_with_index(vault: &Path, index: &WikiIndex) -> Result<DoctorRepo
                 "catalog_open_failed",
                 error.to_string(),
                 DoctorSeverity::Error,
-                Some(".agentero/catalog.sqlite".into()),
+                Some(".library/catalog.sqlite".into()),
             ));
             Vec::new()
         }
@@ -962,7 +962,7 @@ mod tests {
     use uuid::Uuid;
 
     fn temp_vault(name: &str) -> PathBuf {
-        let vault = std::env::temp_dir().join(format!("agentero-doctor-{name}-{}", Uuid::new_v4()));
+        let vault = std::env::temp_dir().join(format!("library-doctor-{name}-{}", Uuid::new_v4()));
         fs::create_dir_all(vault.join("papers/demo")).unwrap();
         fs::create_dir_all(vault.join("notes")).unwrap();
         vault
@@ -1103,7 +1103,7 @@ mod tests {
 
     #[test]
     fn alias_repair_preserves_existing_aliases_and_rejects_dirty_sources() {
-        let vault = std::env::temp_dir().join(format!("agentero-doctor-{}", Uuid::new_v4()));
+        let vault = std::env::temp_dir().join(format!("library-doctor-{}", Uuid::new_v4()));
         fs::create_dir_all(vault.join("papers/demo")).unwrap();
         fs::create_dir_all(vault.join("notes")).unwrap();
         let connection = catalog::ensure_catalog(&vault).unwrap();

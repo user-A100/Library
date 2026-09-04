@@ -9,7 +9,7 @@ import i18n from "@/i18n";
 
 /**
  * Pending auto-open of the external-link edit popover.
- * Keyed by a per-insert id stored on the link node (`agenteroEditId`), not by
+ * Keyed by a per-insert id stored on the link node (`libraryEditId`), not by
  * path — paths / effect remounts must not drop the request.
  */
 const pendingEditIdByEditor = new WeakMap<SlateEditor, string>();
@@ -103,7 +103,7 @@ export function insertExternalLinkNode(
 			url,
 			children: [{ text: label }],
 			// Transient UI flag — not part of Markdown serialization.
-			...(editId ? { agenteroEditId: editId } : {}),
+			...(editId ? { libraryEditId: editId } : {}),
 		});
 		const entry = editor.api.above({
 			match: { type: linkType },

@@ -4,8 +4,8 @@ import { isEditableClipboardTarget } from "@/components/viewer/pdf/host-dom";
 import { bindPanDragGesture } from "@/lib/pdf/pan-drag";
 
 /** Cursor feedback classes; the stylesheet overrides EmbedPDF's inline cursor. */
-const PAN_READY_CLASS = "agentero-pdf-pan-ready";
-const PANNING_CLASS = "agentero-pdf-panning";
+const PAN_READY_CLASS = "library-pdf-pan-ready";
+const PANNING_CLASS = "library-pdf-panning";
 
 /**
  * Space must still activate these rather than arm the hand tool — the roles that

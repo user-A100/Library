@@ -36,7 +36,7 @@ site/
 .qoder/
 **/.qoder/
 
-# Rust workspace (root target/ for agentero-cli + src-tauri)
+# Rust workspace (root target/ for library-cli + src-tauri)
 /target/
 src-tauri/target/
 /target-ios/

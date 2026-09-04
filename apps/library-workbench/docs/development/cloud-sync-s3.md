@@ -29,7 +29,7 @@
 
 Phase 0 独立可交付：即便不做同步，它也兑现「离开应用数据仍可读」的 local-first 承诺，并让 Vault 可被任意文件级备份工具安全备份。
 
-另需引入 **Vault UUID**：新增 `.agentero/vault.json`（`{ "id": "<uuid>", "createdAt": ... }`），首次访问时生成。同步用它防止两个不同 Vault 误绑同一 remote。
+另需引入 **Vault UUID**：新增 `.library/vault.json`（`{ "id": "<uuid>", "createdAt": ... }`），首次访问时生成。同步用它防止两个不同 Vault 误绑同一 remote。
 
 ## 同步模型：内容寻址 blob + 版本清单 + CAS 指针
 
@@ -51,7 +51,7 @@ s3://<bucket>/<prefix>/
 
 ### 本地状态
 
-`.agentero/sync/`（watcher 已忽略 `.agentero/`，不会造成事件回环）：
+`.library/sync/`（watcher 已忽略 `.library/`，不会造成事件回环）：
 
 - `base.json`：上次同步成功时的 manifest（三方合并的 base）。
 - `state.json`：remote 绑定信息、HEAD etag、上次同步时间。
@@ -60,7 +60,7 @@ s3://<bucket>/<prefix>/
 
 ### 同步流程（一次 `sync_now`）
 
-1. **扫描**：walkdir 全量扫 Vault（排除 `.agentero/`、`.trash`、`.git` 等，规则与 watcher `is_ignored` 对齐），用 `size+mtime` 与 `base.json` 快速比对，变化的文件才算 sha256 → 得到 `local` 清单。
+1. **扫描**：walkdir 全量扫 Vault（排除 `.library/`、`.trash`、`.git` 等，规则与 watcher `is_ignored` 对齐），用 `size+mtime` 与 `base.json` 快速比对，变化的文件才算 sha256 → 得到 `local` 清单。
 2. **拉取**：GET `HEAD`，若 `version` > base 的 version，GET 对应 manifest → `remote` 清单。
 3. **三方合并**（base / local / remote 逐路径）：
    - 仅一侧改动 → 直接采纳；
@@ -122,7 +122,7 @@ src-tauri/src/features/sync/
 ├── s3.rs         # SigV4 + reqwest 最小客户端
 ├── snapshot.rs   # Vault 扫描 → Manifest
 ├── engine.rs     # 三方合并、计划、应用、CAS 循环
-└── local.rs      # .agentero/sync/ 状态读写
+└── local.rs      # .library/sync/ 状态读写
 ```
 
 事件（参照 `zotero_sync` 长任务 + 进度先例）：`sync:progress`（阶段/文件计数/字节）、`sync:state`（idle / syncing / error / conflict）。
@@ -146,7 +146,7 @@ watcher、vault、import、remote 均不改。
 
 | Phase | 内容 | 交付判断 |
 |---|---|---|
-| 0 ✅ | catalog sidecar 化 + `.agentero/vault.json` UUID | 删库后 rescan 能恢复 tags/is_read |
+| 0 ✅ | catalog sidecar 化 + `.library/vault.json` UUID | 删库后 rescan 能恢复 tags/is_read |
 | 1 ✅ | sync 模块 MVP：配置 UI、手动同步、manifest/blob/CAS、冲突副本 | 两台设备经 MinIO/R2 双向同步收敛 |
 | 2 🚧 | 自动同步 ✅（打开/静置 30s/定时 + 退出尽力推送）；状态栏指示、GC、multipart 未做 | 日常使用无感同步 |
 | 3 | E2EE（口令派生密钥、blob/manifest 加密） | 远端只见密文 |

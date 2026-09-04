@@ -34,7 +34,7 @@ export type AgentSessionOpenRequest = {
 	/** Monotonic id so identical payloads still re-trigger. */
 	nonce: number;
 	agentId: string;
-	/** Agentero runtime/event session id from runOnce. */
+	/** Library runtime/event session id from runOnce. */
 	runtimeSessionId: string;
 	/** ACP provider session id when available. */
 	providerSessionId?: string;

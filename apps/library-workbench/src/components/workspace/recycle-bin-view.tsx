@@ -27,7 +27,7 @@ import {
 
 /**
  * Recycle Bin center view (Zotero-style): lists items previously deleted into
- * `.agentero/.trash/` in the same full-pane area as the Library table, with
+ * `.library/.trash/` in the same full-pane area as the Library table, with
  * per-item Restore / Delete-permanently. Empty Recycle Bin lives on the
  * sidebar trash node context menu.
  */
@@ -143,7 +143,7 @@ export function RecycleBinView({
 					{t("recycleBin.empty")}
 				</div>
 			) : (
-				<div className="agentero-scroll min-h-0 min-w-0 flex-1">
+				<div className="library-scroll min-h-0 min-w-0 flex-1">
 					<TooltipProvider delayDuration={300}>
 						<ul className="divide-y">
 							{items.map((item) => {

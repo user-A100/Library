@@ -1,6 +1,6 @@
 # 阅读标注：即时文字定位（标的时候算）
 
-> 状态：设计草案。关联 [\#170](https://github.com/poco-ai/Agentero/issues/170)。  
+> 状态：设计草案。关联 [\#170](https://github.com/poco-ai/Library/issues/170)。  
 > 姊妹篇：[惰性定位](mark-locate-lazy.md) · [开发路线](mark-cli-roadmap.md)
 
 ## 1. 一句话
@@ -117,10 +117,10 @@ B2 不是 #170 首版必需；没有 B2 时，CLI 冷写仍走惰性 pending。
 
 ```bash
 # 默认：轻量 pending（推荐）
-agentero mark add <paper> --kind highlight --quote "…" --json
+library mark add <paper> --kind highlight --quote "…" --json
 
 # 显式付费：当场 headless 定位（B2 落地后）
-agentero mark add <paper> --kind highlight --quote "…" --resolve --json
+library mark add <paper> --kind highlight --quote "…" --resolve --json
 ```
 
 `--resolve` 失败时：`--json` 返回 `geometry` 与错误码；退出码策略需在实现时定（建议：定位失败仍 ok 写盘 + `geometry=failed`，或严格模式非零）。

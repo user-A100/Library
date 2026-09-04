@@ -1,10 +1,10 @@
-//! Offline write-back: NOTES.md → Agentero-marked Zotero child note.
+//! Offline write-back: NOTES.md → Library-marked Zotero child note.
 //!
 //! Safety contract:
 //! - Requires Zotero to be closed (write-lock probe via `BEGIN IMMEDIATE`).
 //! - Mandatory timestamped backup of `zotero.sqlite` (+wal/shm) before any
 //!   write; only the newest few backups are kept.
-//! - Only creates/replaces Agentero-marked child notes (marker carries the
+//! - Only creates/replaces Library-marked child notes (marker carries the
 //!   paper id); user-written notes are never touched.
 //! - One transaction for the whole pass; any failure rolls everything back.
 //!
@@ -19,7 +19,7 @@ use rusqlite::{params, Connection};
 use std::fs;
 use std::path::{Path, PathBuf};
 
-/// Keep at most this many Agentero backups of zotero.sqlite.
+/// Keep at most this many Library backups of zotero.sqlite.
 const MAX_BACKUPS: usize = 5;
 
 /// One paper whose NOTES.md should be pushed (selected from the pre-pull
@@ -27,7 +27,7 @@ const MAX_BACKUPS: usize = 5;
 #[derive(Debug, Clone)]
 pub struct PushCandidate {
     pub zotero_item_id: i64,
-    /// Agentero paper id embedded in the sync marker.
+    /// Library paper id embedded in the sync marker.
     pub paper_id: String,
     /// Vault-relative paper path (for NOTES.md + error reporting).
     pub path: String,
@@ -132,9 +132,9 @@ pub fn push_notes(
     })
 }
 
-/// Create or replace this parent item's Agentero-marked child note.
+/// Create or replace this parent item's Library-marked child note.
 ///
-/// Matching is deliberately loose (`agentero:sync paper=<id>` signature,
+/// Matching is deliberately loose (`library:sync paper=<id>` signature,
 /// escaped or not): Zotero may have escaped an earlier, malformed push, and
 /// the note must still be reclaimed instead of duplicated. When several
 /// matches exist (damage from earlier versions), the first is updated and the
@@ -154,12 +154,12 @@ fn upsert_marked_note(
         )
         .map_err(|_| AppError::message(format!("Zotero parent item {parent_item_id} not found")))?;
 
-    // Every Agentero note for exactly this paper under this parent — raw or
+    // Every Library note for exactly this paper under this parent — raw or
     // escaped marker forms alike. `_`/`%` in paper ids must not act as LIKE
     // wildcards (ids like `10_1016_j_neucom…` exist).
     let marker_like = format!(
         "%{}%",
-        like_escape(&format!("agentero:sync paper={paper_id}"))
+        like_escape(&format!("library:sync paper={paper_id}"))
     );
     let mut stmt = tx
         .prepare(
@@ -256,7 +256,7 @@ fn like_escape(s: &str) -> String {
     out
 }
 
-/// Normalized plain-text of this parent's non-Agentero child notes. Blocks
+/// Normalized plain-text of this parent's non-Library child notes. Blocks
 /// matching one of these are skipped by the push (they already show as their
 /// own note under the item).
 fn existing_note_texts(tx: &Connection, parent_item_id: i64) -> Result<Vec<String>, AppError> {
@@ -265,7 +265,7 @@ fn existing_note_texts(tx: &Connection, parent_item_id: i64) -> Result<Vec<Strin
             "SELECT n.note FROM itemNotes n
              WHERE n.parentItemID = ?1
                AND n.itemID NOT IN (SELECT itemID FROM deletedItems)
-               AND n.note NOT LIKE '%agentero:sync paper=%'",
+               AND n.note NOT LIKE '%library:sync paper=%'",
         )
         .map_err(|e| AppError::message(format!("prepare sibling-note lookup: {e}")))?;
     let notes: Vec<String> = stmt
@@ -279,12 +279,12 @@ fn existing_note_texts(tx: &Connection, parent_item_id: i64) -> Result<Vec<Strin
         .collect())
 }
 
-/// Move this parent's Agentero-marked note (if any) into Zotero's trash —
+/// Move this parent's Library-marked note (if any) into Zotero's trash —
 /// used when the vault no longer has anything worth mirroring. Recoverable.
 fn trash_marked_note(tx: &Connection, parent_item_id: i64, paper_id: &str) -> Result<(), AppError> {
     let marker_like = format!(
         "%{}%",
-        like_escape(&format!("agentero:sync paper={paper_id}"))
+        like_escape(&format!("library:sync paper={paper_id}"))
     );
     tx.execute(
         "INSERT OR IGNORE INTO deletedItems (itemID)
@@ -298,10 +298,10 @@ fn trash_marked_note(tx: &Connection, parent_item_id: i64, paper_id: &str) -> Re
     Ok(())
 }
 
-/// Copy `zotero.sqlite` (+wal/shm) into `<zotero_dir>/agentero-backups/`,
+/// Copy `zotero.sqlite` (+wal/shm) into `<zotero_dir>/library-backups/`,
 /// keeping only the newest [`MAX_BACKUPS`] backups.
 fn backup_zotero_db(zotero_dir: &Path) -> Result<PathBuf, AppError> {
-    let backups_dir = zotero_dir.join("agentero-backups");
+    let backups_dir = zotero_dir.join("library-backups");
     fs::create_dir_all(&backups_dir)?;
     let stamp = chrono::Utc::now().format("%Y%m%d-%H%M%S");
     let dest = backups_dir.join(format!("zotero-{stamp}.sqlite"));
@@ -425,10 +425,10 @@ mod tests {
         let note: String = conn
             .query_row("SELECT note FROM itemNotes LIMIT 1", [], |r| r.get(0))
             .unwrap();
-        assert!(note.contains("agentero:sync paper=x"));
+        assert!(note.contains("library:sync paper=x"));
         assert!(note.contains("hello world"));
         // Backup exists on disk.
-        assert!(zdir.join("agentero-backups").is_dir());
+        assert!(zdir.join("library-backups").is_dir());
         drop(conn);
 
         // Second push replaces in place (still exactly one note).
@@ -560,7 +560,7 @@ mod tests {
             )
             .unwrap();
             conn.execute(
-                "INSERT INTO itemNotes VALUES (7, 4, '<!-- agentero:sync paper=x -->stale<!-- /agentero:sync -->', NULL)",
+                "INSERT INTO itemNotes VALUES (7, 4, '<!-- library:sync paper=x -->stale<!-- /library:sync -->', NULL)",
                 [],
             )
             .unwrap();

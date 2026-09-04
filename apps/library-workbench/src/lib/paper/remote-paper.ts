@@ -9,7 +9,7 @@
 import { arxivUrls } from "@/lib/paper/arxiv";
 import type { PaperMetadata } from "@/lib/paper/types";
 
-export const REMOTE_ARXIV_PREFIX = "agentero:arxiv:";
+export const REMOTE_ARXIV_PREFIX = "library:arxiv:";
 
 export type RemotePaperItem = {
 	arxivId: string;

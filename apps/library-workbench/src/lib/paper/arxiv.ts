@@ -73,7 +73,7 @@ export function arxivReaderUrl(url: string): string {
 	// Windows WebView2 intercepts http(s)://<scheme>.localhost; the filter is
 	// registered as http:// unless useHttpsSchemeForCustomProtocol is set.
 	const origin = navigator.userAgent.includes("Windows")
-		? "http://agentero-arxiv.localhost"
-		: "agentero-arxiv://localhost";
+		? "http://library-arxiv.localhost"
+		: "library-arxiv://localhost";
 	return `${origin}${parsed.pathname}${parsed.search}`;
 }

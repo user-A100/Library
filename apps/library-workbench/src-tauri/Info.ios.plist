@@ -3,8 +3,8 @@
 <plist version="1.0">
 <dict>
 	<key>NSCameraUsageDescription</key>
-	<string>Agentero uses the camera to scan a pairing QR code from your computer.</string>
+	<string>Library uses the camera to scan a pairing QR code from your computer.</string>
 	<key>NSLocalNetworkUsageDescription</key>
-	<string>Agentero uses the local network to connect to its development server.</string>
+	<string>Library uses the local network to connect to its development server.</string>
 </dict>
 </plist>

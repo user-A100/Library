@@ -29,7 +29,7 @@ export function isKnownUiTheme(name: unknown): name is string {
 	);
 }
 
-const STYLE_ID = "agentero-ui-theme";
+const STYLE_ID = "library-ui-theme";
 
 let themeDataPromise: Promise<UiThemeDef[]> | null = null;
 

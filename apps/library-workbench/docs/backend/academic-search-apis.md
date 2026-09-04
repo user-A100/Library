@@ -1,6 +1,6 @@
 # 学术搜索 API 一览
 
-Agentero Host 端（`src-tauri/src/features/`）在论文识别、入库、引用补全、推荐等流程中，会调用若干外部学术服务。本文档列出所有当前在用的学术搜索/元数据 API，说明其用途、调用入口、请求形态、fallback 链路与并发控制。
+Library Host 端（`src-tauri/src/features/`）在论文识别、入库、引用补全、推荐等流程中，会调用若干外部学术服务。本文档列出所有当前在用的学术搜索/元数据 API，说明其用途、调用入口、请求形态、fallback 链路与并发控制。
 
 > 范围限定在**学术元数据与论文发现**相关的外部 HTTP API。翻译 API（Google/Bing/DeepL/OpenAI 等）、版面分析 ONNX、本地 Agent/ACP、PostHog 遥测不在本文讨论范围内。
 
@@ -59,7 +59,7 @@ Agentero Host 端（`src-tauri/src/features/`）在论文识别、入库、引�
 入口：`features/refs/online.rs::fetch_references`。
 
 - 优先 Semantic Scholar：`GET /graph/v1/paper/{id}/references?fields=title,authors,year,venue,externalIds,url&limit=1000`，`{id}` 为 `arXiv:...` 或 `DOI:...`。
-- 失败或无结果且存在 DOI 时，fallback Crossref：`GET api.crossref.org/works/{doi}?mailto=agentero@users.noreply.github.com`，取 `message.reference[]`。
+- 失败或无结果且存在 DOI 时，fallback Crossref：`GET api.crossref.org/works/{doi}?mailto=library@users.noreply.github.com`，取 `message.reference[]`。
 
 ### 2.4 反向引用发现（"谁引用了我"）
 

@@ -1,5 +1,5 @@
 {
-	"title": "欢迎使用 Agentero",
+	"title": "欢迎使用 Library",
 	"subtitle": "在这里，你和 AI 助手一起读论文、记笔记。接下来几步，帮你把工作台调成顺手的样子。",
 	"steps": {
 		"welcome": "欢迎",
@@ -20,7 +20,7 @@
 	},
 	"agent": {
 		"title": "选一个 AI 助手",
-		"desc": "Agentero 会调用你电脑上已安装的 AI 助手，帮你总结论文、回答问题。不用额外申请 API，选中一个就能用。",
+		"desc": "Library 会调用你电脑上已安装的 AI 助手，帮你总结论文、回答问题。不用额外申请 API，选中一个就能用。",
 		"rescan": "重新扫描",
 		"scanning": "扫描中…",
 		"none": "没有发现可用的 AI 助手。先在电脑上安装一个（如 opencode、claude-acp），再点「重新扫描」。",

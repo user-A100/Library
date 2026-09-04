@@ -25,7 +25,7 @@ pub fn write_sidecar(vault_root: &Path, record: &PaperRecord) {
     };
     if let Err(e) = write() {
         log::warn!(
-            target: "agentero::catalog",
+            target: "library::catalog",
             "failed to write sidecar for {}: {e}",
             record.path
         );
@@ -64,7 +64,7 @@ mod tests {
 
     #[test]
     fn sidecar_roundtrip_overrides_stale_path() {
-        let vault = std::env::temp_dir().join(format!("agentero-sidecar-{}", Uuid::new_v4()));
+        let vault = std::env::temp_dir().join(format!("library-sidecar-{}", Uuid::new_v4()));
         fs::create_dir_all(vault.join("papers/x")).unwrap();
         let mut record = minimal_record("papers/x");
         record.is_read = true;
@@ -81,7 +81,7 @@ mod tests {
 
     #[test]
     fn read_sidecar_tolerates_connector_paper_meta_shape() {
-        let vault = std::env::temp_dir().join(format!("agentero-sidecar-meta-{}", Uuid::new_v4()));
+        let vault = std::env::temp_dir().join(format!("library-sidecar-meta-{}", Uuid::new_v4()));
         fs::create_dir_all(vault.join("papers/y")).unwrap();
         // Connector-era metadata.json: no `path`, tags as bare strings.
         fs::write(

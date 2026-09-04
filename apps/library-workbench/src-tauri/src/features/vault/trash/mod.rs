@@ -1,6 +1,6 @@
 //! Vault-local recycle bin.
 //!
-//! Deleting an item moves it into `.agentero/.trash/<batchId>/` together with a
+//! Deleting an item moves it into `.library/.trash/<batchId>/` together with a
 //! `manifest.json` that records each item's original vault-relative path and a
 //! snapshot of the catalog rows removed for it. This makes a delete fully
 //! undoable — files move back and catalog rows are re-inserted — without
@@ -14,7 +14,7 @@ use std::path::Path;
 
 /// Vault-relative location of the recycle bin (hidden from the file tree,
 /// which skips dot-entries).
-const TRASH_REL: &str = ".agentero/.trash";
+const TRASH_REL: &str = ".library/.trash";
 
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -100,7 +100,7 @@ fn write_manifest(batch_dir: &Path, manifest: &TrashManifest) -> Result<(), AppE
 ///
 /// For anything under `papers/`, catalog rows are snapshotted then removed so
 /// the Library stays consistent; both are restored on [`restore_batch`].
-/// Skips empty / traversing / `.agentero` / `papers` root / missing paths.
+/// Skips empty / traversing / `.library` / `papers` root / missing paths.
 pub fn trash_paths(vault_root: &Path, rels: &[String]) -> Result<TrashResult, AppError> {
     crate::core::fs::ensure_vault_dir(vault_root)?;
     let now = chrono::Utc::now();
@@ -117,7 +117,7 @@ pub fn trash_paths(vault_root: &Path, rels: &[String]) -> Result<TrashResult, Ap
         if rel.is_empty() || rel == "papers" || rel.contains("..") {
             continue;
         }
-        if rel.starts_with(".agentero") {
+        if rel.starts_with(".library") {
             continue; // never trash the app's private dir
         }
         let abs = vault_root.join(&rel);
@@ -378,7 +378,7 @@ mod tests {
 
     #[test]
     fn trash_and_restore_roundtrip() {
-        let dir = env::temp_dir().join(format!("agentero-trash-{}", std::process::id()));
+        let dir = env::temp_dir().join(format!("library-trash-{}", std::process::id()));
         let _ = fs::remove_dir_all(&dir);
         let paper_dir = dir.join("papers").join("x");
         fs::create_dir_all(&paper_dir).unwrap();
@@ -402,7 +402,7 @@ mod tests {
 
     #[test]
     fn restore_aborts_when_path_reappears() {
-        let dir = env::temp_dir().join(format!("agentero-trash-conflict-{}", std::process::id()));
+        let dir = env::temp_dir().join(format!("library-trash-conflict-{}", std::process::id()));
         let _ = fs::remove_dir_all(&dir);
         let note = dir.join("notes");
         fs::create_dir_all(&note).unwrap();
@@ -422,7 +422,7 @@ mod tests {
 
     #[test]
     fn list_restore_and_purge_items() {
-        let dir = env::temp_dir().join(format!("agentero-trash-list-{}", std::process::id()));
+        let dir = env::temp_dir().join(format!("library-trash-list-{}", std::process::id()));
         let _ = fs::remove_dir_all(&dir);
         let notes = dir.join("notes");
         fs::create_dir_all(&notes).unwrap();

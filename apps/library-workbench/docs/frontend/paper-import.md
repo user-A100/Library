@@ -42,7 +42,7 @@
 |---|---|
 | 魔棒 FileUp | 多选 → `paper_import_local_pdf` **即时导入**（秒级，文件名元数据占位）；任务条随后出现 per-paper 的「识别论文元数据」行（可取消） |
 | 拖到 `papers/` 组织夹 | 直接后台导入（无确认对话框），同上；识别完成后目录自动改名为规范 id（如 `papers/1706.03762`），树/库/tab 路径无缝迁移 |
-| 拖到 Library 表 | 仅一个或多个 PDF 时显示虚线 overlay；松手后直接后台导入。目标：当前文件夹作用域，或全库时的树选中 Papers 夹 / `papers/`（[#309](https://github.com/poco-ai/Agentero/issues/309)） |
+| 拖到 Library 表 | 仅一个或多个 PDF 时显示虚线 overlay；松手后直接后台导入。目标：当前文件夹作用域，或全库时的树选中 Papers 夹 / `papers/`（[#309](https://github.com/poco-ai/Library/issues/309)） |
 | 拖到窗口其它区域 | 不入库（窗口级 `preventDefault` 防 WebView 导航） |
 
 - 即时导入：`paper_commit` 立刻复制 PDF + 建目录 + 落 catalog，`paper:imported` 让论文马上出现在树/论文库；`RecognizeMetadata` job 在后台跑识别链路（见 [../backend/paper-import.md](../backend/paper-import.md)），返回值 `recognizePending=true` 时前端跳过自己的 layout enqueue（runner 统一在改名后编排 PAPER.md / refs / layout）。

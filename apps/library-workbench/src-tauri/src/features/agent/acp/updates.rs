@@ -139,7 +139,7 @@ fn dedupe_model_choices(models: Vec<AgentModelChoice>) -> Vec<AgentModelChoice> 
 
     if dropped > 0 {
         log::debug!(
-            target: "agentero::agent",
+            target: "library::agent",
             "model catalog deduped: kept={}, dropped_duplicates={}",
             out.len(),
             dropped
@@ -216,7 +216,7 @@ pub(crate) fn models_from_config_options(
                 },
             );
             log::debug!(
-                target: "agentero::agent",
+                target: "library::agent",
                 "agent={} config_id={} injected current model not in catalog: {}",
                 agent_id,
                 opt.id,
@@ -228,7 +228,7 @@ pub(crate) fn models_from_config_options(
         }
         if raw_len != models.len() {
             log::debug!(
-                target: "agentero::agent",
+                target: "library::agent",
                 "agent={} config_id={} model list: raw={} unique={}",
                 agent_id,
                 opt.id,

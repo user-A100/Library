@@ -96,7 +96,7 @@ export function GeneralPane({
 	const [systemProxy, setSystemProxy] = useState<string | null>(null);
 	const [seedingTemplate, setSeedingTemplate] = useState(false);
 
-	// Custom note mode seeds `.agentero/templates/NOTES.md` in the active vault;
+	// Custom note mode seeds `.library/templates/NOTES.md` in the active vault;
 	// remote vaults have no local template file to create.
 	const canSeedTemplate = Boolean(vaultPath) && hostContext.kind === "local";
 
@@ -211,7 +211,7 @@ export function GeneralPane({
 					<SettingsRow
 						label={
 							<code className="font-mono text-muted-foreground text-xs">
-								.agentero/templates/NOTES.md
+								.library/templates/NOTES.md
 							</code>
 						}
 					>

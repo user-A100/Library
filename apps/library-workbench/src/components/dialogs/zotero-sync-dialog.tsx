@@ -46,7 +46,7 @@ function loadOpts(): SavedOpts {
 
 /**
  * Bidirectional Zotero sync: pull (metadata / child notes / annotations) and
- * push (NOTES.md → Agentero-marked Zotero child note). Push writes offline to
+ * push (NOTES.md → Library-marked Zotero child note). Push writes offline to
  * `zotero.sqlite` — Zotero must be closed; a timestamped backup is created
  * first. Options and the chosen folder are remembered.
  */

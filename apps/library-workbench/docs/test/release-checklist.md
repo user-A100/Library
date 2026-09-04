@@ -47,14 +47,14 @@
 |---|---|---|---|---|
 | 0.1.1 | 仓库 / 终端 | 对比 `package.json`、`src-tauri/tauri.conf.json`、`src-tauri/Cargo.toml`、`cli/Cargo.toml` 版本 | 四者一致，且等于 tag 去掉 `v` | ☐ |
 | 0.1.2 | 应用·设置 / About | 打开设置或关于，看版本号 | 与 tag 一致 | ☐ |
-| 0.1.3 | 终端 | 运行 Release 里的 `agentero --version` | 与 tag 一致 | ☐ |
+| 0.1.3 | 终端 | 运行 Release 里的 `library --version` | 与 tag 一致 | ☐ |
 
 ### 0.2 自动化（本机或 CI）
 
 ```bash
 pnpm lint && pnpm test && pnpm build
 cargo test --manifest-path src-tauri/Cargo.toml
-cargo test -p agentero-cli
+cargo test -p library-cli
 ```
 
 | # | 界面 | 操作 | 预期 | 结果 |
@@ -68,12 +68,12 @@ cargo test -p agentero-cli
 | # | 界面 | 操作 | 预期 | 结果 |
 |---|---|---|---|---|
 | 0.3.1 | 系统 | 安装本次产物并首次启动 | 无崩溃、无白屏；进入**欢迎页**。Linux 在 22.04+ 验收 | ☐ |
-| 0.3.1b | 终端 | 检查产物不含 CLI（macOS：`ls Agentero.app/Contents/MacOS/ | grep agentero-cli`；Windows：安装目录 `dir agentero-cli*`） | 应**无**任何 agentero-cli 文件（不内置真二进制，也不再有占位 stub；#320） | ☐ |
+| 0.3.1b | 终端 | 检查产物不含 CLI（macOS：`ls Library.app/Contents/MacOS/ | grep library-cli`；Windows：安装目录 `dir library-cli*`） | 应**无**任何 library-cli 文件（不内置真二进制，也不再有占位 stub；#320） | ☐ |
 | 0.3.2 | 欢迎页 | 不打开 Vault，空看界面 | 同一行有 Create / Open / Open remote / Migrate from Zotero + Recent 列表；无大段说明文案 | ☐ |
 | 0.3.3 | 设置 → 关于 | 已安装旧版时检查已发布新版，点「安装并重启」 | 有新版提示、下载进度；重启后 About 显示新版本 | ☐ |
 | 0.3.4 | 主窗口 | 启动已安装旧版 | 首屏不阻塞；有新版时只出现一个「安装并重启」Toast；无更新或离线时不弹错误 | ☐ |
-| 0.3.5 | 访达（macOS） | 安装后启动一次，右键任意文件夹 → 快捷操作 | 出现 **Open with Agentero**；点击后打开为 Vault（运行中/未运行各测一次）；含空格/中文目录名正常；设置 → 关于 移除后菜单消失且重启不再自动恢复 | ☐ |
-| 0.3.6 | 资源管理器（Windows） | 安装后右键文件夹及文件夹空白处 | 均有 **Open with Agentero**（Win11 在「显示更多选项」）；含空格/`&`/中文的目录可打开；卸载后 `reg query` 无 `OpenWithAgentero` 残留 | ☐ |
+| 0.3.5 | 访达（macOS） | 安装后启动一次，右键任意文件夹 → 快捷操作 | 出现 **Open with Library**；点击后打开为 Vault（运行中/未运行各测一次）；含空格/中文目录名正常；设置 → 关于 移除后菜单消失且重启不再自动恢复 | ☐ |
+| 0.3.6 | 资源管理器（Windows） | 安装后右键文件夹及文件夹空白处 | 均有 **Open with Library**（Win11 在「显示更多选项」）；含空格/`&`/中文的目录可打开；卸载后 `reg query` 无 `OpenWithLibrary` 残留 | ☐ |
 
 ---
 
@@ -83,7 +83,7 @@ cargo test -p agentero-cli
 
 | # | 界面 | 操作 | 预期 | 结果 |
 |---|---|---|---|---|
-| 1.1 | 欢迎页 | 点 **Create vault**，选空文件夹 | 进入工作台；左栏出现 `papers/` `notes/`；磁盘有 `.agentero/catalog.sqlite`、`AGENTS.md`；**无**根级 `plans/`、`PAPERS.md` | ☐ |
+| 1.1 | 欢迎页 | 点 **Create vault**，选空文件夹 | 进入工作台；左栏出现 `papers/` `notes/`；磁盘有 `.library/catalog.sqlite`、`AGENTS.md`；**无**根级 `plans/`、`PAPERS.md` | ☐ |
 | 1.2 | 中间栏 | 观察默认中间区 | 为 **Library**（可空表或空状态） | ☐ |
 | 1.3 | 左栏·树 | 点魔棒图标，或 `⇧⌘I` | 打开魔棒弹层 | ☐ |
 | 1.4 | 魔棒弹层 | 粘贴 `1706.03762`，确认入库 | 左下角**任务条**有进度；成功后左栏树**展开并滚到**新论文行；中间打开该 paper | ☐ |
@@ -226,7 +226,7 @@ cargo test -p agentero-cli
 | 6.2.2.1 | 访达 | 把 1 个或多个 PDF **拖到**中间栏 Library 表 | 出现虚线 overlay「松开以导入 PDF」；松手后同一确认框；确认后入库。文件夹作用域导入到该夹 | ☐ |
 | 6.2.2.2 | 访达 | 把 PNG / `.md` 拖到 Library 表 | **无** overlay、不入库 | ☐ |
 | 6.2.3 | 同上 | 再导同名冲突 PDF | citekey 带 `-2` / `-3` 等后缀，不互相覆盖 | ☐ |
-| 6.2.4 | 终端 + 应用 | **用安装包装的应用**（非 `tauri dev`），先确认 PDFium 已随包：macOS `ls "/Applications/Agentero.app/Contents/Frameworks/libpdfium.dylib"`，Windows/Linux 查 exe 同级 `pdfium/`。再临时移走构建期缓存 `~/Library/Caches/pdfium-rs`（Linux `~/.cache/pdfium-rs`），导入一个本地 PDF | 仍生成 `PAPER.md`，catalog 写入 `body_source`；测完恢复缓存目录（回归 #303） | ☐ |
+| 6.2.4 | 终端 + 应用 | **用安装包装的应用**（非 `tauri dev`），先确认 PDFium 已随包：macOS `ls "/Applications/Library.app/Contents/Frameworks/libpdfium.dylib"`，Windows/Linux 查 exe 同级 `pdfium/`。再临时移走构建期缓存 `~/Library/Caches/pdfium-rs`（Linux `~/.cache/pdfium-rs`），导入一个本地 PDF | 仍生成 `PAPER.md`，catalog 写入 `body_source`；测完恢复缓存目录（回归 #303） | ☐ |
 | 6.2.5 | 同上 | 把包内 PDFium 临时改名，再导入一个本地 PDF | 任务面板出现 **失败** 的「解析 PDF 正文」，详情含找不到 PDFium 的真实原因，而不是显示“已完成” | ☐ |
 
 ### 6.3 补下载
@@ -244,7 +244,7 @@ cargo test -p agentero-cli
 |---|---|---|---|---|
 | 6.4.1 | 设置 → 通用 | 打开「兼容 Zotero Connector」 | 状态为 Listening，且绑定当前 Vault | ☐ |
 | 6.4.2 | 系统 | 同时开 Zotero 桌面再开开关 | 明确端口占用失败提示 | ☐ |
-| 6.4.3 | 浏览器 | 打开论文页，点 Connector 保存 | Agentero 入库；树/Library 刷新；打开或聚焦该 paper | ☐ |
+| 6.4.3 | 浏览器 | 打开论文页，点 Connector 保存 | Library 入库；树/Library 刷新；打开或聚焦该 paper | ☐ |
 | 6.4.4 | 浏览器 | 对登录墙 PDF 触发附件保存（若场景可得） | 附件进入论文目录 | ☐ |
 | 6.4.5 | 设置 | 关闭开关后退出应用 | 端口释放；浏览器不再认为 Zotero 在线 | ☐ |
 
@@ -414,20 +414,20 @@ cargo test -p agentero-cli
 
 ```bash
 # 使用本机构建或 Release 二进制
-agentero vault create /tmp/agentero-cli-vault
-agentero --vault /tmp/agentero-cli-vault paper list --json
+library vault create /tmp/library-cli-vault
+library --vault /tmp/library-cli-vault paper list --json
 ```
 
 | # | 界面 | 操作 | 预期 | 结果 |
 |---|---|---|---|---|
-| 13.1 | 终端 | `agentero --version` | 版本与发布一致 | ☐ |
+| 13.1 | 终端 | `library --version` | 版本与发布一致 | ☐ |
 | 13.2 | 终端 | `vault create <空目录>` | 脚手架与 GUI Create 一致（含 catalog） | ☐ |
 | 13.3 | 终端 | `vault which --json` / `info` / `check` | JSON 可解析；退出码 0 | ☐ |
 | 13.4 | 终端 | `tree`；`paper list --json` | 与 catalog 一致 | ☐ |
 | 13.5 | 终端 | `paper tag add …`；`list --tag` | 标签生效 | ☐ |
 | 13.6 | 终端 | `import id 1706.03762`（需网） | 入库成功或稳定 `error.code` | ☐ |
 | 13.7 | 终端 | `export bib` | 输出 BibTeX | ☐ |
-| 13.8 | 终端 | `agentero --help` | **无** agent run / paper-reader 类 BYOA 命令 | ☐ |
+| 13.8 | 终端 | `library --help` | **无** agent run / paper-reader 类 BYOA 命令 | ☐ |
 
 ---
 

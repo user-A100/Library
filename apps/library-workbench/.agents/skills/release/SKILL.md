@@ -1,7 +1,7 @@
 ---
 name: release
 description: >-
-  Prepare and optionally update Agentero GitHub Release notes from merged pull
+  Prepare and optionally update Library GitHub Release notes from merged pull
   requests and uncovered first-parent commits. Use when the user asks to
   prepare, dry-run, review, or update a release; summarize changes between
   versions or tags; or fill a Draft GitHub Release after the v* release
@@ -9,7 +9,7 @@ description: >-
   require explicit approval before changing GitHub state.
 ---
 
-# Agentero Release
+# Library Release
 
 Prepare evidence-backed bilingual Release notes and write them directly to the
 Draft GitHub Release. Use dry runs when the user explicitly requests read-only
@@ -59,7 +59,7 @@ For each candidate change:
   credited in the notes. **Resolve GitHub usernames** — the git commit author
   name (e.g. `QiyuanChen`) is not necessarily the GitHub handle (e.g.
   `qychen2001`). For PRs, use the PR `author.login` field directly. For
-  uncovered commits, run `gh api repos/poco-ai/Agentero/commits/<sha>` and
+  uncovered commits, run `gh api repos/poco-ai/Library/commits/<sha>` and
   extract the `author.login` field. Fall back to the commit `author.name` only
   when the GitHub API returns null (e.g. unauthenticated local commits).
 - Report uncertainty or conflicting evidence instead of inventing behavior.
@@ -150,7 +150,7 @@ After drafting the notes, write them directly to the Draft GitHub Release.
 
    ```bash
    gh release edit "<tag>" \
-     --repo poco-ai/Agentero \
+     --repo poco-ai/Library \
      --verify-tag \
      --notes-file "<temporary-file>"
    ```

@@ -60,7 +60,7 @@ loadVaultTree(root)
 
 ### 2.3 旧忽略集合过窄
 
-旧规则大致只跳过：`.git`、`.agentero`、`node_modules`、`target`、`dist` 以及多数点开头名。
+旧规则大致只跳过：`.git`、`.library`、`node_modules`、`target`、`dist` 以及多数点开头名。
 
 仍会扫入（示例类）：
 
@@ -94,7 +94,7 @@ loadVaultTree(root)
 
 `TREE_IGNORE_NAMES` + 点目录策略（保留 `.agents`、`.env.example`）+ `*.egg-info`：
 
-- VCS / Host 内部：`.git`、`.agentero`、…  
+- VCS / Host 内部：`.git`、`.library`、…  
 - 依赖与缓存：`node_modules`、`.venv`、`venv`、`__pycache__`、`site-packages`、各类 `.*_cache`、…  
 - 编辑器 / 工具：`.codex`、`.idea`、`.vscode`、…  
 

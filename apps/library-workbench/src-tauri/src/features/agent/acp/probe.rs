@@ -36,7 +36,7 @@ pub async fn probe_agent(
 
     let connect = agent_client_protocol::Client
         .builder()
-        .name("agentero")
+        .name("library")
         .with_handler(AcpTerminalHandler::new(terminals))
         .on_receive_request(
             async move |request: RequestPermissionRequest, responder, _cx| {

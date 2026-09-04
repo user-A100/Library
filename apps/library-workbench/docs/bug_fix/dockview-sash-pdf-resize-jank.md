@@ -5,10 +5,10 @@
 **相关代码**：
 
 - `src/lib/workspace/dockview-sash.ts` — `installDockviewSashFrameLoop`、`createLatestFrameDispatcher`、`isDockviewSashTarget`
-- `src/components/workspace/dock-workspace.tsx` — 挂载 sash frame loop，挂载点 `.agentero-dockview`
+- `src/components/workspace/dock-workspace.tsx` — 挂载 sash frame loop，挂载点 `.library-dockview`
 - `src/lib/pdf/dockview-resize.ts` — `createPdfViewportResizeGate`（拖动期间暂停 EmbedPDF viewport metrics）
 - `src/components/viewer/embed/pdf-viewer.tsx` — `DockviewViewport` 包装 EmbedPDF viewport，按拖动状态门控
-- `src/index.css` — `.agentero-dock-sash-active` 期间的 `contain: layout paint` 与 `user-select: none`
+- `src/index.css` — `.library-dock-sash-active` 期间的 `contain: layout paint` 与 `user-select: none`
 - `test/dockview-sash-pointer.test.ts` — sash frame 调度与 pointerup 补齐测试
 - `test/pdf-dockview-resize.test.ts` — resize gate 合并 / suppress / 一次性提交测试
 - 文档：`docs/frontend/workspace.md`、`docs/frontend/shell.md`、`docs/test/release-checklist.md`
@@ -66,11 +66,11 @@ Dockview 7 在每个原始 `pointermove` 中同步执行递归 `layoutViews()`�
 
 ### 3.1 Dockview 一侧：每帧只转发最后一次坐标
 
-`installDockviewSashFrameLoop` 挂在工作区 `.agentero-dockview` 根节点上，在捕获阶段拦截 pointerdown：
+`installDockviewSashFrameLoop` 挂在工作区 `.library-dockview` 根节点上，在捕获阶段拦截 pointerdown：
 
 | 信号 | 处理 |
 |---|---|
-| pointerdown 命中 `.dv-sash` 且属于本工作区 | 进入「sash 拖动态」，加 `.agentero-dock-sash-active`，`preventDefault` 阻止原生选区 |
+| pointerdown 命中 `.dv-sash` 且属于本工作区 | 进入「sash 拖动态」，加 `.library-dock-sash-active`，`preventDefault` 阻止原生选区 |
 | 拖动中的 pointermove | **取消** Dockview 原生监听，改 enqueue 到 `createLatestFrameDispatcher` |
 | `requestAnimationFrame` 触发 | 合成一条 pointermove 转发 Dockview，只携带本帧最后一次坐标 |
 | pointerup / pointercancel / contextmenu / window blur | 在交给 Dockview 前**同步 flush** 最终坐标，避免松手回跳 |
@@ -92,15 +92,15 @@ Dockview 7 在每个原始 `pointermove` 中同步执行递归 `layoutViews()`�
 
 ### 3.3 跨 panel 隔离 + 选区抑制
 
-`src/index.css` 在 `.agentero-dock-sash-active` 期间：
+`src/index.css` 在 `.library-dock-sash-active` 期间：
 
 ```css
-.agentero-dockview.agentero-dock-sash-active .dv-view,
-.agentero-dockview.agentero-dock-sash-active .dv-render-overlay {
+.library-dockview.library-dock-sash-active .dv-view,
+.library-dockview.library-dock-sash-active .dv-render-overlay {
   contain: layout paint;
 }
 
-.agentero-dockview.agentero-dock-sash-active {
+.library-dockview.library-dock-sash-active {
   -webkit-user-select: none;
   user-select: none;
 }

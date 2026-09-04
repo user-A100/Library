@@ -188,8 +188,8 @@ describe("Dockview sash pointer scheduling", () => {
 			clientX: 10,
 		});
 		root.dispatchEvent(pointerDown);
-		expect(classes.has("agentero-dock-sash-active")).toBe(true);
-		expect(sashClasses.has("agentero-dock-sash-dragging")).toBe(true);
+		expect(classes.has("library-dock-sash-active")).toBe(true);
+		expect(sashClasses.has("library-dock-sash-dragging")).toBe(true);
 		expect(pointerDown.defaultPrevented).toBe(true);
 
 		for (const clientX of [20, 30, 40]) {
@@ -213,8 +213,8 @@ describe("Dockview sash pointer scheduling", () => {
 			new FakePointerEvent("pointerup", { pointerId: 4, clientX: 50 }),
 		);
 		expect(dockviewMoves).toEqual([40, 50]);
-		expect(classes.has("agentero-dock-sash-active")).toBe(false);
-		expect(sashClasses.has("agentero-dock-sash-dragging")).toBe(false);
+		expect(classes.has("library-dock-sash-active")).toBe(false);
+		expect(sashClasses.has("library-dock-sash-dragging")).toBe(false);
 		expect(dockviewEnds).toBe(1);
 
 		root.dispatchEvent(
@@ -224,8 +224,8 @@ describe("Dockview sash pointer scheduling", () => {
 			new FakePointerEvent("pointermove", { pointerId: 5, clientX: 70 }),
 		);
 		ownerWindow.dispatchEvent(new Event("blur"));
-		expect(classes.has("agentero-dock-sash-active")).toBe(false);
-		expect(sashClasses.has("agentero-dock-sash-dragging")).toBe(false);
+		expect(classes.has("library-dock-sash-active")).toBe(false);
+		expect(sashClasses.has("library-dock-sash-dragging")).toBe(false);
 		expect(dockviewEnds).toBe(2);
 
 		dispose();

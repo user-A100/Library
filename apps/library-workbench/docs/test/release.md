@@ -4,7 +4,7 @@
 > 适用场景：将基于 iPadOS 的 App 提交到 Apple App Store，并为“启航”赛道准备可验证的上架或 TestFlight 版本。  
 > 说明：Apple 的审核规则和上传要求会持续更新，正式提交前应再次检查官方页面。
 
-## Agentero Desktop/CLI 版本发布
+## Library Desktop/CLI 版本发布
 
 桌面安装包由 Tauri 配置和 Rust package 版本决定，CLI 归档文件名由发布 tag 和 Rust target 决定。因此发布时不能只创建 `v*` tag，必须先同步版本并提交。
 
@@ -24,9 +24,9 @@ Release 中区分两类资产：
 
 | 类型 | 命名规范 | 示例 |
 |---|---|---|
-| 桌面安装包 | `Agentero_<version>_<arch>.<format>` | `Agentero_0.3.2_aarch64.dmg` |
-| CLI 归档 | `agentero-cli-<version>-<rust-host>.<archive>` | `agentero-cli-0.3.2-aarch64-apple-darwin.tar.gz` |
-| CLI 校验文件 | `<CLI 归档文件名>.sha256` | `agentero-cli-0.3.2-aarch64-apple-darwin.tar.gz.sha256` |
+| 桌面安装包 | `Library_<version>_<arch>.<format>` | `Library_0.3.2_aarch64.dmg` |
+| CLI 归档 | `library-cli-<version>-<rust-host>.<archive>` | `library-cli-0.3.2-aarch64-apple-darwin.tar.gz` |
+| CLI 校验文件 | `<CLI 归档文件名>.sha256` | `library-cli-0.3.2-aarch64-apple-darwin.tar.gz.sha256` |
 
 CLI 的 `<rust-host>` 来自发布 runner 上 `rustc -vV` 的 `host` 字段，不由工作流手写映射。例如：
 
@@ -35,15 +35,15 @@ CLI 的 `<rust-host>` 来自发布 runner 上 `rustc -vV` 的 `host` 字段，�
 - `aarch64-unknown-linux-gnu`：ARM64 Linux；
 - `x86_64-pc-windows-msvc`：Windows MSVC。
 
-CLI 压缩包内部统一包含名为 `agentero`（Windows 为 `agentero.exe`）的可执行文件；外部归档名使用 `agentero-cli-` 前缀，避免与桌面安装包混淆。
+CLI 压缩包内部统一包含名为 `library`（Windows 为 `library.exe`）的可执行文件；外部归档名使用 `library-cli-` 前缀，避免与桌面安装包混淆。
 
-桌面安装包 **不** 嵌入真实 CLI（[#285](https://github.com/poco-ai/Agentero/issues/285)）：`externalBin` 已移除，安装目录不含任何 `agentero-cli` 文件（历史上 Windows 随包附带的批处理占位 `.exe` 会触发“不支持的 16 位应用程序”系统弹窗，已根除）。用户从 **设置 → 关于 → 安装 CLI** 下载与 App 同版本的上述归档（Host 校验 sibling `.sha256`）。独立 CLI 归档仍须随 Release 上传，供 headless 与应用内安装共用。
+桌面安装包 **不** 嵌入真实 CLI（[#285](https://github.com/poco-ai/Library/issues/285)）：`externalBin` 已移除，安装目录不含任何 `library-cli` 文件（历史上 Windows 随包附带的批处理占位 `.exe` 会触发“不支持的 16 位应用程序”系统弹窗，已根除）。用户从 **设置 → 关于 → 安装 CLI** 下载与 App 同版本的上述归档（Host 校验 sibling `.sha256`）。独立 CLI 归档仍须随 Release 上传，供 headless 与应用内安装共用。
 
 ### Linux 支持边界
 
 - CI：`ubuntu-22.04` / `ubuntu-24.04-arm`，依赖 `libwebkit2gtk-4.1-dev`。
 - 用户侧最低：Ubuntu **22.04+**（webkit2gtk 4.1）。20.04 不支持。
-- 用户文档：[`../usage/getting-started.md`](../usage/getting-started.md)（[#253](https://github.com/poco-ai/Agentero/issues/253)）。
+- 用户文档：[`../usage/getting-started.md`](../usage/getting-started.md)（[#253](https://github.com/poco-ai/Library/issues/253)）。
 
 ### 应用内更新签名
 
@@ -56,7 +56,7 @@ GitHub Actions 必须配置以下 repository secrets；`release.yml` 会在创�
 | `TAURI_SIGNING_PRIVATE_KEY` | `tauri signer generate` 产生的完整 minisign 私钥内容 |
 | `TAURI_SIGNING_PRIVATE_KEY_PASSWORD` | 生成该私钥时使用的密码 |
 
-发布工作流设置 `createUpdaterArtifacts`，由 `tauri-apps/tauri-action@v1` 上传签名更新包、`.sig` 和聚合后的 `latest.json`。客户端请求 `https://github.com/poco-ai/Agentero/releases/latest/download/latest.json`，因此：
+发布工作流设置 `createUpdaterArtifacts`，由 `tauri-apps/tauri-action@v1` 上传签名更新包、`.sig` 和聚合后的 `latest.json`。客户端请求 `https://github.com/poco-ai/Library/releases/latest/download/latest.json`，因此：
 
 - Draft Release 用于验收，发布前不会被客户端读取；
 - 只有完整、已发布的稳定版 Release 才会成为更新源；
@@ -66,7 +66,7 @@ GitHub Actions 必须配置以下 repository secrets；`release.yml` 会在创�
 生成或轮换密钥时，在安全位置执行以下命令，将公钥替换到 `tauri.conf.json`，并将私钥/密码写入 GitHub Actions Secrets：
 
 ```bash
-pnpm tauri signer generate --password '<strong password>' --write-keys /secure/path/agentero-updater.key
+pnpm tauri signer generate --password '<strong password>' --write-keys /secure/path/library-updater.key
 ```
 
 ### macOS 签名与公证（店外分发）
@@ -170,7 +170,7 @@ Apple 不仅检查 App 能否安装，还会关注 iPad 上的实际体验。建
 
 Apple 要求审核人员能够完整访问和验证 App 的核心功能。后端服务在审核期间也必须保持在线。
 
-**Agentero iOS 特有约定（无登录）：**
+**Library iOS 特有约定（无登录）：**
 
 - **Sign-in required = No**，演示账号留空；不要为过审单独做假登录页或「输入测试网站账号」流程。
 - 核心能力依赖桌面端配对：在 **App Review Notes** 中写清扫码 / 粘贴配对链接步骤，并保证中继与（可选）演示桌面在审核窗口可用。

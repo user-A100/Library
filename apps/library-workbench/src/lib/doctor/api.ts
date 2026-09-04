@@ -196,7 +196,7 @@ export function doctorApplyAliases(
 	});
 }
 
-/** Persist ignore/restore for paper-alias candidates (vault `.agentero/doctor.json`). */
+/** Persist ignore/restore for paper-alias candidates (vault `.library/doctor.json`). */
 export function doctorIgnoreAliases(
 	vaultPath: string,
 	paths: string[],

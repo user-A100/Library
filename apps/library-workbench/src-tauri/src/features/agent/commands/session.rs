@@ -121,7 +121,7 @@ pub async fn agent_run_once(
         }
         let _ = app_handle.state::<AgentRunController>().finish(&session_id);
         log::info!(
-            target: "agentero::op",
+            target: "library::op",
             "op end agent_run_session session_id={} agent_id={}",
             trunc(&session_id, 48),
             trunc(&session_agent_id, 48)

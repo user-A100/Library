@@ -1,15 +1,15 @@
 <p align="center">
-  <img src="docs/assets/hero.png" alt="Agentero" width="100%" />
+  <img src="docs/assets/hero.png" alt="Library" width="100%" />
 </p>
 
 <p align="center">
-  <a href="https://github.com/poco-ai/agentero/stargazers"><img src="https://img.shields.io/github/stars/poco-ai/agentero?style=flat&logo=github" alt="GitHub stars" /></a>
-  <a href="https://github.com/poco-ai/agentero/network/members"><img src="https://img.shields.io/github/forks/poco-ai/agentero?style=flat&logo=github" alt="GitHub forks" /></a>
-  <a href="https://github.com/poco-ai/agentero/issues"><img src="https://img.shields.io/github/issues/poco-ai/agentero?style=flat" alt="GitHub issues" /></a>
-  <a href="https://github.com/poco-ai/agentero/pulls"><img src="https://img.shields.io/github/issues-pr/poco-ai/agentero?style=flat" alt="GitHub pull requests" /></a>
+  <a href="https://github.com/stargazers"><img src="https://img.shields.io/github/stars/poco-ai/library?style=flat&logo=github" alt="GitHub stars" /></a>
+  <a href="https://github.com/network/members"><img src="https://img.shields.io/github/forks/poco-ai/library?style=flat&logo=github" alt="GitHub forks" /></a>
+  <a href="https://github.com/issues"><img src="https://img.shields.io/github/issues/poco-ai/library?style=flat" alt="GitHub issues" /></a>
+  <a href="https://github.com/pulls"><img src="https://img.shields.io/github/issues-pr/poco-ai/library?style=flat" alt="GitHub pull requests" /></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="License: MIT" /></a>
-  <a href="https://github.com/poco-ai/agentero/releases"><img src="https://img.shields.io/github/v/release/poco-ai/agentero?include_prereleases&style=flat" alt="Release" /></a>
-  <a href="https://agentero-docs.poco-ai.com"><img src="https://img.shields.io/badge/docs-online-5319E7?logo=mkdocs&logoColor=white" alt="Documentation" /></a>
+  <a href="https://github.com/releases"><img src="https://img.shields.io/github/v/release/poco-ai/library?include_prereleases&style=flat" alt="Release" /></a>
+  <a href="https://library-docs.poco-ai.com"><img src="https://img.shields.io/badge/docs-online-5319E7?logo=mkdocs&logoColor=white" alt="Documentation" /></a>
 </p>
 
 <p align="center">
@@ -19,7 +19,7 @@
 如果本项目对你有帮助，请在右上角**给个 star** 吧！
 
 <p align="center">
-  <a href="https://github.com/poco-ai/agentero/stargazers"><img src="https://github.com/user-attachments/assets/1d49b049-89ae-4992-a92d-d2411c8053b6" alt="Give me a star" width="480" /></a>
+  <a href="https://github.com/stargazers"><img src="https://github.com/user-attachments/assets/1d49b049-89ae-4992-a92d-d2411c8053b6" alt="Give me a star" width="480" /></a>
 </p>
 
 **Context is everything**。
@@ -28,14 +28,14 @@
 
 但科研的 context 今天是碎裂的：PDF 和高亮批注可能在 Zotero 里，笔记在 Obsidian 里，你和 AI 的讨论、提问、方案留在对话框里。三者互不相通，再聪明的 Agent 也只能读到碎片。
 
-所以我们做了 Agentero，旨在构建 Agent 友好、Agent 原生的文献管理方式，探索人与 Agent 在文献管理中的协作方式。
+所以我们做了 Library，旨在构建 Agent 友好、Agent 原生的文献管理方式，探索人与 Agent 在文献管理中的协作方式。
 
-Agentero 是一个 Agent 时代的本地优先科研工作台，让输入、处理、输出三个环节都有 AI 参与。它不锁定具体 Agent 或模型——通过 ACP 接上你自己的本地 Agent（BYOA），工作上下文留在本地 Vault。
+Library 是一个 Agent 时代的本地优先科研工作台，让输入、处理、输出三个环节都有 AI 参与。它不锁定具体 Agent 或模型——通过 ACP 接上你自己的本地 Agent（BYOA），工作上下文留在本地 Vault。
 
 ## 功能
 
 - **Agent 原生体验**
-  - 通过 **ACP** 连接本机 Agent，Agentero 不锁定具体 Agent 或模型，工作上下文留在本地 Vault
+  - 通过 **ACP** 连接本机 Agent，Library 不锁定具体 Agent 或模型，工作上下文留在本地 Vault
   - 支持快速安装、配置、卸载 Agent
   - 支持划词对话、论文导入与 Skill 导入，让 Agent 参与检索、阅读与整理工作流
   - 内置 CLI，支持导入论文、获取论文metadata、写入笔记、高亮等操作
@@ -105,7 +105,7 @@ Agentero 是一个 Agent 时代的本地优先科研工作台，让输入、处�
 <p align="center">
   <img src="docs/assets/image.png" alt="MCP 连接" width="90%" />
   <br/>
-  <sub>内置 MCP，可将 Agentero 能力接入 ChatGPT 等外部客户端</sub>
+  <sub>内置 MCP，可将 Library 能力接入 ChatGPT 等外部客户端</sub>
 </p>
 
 <p align="center">
@@ -124,15 +124,15 @@ Agentero 是一个 Agent 时代的本地优先科研工作台，让输入、处�
 
 ### 桌面应用
 
-前往 [Agentero](https://agentero.poco-ai.com) 或 [Releases](https://github.com/poco-ai/agentero/releases) 下载。
+前往 [Library](https://library.poco-ai.com) 或 [Releases](https://github.com/releases) 下载。
 
 Linux 需 Ubuntu **22.04+**（webkit2gtk 4.1）。详见 [安装文档](docs/usage/getting-started.md)。
 
 HomeBrew
 
 ```bash
-brew tap poco-ai/agentero
-brew install --cask agentero
+brew tap poco-ai/library
+brew install --cask library
 ```
 
 ### CLI
@@ -140,8 +140,8 @@ brew install --cask agentero
 HomeBrew
 
 ```bash
-brew tap poco-ai/agentero
-brew install agentero
+brew tap poco-ai/library
+brew install library
 ```
 
 ## 开发
@@ -149,12 +149,12 @@ brew install agentero
 ### 项目结构
 
 ```text
-agentero/
+library/
 ├── AGENTS.md             # 面向 Agent / 开发者的仓库指南
 ├── mkdocs.yml            # MkDocs 文档站配置
 ├── src/                  # React + TypeScript 前端
 ├── src-tauri/            # Tauri 2 + Rust Host（Vault、Wiki、ACP）
-├── cli/                  # headless CLI（bin agentero；见 docs/backend/cli.md）
+├── cli/                  # headless CLI（bin library；见 docs/backend/cli.md）
 ├── templates/vault/      # Create Vault 脚手架（含 .agents/skills）
 ├── docs/                 # MkDocs：usage / frontend / backend / development（草稿）
 └── package.json
@@ -180,8 +180,8 @@ agentero/
 ### 测试
 
 ```bash
-git clone https://github.com/poco-ai/agentero.git
-cd agentero
+git clone https://github.com/poco-ai/library.git
+cd library
 pnpm install
 
 # 清除前端与 Rust 构建产物
@@ -210,7 +210,7 @@ pnpm dev
 
 ## Star History
 
-[![Star History Chart](https://api.star-history.com/chart?repos=poco-ai/agentero&type=date&legend=top-left&sealed_token=dKsoXrNYkG3u-nEL3OLp0_aTrlN-GjDpvVEVJvC3xjH13q3viEwwkkB5m6LYT3iKu6LZXtZpQAXalvBwaFQdYgVTjTA1Dzp6NGe_BUQXA1cMt57wNdrYvA)](https://www.star-history.com/?type=date&repos=poco-ai%2Fagentero)
+[![Star History Chart](https://api.star-history.com/chart?repos=poco-ai/library&type=date&legend=top-left&sealed_token=dKsoXrNYkG3u-nEL3OLp0_aTrlN-GjDpvVEVJvC3xjH13q3viEwwkkB5m6LYT3iKu6LZXtZpQAXalvBwaFQdYgVTjTA1Dzp6NGe_BUQXA1cMt57wNdrYvA)](https://www.star-history.com/?type=date&repos=poco-ai%2Flibrary)
 
 ## 致谢
 

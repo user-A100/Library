@@ -1,7 +1,7 @@
 //! Opt-out product analytics via PostHog (desktop only).
 //!
 //! The project API key is baked in at build time via the
-//! `AGENTERO_POSTHOG_KEY` environment variable; when unset (or in debug
+//! `LIBRARY_POSTHOG_KEY` environment variable; when unset (or in debug
 //! builds) every entry point is a no-op, so local and OSS builds report
 //! nothing. Users can additionally opt out via
 //! `AppSettings::telemetry_enabled` (applies from the next launch).
@@ -24,7 +24,7 @@ const APP_VERSION: &str = env!("CARGO_PKG_VERSION");
 
 /// Build-time PostHog project API key; `None` disables telemetry entirely.
 fn posthog_key() -> Option<&'static str> {
-    option_env!("AGENTERO_POSTHOG_KEY")
+    option_env!("LIBRARY_POSTHOG_KEY")
         .map(str::trim)
         .filter(|key| !key.is_empty())
 }
@@ -120,11 +120,11 @@ impl Telemetry {
             }
             for (key, value) in props.as_object().expect("literal is an object") {
                 if let Err(e) = event.insert_prop(key.clone(), value.clone()) {
-                    log::warn!(target: "agentero::op", "telemetry prop {key} failed: {e}");
+                    log::warn!(target: "library::op", "telemetry prop {key} failed: {e}");
                 }
             }
             client.capture(event);
-            log::info!(target: "agentero::op", "op start telemetry enabled=true");
+            log::info!(target: "library::op", "op start telemetry enabled=true");
         }
 
         *self.inner.lock().unwrap() = Some(Inner {
@@ -210,6 +210,6 @@ fn record_usage(kind: &str, dur_ms: Option<i64>, extra: serde_json::Value) {
             extra: Some(extra),
         }],
     ) {
-        log::warn!(target: "agentero::usage", "record {kind} failed: {e}");
+        log::warn!(target: "library::usage", "record {kind} failed: {e}");
     }
 }

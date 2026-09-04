@@ -185,7 +185,7 @@ type SelectionCardProps = {
 	 */
 	lockHeight?: boolean;
 	/**
-	 * When false, the body does not scroll (`agentero-scroll` off) and grows
+	 * When false, the body does not scroll (`library-scroll` off) and grows
 	 * with content. Use for short tables that should show fully (formula legend).
 	 * Still clamped by placement `maxHeight` via the outer shell when needed.
 	 */
@@ -345,7 +345,7 @@ export function SelectionCard({
 				className={cn(
 					"flex flex-col",
 					bodyScroll
-						? "agentero-scroll min-h-0 flex-1 overflow-x-hidden overflow-y-auto"
+						? "library-scroll min-h-0 flex-1 overflow-x-hidden overflow-y-auto"
 						: "overflow-visible",
 					bodyClassName,
 				)}

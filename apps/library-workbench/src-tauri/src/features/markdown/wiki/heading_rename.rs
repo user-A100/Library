@@ -561,7 +561,7 @@ mod tests {
     use uuid::Uuid;
 
     fn fixture_vault() -> PathBuf {
-        let root = std::env::temp_dir().join(format!("agentero-heading-rename-{}", Uuid::new_v4()));
+        let root = std::env::temp_dir().join(format!("library-heading-rename-{}", Uuid::new_v4()));
         fs::create_dir_all(root.join("notes")).expect("create fixture vault");
         root
     }

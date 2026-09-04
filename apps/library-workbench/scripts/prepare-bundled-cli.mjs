@@ -1,5 +1,5 @@
 /**
- * Build the headless CLI (`agentero-cli` cargo bin) and copy it into
+ * Build the headless CLI (`library-cli` cargo bin) and copy it into
  * `src-tauri/binaries` (dev discovery for Settings → Install CLI) and next to
  * the GUI binary in `target/{debug,release}`.
  *
@@ -50,18 +50,18 @@ if (isMobile) {
 
 const outDir = path.join(root, "src-tauri", "binaries");
 fs.mkdirSync(outDir, { recursive: true });
-const dest = path.join(outDir, `agentero-cli-${triple}${ext}`);
+const dest = path.join(outDir, `library-cli-${triple}${ext}`);
 
 const profile = release ? "release" : "debug";
 console.log(
-	`[prepare-bundled-cli] cargo build -p agentero-cli${release ? " --release" : ""}`,
+	`[prepare-bundled-cli] cargo build -p library-cli${release ? " --release" : ""}`,
 );
-execSync(`cargo build -p agentero-cli${release ? " --release" : ""}`, {
+execSync(`cargo build -p library-cli${release ? " --release" : ""}`, {
 	cwd: root,
 	stdio: "inherit",
 });
 
-const src = path.join(root, "target", profile, `agentero-cli${ext}`);
+const src = path.join(root, "target", profile, `library-cli${ext}`);
 if (!fs.existsSync(src)) {
 	console.error(`[prepare-bundled-cli] missing ${src}`);
 	process.exit(1);

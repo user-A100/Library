@@ -98,7 +98,7 @@ mod tests {
 
     #[test]
     fn paper_move_runs_the_filesystem_move_inside_the_wiki_transaction() {
-        let vault = std::env::temp_dir().join(format!("agentero-paper-move-{}", Uuid::new_v4()));
+        let vault = std::env::temp_dir().join(format!("library-paper-move-{}", Uuid::new_v4()));
         let source = vault.join("papers/inbox/New note.md");
         fs::create_dir_all(source.parent().expect("source parent")).expect("create source parent");
         fs::write(&source, "# New note\n").expect("write source");
@@ -125,7 +125,7 @@ mod tests {
     #[tokio::test]
     async fn shared_paper_move_service_uses_the_same_transaction() {
         let vault =
-            std::env::temp_dir().join(format!("agentero-shared-paper-move-{}", Uuid::new_v4()));
+            std::env::temp_dir().join(format!("library-shared-paper-move-{}", Uuid::new_v4()));
         let source = vault.join("papers/inbox/paper-1/NOTES.md");
         fs::create_dir_all(source.parent().expect("source parent")).expect("create source parent");
         fs::write(&source, "# Paper\n").expect("write source");

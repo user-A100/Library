@@ -1,17 +1,17 @@
 # 阅读标注开放 CLI / Agent：开发路线
 
 > 状态：M1–M3 主要能力已实现（引擎定位 + 高亮/批注/翻译 CLI），本文保留决策脉络。
-> 实现说明见 [backend/cli.md](../backend/cli.md) 与 [frontend/pdf.md](../frontend/pdf.md)。关联 [\#170](https://github.com/poco-ai/Agentero/issues/170)。  
+> 实现说明见 [backend/cli.md](../backend/cli.md) 与 [frontend/pdf.md](../frontend/pdf.md)。关联 [\#170](https://github.com/poco-ai/Library/issues/170)。  
 > 定位策略详情：[惰性](mark-locate-lazy.md) · [即时](mark-locate-eager.md)  
-> 桌面安装包如何带上同版本 `agentero`：[CLI 文档](../backend/cli.md)（[\#165](https://github.com/poco-ai/Agentero/issues/165) / [\#166](https://github.com/poco-ai/Agentero/issues/166)）
+> 桌面安装包如何带上同版本 `library`：[CLI 文档](../backend/cli.md)（[\#165](https://github.com/poco-ai/Library/issues/165) / [\#166](https://github.com/poco-ai/Library/issues/166)）
 
 ## 1. 目标
 
-把桌面端已有的 **翻译、划词结果、高亮、批注** 等阅读能力，**内置进 headless `agentero` CLI**（命令契约 + Vault 落盘），供脚本与对话框 Agent 调用；并用 **Skill** 约束正确用法（写什么、何时定位、不编坐标、不越权改 NOTES）。
+把桌面端已有的 **翻译、划词结果、高亮、批注** 等阅读能力，**内置进 headless `library` CLI**（命令契约 + Vault 落盘），供脚本与对话框 Agent 调用；并用 **Skill** 约束正确用法（写什么、何时定位、不编坐标、不越权改 NOTES）。
 
 Issue 原文诉求拆两层：
 
-1. **CLI 契约**：翻译 / 高亮 / 批注等可被 `agentero … --json` 稳定读写。  
+1. **CLI 契约**：翻译 / 高亮 / 批注等可被 `library … --json` 稳定读写。  
 2. **Skill 契约**：对话框 Agent 能代劳高亮、在图/公式等位置批注、翻译、对话锚点——**对话仍走 BYOA**，CLI 只落盘与查库。
 
 **非目标（首版）：** CLI 内 BYOA/ACP、改 PDF 二进制、默认冷启动全文解析每一条标注、手写 EmbedPDF `annotations.json` blob。
@@ -20,22 +20,22 @@ Issue 原文诉求拆两层：
 
 | 议题 | Issue | 文档 | 和本篇的关系 |
 |---|---|---|---|
-| **命令能力**：mark / translate 等 | [#170](https://github.com/poco-ai/Agentero/issues/170) | **本文** | 在 `cli/` 实现子命令与 JSON 契约 |
-| **分发形态**：安装包携带同版本 `agentero`、PATH、`open` | [#165](https://github.com/poco-ai/Agentero/issues/165) | [CLI 文档](../backend/cli.md) | #170 的命令随 **同一二进制** 交付；不另做一个「标注专用 CLI」 |
-| **paper move 等既有契约** | [#166](https://github.com/poco-ai/Agentero/issues/166) | [CLI 文档](../backend/cli.md) | 标注命令与现有 Clap 解析、`--vault` / `--json` / `-y` 一致 |
+| **命令能力**：mark / translate 等 | [#170](https://github.com/poco-ai/Library/issues/170) | **本文** | 在 `cli/` 实现子命令与 JSON 契约 |
+| **分发形态**：安装包携带同版本 `library`、PATH、`open` | [#165](https://github.com/poco-ai/Library/issues/165) | [CLI 文档](../backend/cli.md) | #170 的命令随 **同一二进制** 交付；不另做一个「标注专用 CLI」 |
+| **paper move 等既有契约** | [#166](https://github.com/poco-ai/Library/issues/166) | [CLI 文档](../backend/cli.md) | 标注命令与现有 Clap 解析、`--vault` / `--json` / `-y` 一致 |
 
 原则：
 
-- **一套 bin**：桌面内置的 `agentero` = headless CLI；用户装 App 后即可 `agentero mark …`（在 #165 落地后）。  
-- **开发期**：仍可用 `cargo run -p agentero-cli -- …` 验收 #170，不阻塞分发工作。  
+- **一套 bin**：桌面内置的 `library` = headless CLI；用户装 App 后即可 `library mark …`（在 #165 落地后）。  
+- **开发期**：仍可用 `cargo run -p library-cli -- …` 验收 #170，不阻塞分发工作。  
 - **版本对齐**：mark/translate 的 schema 与桌面阅读器同一 tag 发布，避免「CLI 写出桌面不认的 mark」。  
 - **不把 GUI 可执行文件当 CLI**（与 bundled-cli 一致）；定位用的 EmbedPDF 仍在桌面进程，CLI 默认只写 pending。
 
 ```text
 桌面安装包
-  ├── Agentero.app / GUI          ← 划词、EmbedPDF、惰性/即时定位
-  └── agentero (headless CLI)     ← vault/paper/import/wiki + mark/translate（#170）
-         同一 version / 同一 agentero_lib 领域逻辑
+  ├── Library.app / GUI          ← 划词、EmbedPDF、惰性/即时定位
+  └── library (headless CLI)     ← vault/paper/import/wiki + mark/translate（#170）
+         同一 version / 同一 library_lib 领域逻辑
 ```
 
 ## 3. 现状摘要
@@ -58,7 +58,7 @@ Issue 原文诉求拆两层：
 | 方案 | 做法 | 首版 |
 |---|---|---|
 | **A. CLI 纯文件读写** | `mark` 读写 `papers/…/marks/*.json`，校验 schema；不跑 PDF 引擎 | **采用（基础）** |
-| **B. Host command + CLI 薄封装** | `mark_list` / `mark_upsert` 进 `agentero_lib`，桌面与 CLI 共用 | 中长期；remote/iOS 写 marks 时再抽 |
+| **B. Host command + CLI 薄封装** | `mark_list` / `mark_upsert` 进 `library_lib`，桌面与 CLI 共用 | 中长期；remote/iOS 写 marks 时再抽 |
 | **C. quote → 几何** | 惰性打开再算 + 可选即时；见两篇定位文档 | **采用（上层）** |
 | **D. 翻译进 CLI** | 复用免费 MT；不跑 BYOA | **采用（上层）** |
 | **E. ask / agent-trace** | CLI 可写 ask 壳；对话与裁图仍在 GUI/Agent | 部分；trace 后置 |
@@ -68,8 +68,8 @@ Issue 原文诉求拆两层：
 
 ```text
 ┌─────────────┐     ┌──────────────────┐     ┌──────────────────────────┐
-│ 对话框 Agent│────►│ Skill            │────►│ agentero CLI（内置命令）  │
-│ (BYOA/ACP)  │     │ agentero-cli /   │     │ mark · translate · …     │
+│ 对话框 Agent│────►│ Skill            │────►│ library CLI（内置命令）  │
+│ (BYOA/ACP)  │     │ library-cli /   │     │ mark · translate · …     │
 └─────────────┘     │ paper-annotate   │     │ --json / --vault / -y    │
        │            └──────────────────┘     └────────────┬─────────────┘
        │ 对话/精读（不经 CLI）                           │ 写 marks/
@@ -100,7 +100,7 @@ Issue 原文诉求拆两层：
 | 免费 MT 文本翻译（上层） | BYOA Agent 翻译经 CLI |
 | 与 `wiki check`、`[[@id]]` 兼容的 id | 伪造 id、手写 0–1 坐标充 resolved |
 
-### 4.4 目标命令面（内置到 `agentero` 后）
+### 4.4 目标命令面（内置到 `library` 后）
 
 在现有命令组旁增加（实现时写入 [backend/cli.md](../backend/cli.md)）：
 
@@ -114,8 +114,8 @@ Issue 原文诉求拆两层：
 
 ```bash
 # 与现有全局参数一致
-agentero --vault ~/research mark list papers/1706.03762 --json
-agentero mark add papers/1706.03762 \
+library --vault ~/research mark list papers/1706.03762 --json
+library mark add papers/1706.03762 \
   --kind highlight \
   --quote "Attention is all you need" \
   --page 3 \
@@ -123,11 +123,11 @@ agentero mark add papers/1706.03762 \
   --color yellow \
   --json
 
-agentero translate "Hello world" --to zh --json
-agentero mark add papers/… --kind translate --quote "…" --result "…" --json
+library translate "Hello world" --to zh --json
+library mark add papers/… --kind translate --quote "…" --result "…" --json
 ```
 
-全局约定不变：`--vault` → `AGENTERO_VAULT` → cwd 上溯 → config `default_vault`；破坏性操作 `-y`。
+全局约定不变：`--vault` → `LIBRARY_VAULT` → cwd 上溯 → config `default_vault`；破坏性操作 `-y`。
 
 ### 4.5 总体实施策略
 
@@ -146,7 +146,7 @@ agentero mark add papers/… --kind translate --quote "…" --result "…" --jso
 
 ## 5. 阶段一：基础能力
 
-目标：把 **mark CRUD 内置进 `agentero` CLI**；Agent/脚本能稳定读写标注内容，位置可后补；不依赖新 PDF 算法即可交付价值。
+目标：把 **mark CRUD 内置进 `library` CLI**；Agent/脚本能稳定读写标注内容，位置可后补；不依赖新 PDF 算法即可交付价值。
 
 ### 5.1 Schema 与共享校验
 
@@ -154,7 +154,7 @@ agentero mark add papers/… --kind translate --quote "…" --result "…" --jso
 |---|---|
 | 统一 per-id mark 字段 | `version` / `kind` / `id` / `paperPath` / 时间戳 / `quote` / `page?` / `rects` / `comment?` / `color?` |
 | `geometry` | `pending` \| `resolved` \| `failed`（见 [惰性](mark-locate-lazy.md)） |
-| 实现位置 | 优先可被 CLI 使用的校验（TS 权威则 CLI 先窄实现 JSON 契约 + 集成测试；中长期 `agentero_lib` 共享，便于桌面内置 CLI 与 Host 同逻辑） |
+| 实现位置 | 优先可被 CLI 使用的校验（TS 权威则 CLI 先窄实现 JSON 契约 + 集成测试；中长期 `library_lib` 共享，便于桌面内置 CLI 与 Host 同逻辑） |
 | 双轨约定 | CLI/Agent **只写** per-id `marks/<id>.json`；**不**手写 EmbedPDF `annotations.json` |
 
 ### 5.2 CLI：`mark` 命令组（内置子命令）
@@ -162,11 +162,11 @@ agentero mark add papers/… --kind translate --quote "…" --result "…" --jso
 建议契约（名称可微调，需 `--json`）：
 
 ```bash
-agentero mark list   <paper> [--kind highlight|translate|ask|…] --json
-agentero mark get    <paper> <id> --json
-agentero mark add    <paper> --kind highlight --quote "…" [--page N] [--comment …] [--color …] --json
-agentero mark update <paper> <id> [--comment …] [--color …] --json
-agentero mark delete <paper> <id> -y --json
+library mark list   <paper> [--kind highlight|translate|ask|…] --json
+library mark get    <paper> <id> --json
+library mark add    <paper> --kind highlight --quote "…" [--page N] [--comment …] [--color …] --json
+library mark update <paper> <id> [--comment …] [--color …] --json
+library mark delete <paper> <id> -y --json
 ```
 
 | 规则 | 说明 |
@@ -242,7 +242,7 @@ agentero mark delete <paper> <id> -y --json
 |---|---|---|
 | P0 | 写出 `source/layout-index.json`（与侧栏同源） | **已实现**（layout 分析 merge 后） |
 | P0 | CLI `layout list\|get` + `mark add --region` | **已实现** |
-| P1 | Skill 教 Agent：`layout list` → `mark add --region` | **已改 agentero-cli v2** |
+| P1 | Skill 教 Agent：`layout list` → `mark add --region` | **已改 library-cli v2** |
 | P2 | 桌面打开时对 `layoutRef` mark 稳定出针/黄底 | 依赖现有 rects；可再打磨 |
 | P3 | 自动裁图 + `agent-trace` | 仍后置 |
 
@@ -259,9 +259,9 @@ agentero mark delete <paper> <id> -y --json
 
 Skill 是 **约定与工作流**，不是第二套业务逻辑。实现顺序应 **跟在基础 CLI 之后**，并随定位/翻译能力增量改版。
 
-### 7.1 改现有 `agentero-cli` skill
+### 7.1 改现有 `library-cli` skill
 
-路径：`templates/vault/.agents/skills/agentero-cli/SKILL.md`（及种子升级策略）。
+路径：`templates/vault/.agents/skills/library-cli/SKILL.md`（及种子升级策略）。
 
 | 版本 | 内容 |
 |---|---|
@@ -269,7 +269,7 @@ Skill 是 **约定与工作流**，不是第二套业务逻辑。实现顺序应
 | S1（对齐定位 P0） | 说明「打开 PDF 后自动补位置」；教写独特 quote、可选 page |
 | S2 | `translate` 命令与 translate mark；与划词翻译语义一致 |
 | S3 | 与 `wiki check`、`[[@id]]` 互链写法；仍不伪造 id |
-| S4 | 若桌面已内置 CLI：说明 PATH / `agentero` 发现方式（与 [CLI 文档](../backend/cli.md) 用户文档对齐） |
+| S4 | 若桌面已内置 CLI：说明 PATH / `library` 发现方式（与 [CLI 文档](../backend/cli.md) 用户文档对齐） |
 
 Hard boundaries 保持：
 
@@ -285,7 +285,7 @@ Hard boundaries 保持：
 | 节 | 内容 |
 |---|---|
 | When to use | 「帮我标黄」「批注这句」「钉翻译」「记下要问的点」 |
-| When not | 长文精读讲义 → `paper-reader`；库管理 → `agentero-cli` |
+| When not | 长文精读讲义 → `paper-reader`；库管理 → `library-cli` |
 | Protocol | `paper get` → 读 NOTES/PAPER → 选定 quote → `mark add` → 告知用户打开 PDF 可见框 |
 | 已打开 PDF | 预期即时 resolved（若产品已实现） |
 | 图/公式 | 只写文字锚 + 请用户框选；不假装自动识图 |
@@ -312,7 +312,7 @@ Hard boundaries 保持：
 ```text
 M1 基础
   schema + mark CLI 内置子命令
-  agentero-cli skill S0
+  library-cli skill S0
        │
        ▼
 M2 定位 P0
@@ -333,8 +333,8 @@ M4 可选
        │
        ▼
 分发（可并行，不阻塞 M1）
-  桌面安装包内置同版本 agentero  ← bundled-cli / #165
-  用户 PATH 上只有一个 agentero，含 mark/translate
+  桌面安装包内置同版本 library  ← bundled-cli / #165
+  用户 PATH 上只有一个 library，含 mark/translate
 ```
 
 | 里程碑 | 依赖 | 用户可感知结果 |
@@ -343,7 +343,7 @@ M4 可选
 | M2 | EmbedPDF 搜索已存在 | 打开 PDF 后框/针出现 |
 | M3 | M2 | 更像人手划词；CLI 能翻译 |
 | M4 | 按需 | 无 GUI 也可 resolve；专项 skill |
-| 分发 | [CLI 文档](../backend/cli.md) | 装 App 即得含 mark 的 `agentero` |
+| 分发 | [CLI 文档](../backend/cli.md) | 装 App 即得含 mark 的 `library` |
 
 #165 与 #170 **可并行**：先合入 `mark` 命令到 `cli/`，再由 release 把该二进制打进安装包。
 
@@ -370,7 +370,7 @@ M4 可选
 | 前端单测 | geometry 解析；命中策略纯函数（多命中/page 过滤） |
 | 手动 / E2E | 写入 pending → 打开样例 PDF → resolved；错误句 failed |
 | 回归 | 人手划词、⌘F、既有 ask/translate 针不受损 |
-| 分发（#165） | 安装包内 CLI 版本与 App 一致，且 `agentero mark --help` 可用 |
+| 分发（#165） | 安装包内 CLI 版本与 App 一致，且 `library mark --help` 可用 |
 
 ## 11. 文档同步清单（实现时）
 
@@ -388,10 +388,10 @@ M4 可选
 
 ## 12. 相关链接
 
-- Issue [\#170](https://github.com/poco-ai/Agentero/issues/170)（标注开放 CLI + Skill）
-- Issue [\#165](https://github.com/poco-ai/Agentero/issues/165) / [\#166](https://github.com/poco-ai/Agentero/issues/166)（内置桌面 CLI / paper move）
+- Issue [\#170](https://github.com/poco-ai/Library/issues/170)（标注开放 CLI + Skill）
+- Issue [\#165](https://github.com/poco-ai/Library/issues/165) / [\#166](https://github.com/poco-ai/Library/issues/166)（内置桌面 CLI / paper move）
 - [内置桌面 CLI 设计](../backend/cli.md)
 - [惰性定位设计](mark-locate-lazy.md)
 - [即时定位设计](mark-locate-eager.md)
 - [既有 CLI 说明](../backend/cli.md)
-- agentero-cli skill 模板：`templates/vault/.agents/skills/agentero-cli/SKILL.md`（仓库内种子，非文档站页面）
+- library-cli skill 模板：`templates/vault/.agents/skills/library-cli/SKILL.md`（仓库内种子，非文档站页面）

@@ -1,6 +1,6 @@
-# Agentero 文档
+# Library 文档
 
-Agentero 是一个基于 Tauri 2 + React 19 的本地优先科研工作台。
+Library 是一个基于 Tauri 2 + React 19 的本地优先科研工作台。
 
 ## 开始使用
 

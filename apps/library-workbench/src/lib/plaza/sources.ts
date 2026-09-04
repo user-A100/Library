@@ -11,7 +11,7 @@
 import i18n from "@/i18n";
 
 /** Virtual tree/tab path for the Plaza parent node. */
-export const PLAZA_VIRTUAL_PATH = "agentero:plaza";
+export const PLAZA_VIRTUAL_PATH = "library:plaza";
 
 /**
  * Icon key for a plaza source. Lib only carries the name; the
@@ -27,7 +27,7 @@ export type PlazaSourceIcon =
 
 export type PlazaSource = {
 	id: string;
-	/** `agentero:plaza/<id>` — virtual, never a filesystem path. */
+	/** `library:plaza/<id>` — virtual, never a filesystem path. */
 	path: string;
 	label: string;
 	/**
@@ -67,7 +67,7 @@ export const PLAZA_SOURCES: readonly PlazaSource[] = [
 		path: sourcePath("cool-papers"),
 		label: "Cool Papers",
 		url: "https://papers.cool/",
-		embedOrigin: () => schemeOrigin("agentero-coolpapers"),
+		embedOrigin: () => schemeOrigin("library-coolpapers"),
 		icon: "coolPapers",
 	},
 	{
@@ -75,7 +75,7 @@ export const PLAZA_SOURCES: readonly PlazaSource[] = [
 		path: sourcePath("modelscope"),
 		label: "ModelScope Papers",
 		url: "https://modelscope.cn/papers",
-		embedOrigin: () => schemeOrigin("agentero-modelscope"),
+		embedOrigin: () => schemeOrigin("library-modelscope"),
 		icon: "modelScope",
 	},
 	{

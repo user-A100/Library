@@ -563,7 +563,7 @@ describe("ensureModelsInclude", () => {
 describe("isBackgroundWorkflowHistoryTitle", () => {
 	it("hides paper-reader workflow titles", () => {
 		expect(
-			isBackgroundWorkflowHistoryTitle("agentero paper-reader notes"),
+			isBackgroundWorkflowHistoryTitle("library paper-reader notes"),
 		).toBe(true);
 		expect(isBackgroundWorkflowHistoryTitle("Summarize this paper")).toBe(
 			false,
@@ -583,7 +583,7 @@ User comment: 这里最值得读的是什么?`;
 });
 
 describe("providerSessionIdForHistoryLoad", () => {
-	it("uses the provider id instead of the Agentero runtime id", () => {
+	it("uses the provider id instead of the Library runtime id", () => {
 		expect(
 			providerSessionIdForHistoryLoad({
 				id: "runtime-v4",

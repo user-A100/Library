@@ -27,7 +27,7 @@ const NAV_BRIDGE: &str = r##"<style>
       if (parent !== window && parent.location.href) return;
     } catch (e) {}
     var post = function (message) {
-      message.source = "agentero-plaza";
+      message.source = "library-plaza";
       parent.postMessage(message, "*");
     };
     var send = function () {
@@ -172,7 +172,7 @@ const NAV_BRIDGE: &str = r##"<style>
 
     window.addEventListener("message", function (event) {
       var data = event.data;
-      if (!data || data.source !== "agentero-plaza-host") return;
+      if (!data || data.source !== "library-plaza-host") return;
       if (typeof data.importedId !== "string") return;
       var panel = document.getElementById(data.importedId);
       var button = panel ? panel.querySelector(".title-import") : null;
@@ -242,8 +242,8 @@ mod tests {
     #[test]
     fn injects_nav_bridge_before_head_close() {
         let out = rewrite_html("<html><head><title>t</title></head><body></body></html>");
-        assert!(out.contains("agentero-plaza"));
-        let script = out.find("agentero-plaza").expect("bridge present");
+        assert!(out.contains("library-plaza"));
+        let script = out.find("library-plaza").expect("bridge present");
         let head_end = out.find("</head>").expect("head close present");
         assert!(script < head_end);
     }
@@ -251,7 +251,7 @@ mod tests {
     #[test]
     fn injects_nav_bridge_even_without_a_head() {
         let out = rewrite_html("<p>fragment</p>");
-        assert!(out.contains("agentero-plaza"));
+        assert!(out.contains("library-plaza"));
         assert!(out.contains("<p>fragment</p>"));
     }
 
@@ -261,7 +261,7 @@ mod tests {
         assert!(out.contains("title-import"));
         assert!(out.contains("importPaper"));
         // Settled from the app so a row can show 已入库 / stay retryable.
-        assert!(out.contains("agentero-plaza-host"));
+        assert!(out.contains("library-plaza-host"));
     }
 
     /// The bridge lands in `<head>`, where the body does not exist yet: decorating

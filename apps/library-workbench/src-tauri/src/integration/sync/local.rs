@@ -1,9 +1,9 @@
-//! Local sync state under `.agentero/` (ignored by the vault watcher, so
+//! Local sync state under `.library/` (ignored by the vault watcher, so
 //! writes here never loop back as file-change events).
 //!
-//! - `.agentero/vault.json` — durable vault identity (UUID)
-//! - `.agentero/sync/base.json` — manifest of the last successful sync
-//! - `.agentero/sync/state.json` — last sync time / version for status UI
+//! - `.library/vault.json` — durable vault identity (UUID)
+//! - `.library/sync/base.json` — manifest of the last successful sync
+//! - `.library/sync/state.json` — last sync time / version for status UI
 
 use crate::core::error::AppError;
 use crate::integration::sync::snapshot::Manifest;
@@ -28,11 +28,11 @@ pub struct SyncMeta {
 }
 
 fn identity_path(vault: &Path) -> PathBuf {
-    vault.join(".agentero").join("vault.json")
+    vault.join(".library").join("vault.json")
 }
 
 fn sync_dir(vault: &Path) -> PathBuf {
-    vault.join(".agentero").join("sync")
+    vault.join(".library").join("sync")
 }
 
 fn write_json<T: Serialize>(path: &Path, value: &T) -> Result<(), AppError> {

@@ -344,7 +344,7 @@ async fn save_items(
             let reg = match state.ctrl.remote_registry() {
                 Some(r) => r,
                 None => {
-                    let msg = "remote registry unavailable — restart Agentero after updating";
+                    let msg = "remote registry unavailable — restart Library after updating";
                     state.ctrl.emit_error(msg, Some(&session_id));
                     state.ctrl.mark_session_done(&session_id);
                     return json_response(StatusCode::SERVICE_UNAVAILABLE, json!({ "error": msg }));
@@ -366,7 +366,7 @@ async fn save_items(
                 Err(e) => {
                     // Session handle stale (e.g. reconnected remote without rebinding Connector).
                     Err(AppError::message(format!(
-                        "remote vault session expired ({e}); reconnect the remote vault in Agentero, then save again"
+                        "remote vault session expired ({e}); reconnect the remote vault in Library, then save again"
                     )))
                 }
             }

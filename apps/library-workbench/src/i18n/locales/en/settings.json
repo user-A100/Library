@@ -147,7 +147,7 @@
 		"export": {
 			"section": "Note export",
 			"watermark": {
-				"label": "Agentero watermark by default"
+				"label": "Library watermark by default"
 			}
 		},
 		"privacy": {
@@ -345,10 +345,10 @@
 		},
 		"uninstallDialog": {
 			"title": "Uninstall {{name}}?",
-			"lead": "Agentero will run the following uninstall steps:",
+			"lead": "Library will run the following uninstall steps:",
 			"dirsLabel": "Directories to delete",
 			"copyAria": "Copy to clipboard",
-			"registryOnly": "Only the Agentero registry entry will be removed; installed files stay on disk.",
+			"registryOnly": "Only the Library registry entry will be removed; installed files stay on disk.",
 			"confirm": "Uninstall"
 		},
 		"remote": {
@@ -525,8 +525,8 @@
 			"visualMarks": "Visual annotations"
 		},
 		"sectionHints": {
-			"vault": "Checks top-level papers/, notes/, and .agentero/ folders.",
-			"catalog": "Checks that .agentero/catalog.sqlite exists and its schema matches this app.",
+			"vault": "Checks top-level papers/, notes/, and .library/ folders.",
+			"catalog": "Checks that .library/catalog.sqlite exists and its schema matches this app.",
 			"wikilinks": "Checks local wiki links for missing, ambiguous, or invalid heading targets.",
 			"aliases": "Checks paper NOTES.md for at least two distinct frontmatter aliases.",
 			"visualMarks": "Migrates legacy agent-trace marks to nested visual v2 (note-only marks stay valid)."
@@ -597,7 +597,7 @@
 			"openFailed": "Couldn't open the log folder."
 		},
 		"update": {
-			"idle": "Check for the latest Agentero release",
+			"idle": "Check for the latest Library release",
 			"unsupported": "Updates are available in installed desktop builds",
 			"checking": "Checking for updates...",
 			"upToDate": "You're up to date",
@@ -613,8 +613,8 @@
 			"tagUpdating": "Updating…",
 			"tagDownloading": "Updating {{progress}}%",
 			"tagInstalling": "Installing…",
-			"toastTitle": "Agentero {{version}} is available",
-			"toastDescription": "Download the verified update and restart Agentero"
+			"toastTitle": "Library {{version}} is available",
+			"toastDescription": "Download the verified update and restart Library"
 		},
 		"cli": {
 			"label": "Command-line tools",
@@ -645,9 +645,9 @@
 		},
 		"finder": {
 			"label": "Finder integration",
-			"description": "Adds \"Open with Agentero\" to the right-click menu for folders in Finder",
+			"description": "Adds \"Open with Library\" to the right-click menu for folders in Finder",
 			"descriptionInstalled": "Right-click a folder in Finder to open it as a Vault",
-			"stale": "Agentero was moved — update to fix the menu entry",
+			"stale": "Library was moved — update to fix the menu entry",
 			"install": "Install",
 			"update": "Update",
 			"uninstall": "Remove",

@@ -39,10 +39,10 @@ ACP 的 `NewSessionRequest` 携带 `cwd` 字段，用于告知 Agent 当前会�
 ### 3.3 Windows 包装
 
 ```text
-cmd /D /C "cd /d "%AGENTERO_AGENT_CWD%" && \"<command>\" \"<arg1>\" ..."
+cmd /D /C "cd /d "%LIBRARY_AGENT_CWD%" && \"<command>\" \"<arg1>\" ..."
 ```
 
-- 用 `AGENTERO_AGENT_CWD` 环境变量传递 Vault 路径，避免在命令字符串中直接引用带空格的 Vault 路径。
+- 用 `LIBRARY_AGENT_CWD` 环境变量传递 Vault 路径，避免在命令字符串中直接引用带空格的 Vault 路径。
 - 命令和参数按需用双引号包裹，双引号内部用 `\"` 转义。
 
 ### 3.4 调用点

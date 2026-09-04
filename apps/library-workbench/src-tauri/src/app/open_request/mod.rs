@@ -1,8 +1,8 @@
 //! Deep-link / second-instance vault open requests.
 //!
 //! Paths to open arrive via:
-//! 1. `agentero://open?path=…` deep link / second-instance argv
-//! 2. **CLI request file** (`…/agentero/cli-open-request.json`) — reliable when
+//! 1. `library://open?path=…` deep link / second-instance argv
+//! 2. **CLI request file** (`…/library/cli-open-request.json`) — reliable when
 //!    deep-link is unregistered (dev) or a second GUI process would miss the
 //!    window the user is looking at
 //! 3. **Bare directory argv** — OS shell integrations (Finder Quick Action,
@@ -12,7 +12,7 @@
 //! startup races, and emits `vault:open-request` for the renderer.
 
 use crate::core::error::AppError;
-use crate::core::paths::agentero_config_dir;
+use crate::core::paths::library_config_dir;
 use serde::{Deserialize, Serialize};
 use std::path::{Path, PathBuf};
 use std::sync::Mutex;
@@ -65,22 +65,22 @@ pub struct VaultOpenPayload {
     pub path: String,
 }
 
-/// Parse `agentero://open?path=` (or `agentero:open?path=` variants).
+/// Parse `library://open?path=` (or `library:open?path=` variants).
 pub fn parse_open_url(raw: &str) -> Result<PathBuf, AppError> {
     let url = Url::parse(raw).map_err(|e| AppError::message(format!("invalid open URL: {e}")))?;
     let scheme = url.scheme();
-    if scheme != "agentero" {
+    if scheme != "library" {
         return Err(AppError::message(format!(
             "unsupported URL scheme: {scheme}"
         )));
     }
-    // `agentero://open?path=` → host "open"
+    // `library://open?path=` → host "open"
     let host = url.host_str().unwrap_or("");
     let path_seg = url.path().trim_matches('/');
     let is_open = host.eq_ignore_ascii_case("open") || path_seg.eq_ignore_ascii_case("open");
     if !is_open {
         return Err(AppError::message(format!(
-            "unsupported agentero URL action: {}",
+            "unsupported library URL action: {}",
             if host.is_empty() { path_seg } else { host }
         )));
     }
@@ -133,7 +133,7 @@ pub fn handle_open_path<R: Runtime>(app: &AppHandle<R>, path: &Path) -> Result<S
 
     if let Err(e) = app.fs_scope().allow_directory(&canonical, true) {
         log::warn!(
-            target: "agentero::op",
+            target: "library::op",
             "vault open allow_directory failed path={} error={e}",
             trunc(&path_str)
         );
@@ -150,7 +150,7 @@ pub fn handle_open_path<R: Runtime>(app: &AppHandle<R>, path: &Path) -> Result<S
 
     focus_main_window(app);
     log::info!(
-        target: "agentero::op",
+        target: "library::op",
         "op end vault_open_request ok=true path={}",
         trunc(&path_str)
     );
@@ -169,7 +169,7 @@ pub fn handle_deep_link_urls<R: Runtime>(app: &AppHandle<R>, urls: &[String]) {
             Ok(path) => {
                 if let Err(e) = handle_open_path(app, &path) {
                     log::warn!(
-                        target: "agentero::op",
+                        target: "library::op",
                         "op end vault_open_request ok=false url={} error={e}",
                         trunc(raw)
                     );
@@ -181,7 +181,7 @@ pub fn handle_deep_link_urls<R: Runtime>(app: &AppHandle<R>, urls: &[String]) {
             }
             Err(e) => {
                 log::debug!(
-                    target: "agentero::op",
+                    target: "library::op",
                     "skip deep link url={} error={e}",
                     trunc(raw)
                 );
@@ -190,7 +190,7 @@ pub fn handle_deep_link_urls<R: Runtime>(app: &AppHandle<R>, urls: &[String]) {
     }
 }
 
-/// Collect open requests from argv: `agentero://` URLs plus at most one bare
+/// Collect open requests from argv: `library://` URLs plus at most one bare
 /// directory path. Skips argv[0] and flag-like args (`-` prefix, e.g. WebView2
 /// switches); a directory candidate must be an absolute existing directory, so
 /// stray args (e.g. the forwarded exe path on Windows) are ignored.
@@ -201,7 +201,7 @@ pub fn collect_open_args(argv: &[String]) -> (Vec<String>, Option<PathBuf>) {
         if idx == 0 {
             continue;
         }
-        if arg.starts_with("agentero://") || arg.starts_with("agentero:") {
+        if arg.starts_with("library://") || arg.starts_with("library:") {
             urls.push(arg.clone());
             continue;
         }
@@ -215,7 +215,7 @@ pub fn collect_open_args(argv: &[String]) -> (Vec<String>, Option<PathBuf>) {
     (urls, dir)
 }
 
-/// Handle CLI argv: `agentero://` URLs (second instance / Windows / Linux) and
+/// Handle CLI argv: `library://` URLs (second instance / Windows / Linux) and
 /// bare directory paths (shell integrations such as the Finder Quick Action or
 /// Explorer context menu pass the folder directly).
 #[cfg(feature = "desktop")]
@@ -227,7 +227,7 @@ pub fn handle_argv_urls<R: Runtime>(app: &AppHandle<R>, argv: &[String]) {
     if let Some(path) = dir {
         if let Err(e) = handle_open_path(app, &path) {
             log::warn!(
-                target: "agentero::op",
+                target: "library::op",
                 "op end vault_open_request ok=false argv_dir={} error={e}",
                 trunc(&path.to_string_lossy())
             );
@@ -254,7 +254,7 @@ fn focus_main_window<R: Runtime>(app: &AppHandle<R>) {
         let _ = std::process::Command::new("osascript")
             .args([
                 "-e",
-                r#"tell application "System Events" to set frontmost of first process whose name is "agentero" to true"#,
+                r#"tell application "System Events" to set frontmost of first process whose name is "library" to true"#,
             ])
             .stdin(std::process::Stdio::null())
             .stdout(std::process::Stdio::null())
@@ -285,13 +285,13 @@ struct CliOpenRequestFile {
 
 /// Absolute path of the CLI open-request file.
 pub fn cli_open_request_path() -> PathBuf {
-    agentero_config_dir().join(CLI_OPEN_REQUEST_FILE)
+    library_config_dir().join(CLI_OPEN_REQUEST_FILE)
 }
 
 /// CLI (and tests): ask any running desktop Host to open `absolute_path`.
 pub fn write_cli_open_request(absolute_path: &Path) -> Result<PathBuf, AppError> {
     let canonical = validate_open_dir(absolute_path)?;
-    let dir = agentero_config_dir();
+    let dir = library_config_dir();
     std::fs::create_dir_all(&dir)?;
     let file = cli_open_request_path();
     let ts = SystemTime::now()
@@ -321,7 +321,7 @@ pub fn take_cli_open_request_file() -> Option<PathBuf> {
         .unwrap_or(0);
     if now.saturating_sub(req.ts) > CLI_OPEN_REQUEST_MAX_AGE_SECS {
         log::info!(
-            target: "agentero::op",
+            target: "library::op",
             "ignore stale cli open request age_s={}",
             now.saturating_sub(req.ts)
         );
@@ -355,7 +355,7 @@ pub fn spawn_cli_open_request_watcher<R: Runtime>(app: AppHandle<R>) {
                 }
                 Err(e) => {
                     log::warn!(
-                        target: "agentero::op",
+                        target: "library::op",
                         "cli open request file failed path={} error={e}",
                         trunc(&key)
                     );
@@ -376,7 +376,7 @@ mod tests {
 
     fn test_dir(tag: &str) -> PathBuf {
         let dir =
-            std::env::temp_dir().join(format!("agentero-open-req-{tag}-{}", std::process::id()));
+            std::env::temp_dir().join(format!("library-open-req-{tag}-{}", std::process::id()));
         let _ = fs::remove_dir_all(&dir);
         fs::create_dir_all(&dir).unwrap();
         dir
@@ -384,19 +384,19 @@ mod tests {
 
     #[test]
     fn parses_open_query() {
-        let p = parse_open_url("agentero://open?path=%2Ftmp%2Fresearch").unwrap();
+        let p = parse_open_url("library://open?path=%2Ftmp%2Fresearch").unwrap();
         assert_eq!(p, PathBuf::from("/tmp/research"));
     }
 
     #[test]
     fn parses_open_path_form() {
-        let p = parse_open_url("agentero:open?path=%2Ftmp%2Fresearch").unwrap();
+        let p = parse_open_url("library:open?path=%2Ftmp%2Fresearch").unwrap();
         assert_eq!(p, PathBuf::from("/tmp/research"));
     }
 
     #[test]
     fn rejects_missing_path() {
-        assert!(parse_open_url("agentero://open").is_err());
+        assert!(parse_open_url("library://open").is_err());
     }
 
     #[test]
@@ -445,7 +445,7 @@ mod tests {
     #[test]
     fn collect_args_skips_flags_and_missing_paths() {
         let (urls, picked) = collect_open_args(&argv(&[
-            "/path/to/agentero",
+            "/path/to/library",
             "--some-flag",
             "/nonexistent/vault/dir",
         ]));
@@ -458,7 +458,7 @@ mod tests {
         let dir = test_dir("argfile");
         let file = dir.join("paper.pdf");
         fs::write(&file, "x").unwrap();
-        let (urls, picked) = collect_open_args(&argv(&["/bin/agentero", file.to_str().unwrap()]));
+        let (urls, picked) = collect_open_args(&argv(&["/bin/library", file.to_str().unwrap()]));
         assert!(urls.is_empty());
         assert_eq!(picked, None);
         let _ = fs::remove_dir_all(&dir);
@@ -467,7 +467,7 @@ mod tests {
     #[test]
     fn collect_args_accepts_absolute_dir() {
         let dir = test_dir("argdir");
-        let (urls, picked) = collect_open_args(&argv(&["/bin/agentero", dir.to_str().unwrap()]));
+        let (urls, picked) = collect_open_args(&argv(&["/bin/library", dir.to_str().unwrap()]));
         assert!(urls.is_empty());
         assert_eq!(picked, Some(dir.clone()));
         let _ = fs::remove_dir_all(&dir);
@@ -478,14 +478,14 @@ mod tests {
         let dir_a = test_dir("mixa");
         let dir_b = test_dir("mixb");
         let (urls, picked) = collect_open_args(&argv(&[
-            "/bin/agentero",
-            "agentero://open?path=%2Ftmp%2Fresearch",
+            "/bin/library",
+            "library://open?path=%2Ftmp%2Fresearch",
             dir_a.to_str().unwrap(),
             dir_b.to_str().unwrap(),
         ]));
         assert_eq!(
             urls,
-            vec!["agentero://open?path=%2Ftmp%2Fresearch".to_string()]
+            vec!["library://open?path=%2Ftmp%2Fresearch".to_string()]
         );
         assert_eq!(picked, Some(dir_a.clone()));
         let _ = fs::remove_dir_all(&dir_a);

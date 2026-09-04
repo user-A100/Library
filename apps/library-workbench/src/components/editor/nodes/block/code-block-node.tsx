@@ -219,7 +219,7 @@ function MermaidPreview({ source }: { source: string }) {
 					const result = await mermaid
 						.getMermaid()
 						.render(
-							`agentero-mermaid-${previewId}-${renderVersion}`,
+							`library-mermaid-${previewId}-${renderVersion}`,
 							sourceText,
 						);
 					if (cancelled || renderVersionRef.current !== renderVersion) return;
@@ -275,12 +275,12 @@ export function CodeBlockElement(props: PlateElementProps<TCodeBlockElement>) {
 
 	return (
 		// Constrain width so long lines overflow inside <pre> (scroll), not the editor.
-		// Use agentero-scroll-both: agentero-scroll sets overflow-x:hidden (unlayered CSS
+		// Use library-scroll-both: library-scroll sets overflow-x:hidden (unlayered CSS
 		// beats Tailwind overflow-x-auto). The x-only modifier lets vertical wheel
 		// input continue to the document scroller. whitespace-pre overrides editor
 		// break-spaces.
 		<PlateElement className="max-w-full min-w-0 py-1" {...props}>
-			<div className="agentero-codeblock group relative max-w-full min-w-0 overflow-hidden rounded-md bg-muted/50">
+			<div className="library-codeblock group relative max-w-full min-w-0 overflow-hidden rounded-md bg-muted/50">
 				<div
 					contentEditable={false}
 					className="absolute top-1.5 right-1.5 z-10 flex items-center gap-1"
@@ -288,7 +288,7 @@ export function CodeBlockElement(props: PlateElementProps<TCodeBlockElement>) {
 					<CodeLanguageSelect />
 					<CopyCodeButton element={props.element} />
 				</div>
-				<pre className="agentero-scroll-both agentero-scroll-x-only max-w-full overflow-x-auto p-4 font-mono text-sm leading-[normal] whitespace-pre [tab-size:2]">
+				<pre className="library-scroll-both library-scroll-x-only max-w-full overflow-x-auto p-4 font-mono text-sm leading-[normal] whitespace-pre [tab-size:2]">
 					<code className="block w-max min-w-full">{props.children}</code>
 				</pre>
 				{isMermaid ? <MermaidPreview source={source} /> : null}

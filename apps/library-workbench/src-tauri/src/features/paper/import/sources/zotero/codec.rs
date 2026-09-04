@@ -1,7 +1,7 @@
-//! MD↔HTML conversion and Agentero sync-marker blocks for Zotero note sync.
+//! MD↔HTML conversion and Library sync-marker blocks for Zotero note sync.
 //!
 //! Pushed notes are wrapped in HTML comment markers so subsequent syncs can
-//! recognize (and replace) Agentero-owned content inside Zotero without ever
+//! recognize (and replace) Library-owned content inside Zotero without ever
 //! touching user-written notes.
 //!
 //! Zotero 7 format requirement (verified against a real library): rich-text
@@ -10,17 +10,17 @@
 //! HTML tags literally and escaping them (`&lt;p&gt;`) on the next save,
 //! which destroys the markers.
 
-/// Opening marker prefix: `<!-- agentero:sync paper=<id> -->`.
-const MARKER_OPEN_PREFIX: &str = "<!-- agentero:sync paper=";
+/// Opening marker prefix: `<!-- library:sync paper=<id> -->`.
+const MARKER_OPEN_PREFIX: &str = "<!-- library:sync paper=";
 const MARKER_OPEN_SUFFIX: &str = " -->";
 /// Closing marker.
-pub const MARKER_CLOSE: &str = "<!-- /agentero:sync -->";
+pub const MARKER_CLOSE: &str = "<!-- /library:sync -->";
 
 /// Signature shared by every marker form — raw HTML, Zotero-escaped
-/// (`&lt;!-- agentero:sync paper=…`), Markdown-escaped (`\<!-- …`) or worse:
+/// (`&lt;!-- library:sync paper=…`), Markdown-escaped (`\<!-- …`) or worse:
 /// only angle brackets and dashes ever get escaped, the paper-id part stays
-/// intact. Anything containing this signature is Agentero sync content.
-pub const SYNC_SIGNATURE: &str = "agentero:sync paper=";
+/// intact. Anything containing this signature is Library sync content.
+pub const SYNC_SIGNATURE: &str = "library:sync paper=";
 
 /// Wrap converted HTML with sync markers for the given paper id, inside the
 /// Zotero 7 rich-note wrapper so the editor renders (and preserves) it as
@@ -34,12 +34,12 @@ pub fn wrap_sync_html(paper_id: &str, html: &str) -> String {
     )
 }
 
-/// True when the note HTML carries a complete Agentero sync marker pair.
+/// True when the note HTML carries a complete Library sync marker pair.
 pub fn is_sync_marked(html: &str) -> bool {
     html.contains(MARKER_OPEN_PREFIX) && html.contains(MARKER_CLOSE)
 }
 
-/// True for anything that is (or was) Agentero sync content, in any damage
+/// True for anything that is (or was) Library sync content, in any damage
 /// state: intact markers, Zotero-escaped markers, or Markdown-escaped leaked
 /// blocks inside NOTES.md. Used to never re-import our own pushed notes.
 pub fn looks_like_sync_note(text: &str) -> bool {
@@ -175,7 +175,7 @@ pub fn clean_note_markdown(md: &str) -> String {
 }
 
 /// Clean vault Markdown for a Zotero note and drop blocks whose text already
-/// exists among the parent item's own (non-Agentero) notes: pull copied those
+/// exists among the parent item's own (non-Library) notes: pull copied those
 /// notes into NOTES.md, so pushing them back would show the same text twice
 /// (once as the original note, once inside the sync note).
 ///
@@ -467,19 +467,19 @@ mod tests {
     fn sync_signature_survives_every_escape_form() {
         // Raw markers.
         assert!(looks_like_sync_note(
-            "<!-- agentero:sync paper=2210.03629 -->\n<p>x</p>"
+            "<!-- library:sync paper=2210.03629 -->\n<p>x</p>"
         ));
         // Zotero-escaped (legacy plain-text treatment).
         assert!(looks_like_sync_note(
-            "<div class=\"zotero-note znv1\"><p>&lt;!-- agentero:sync paper=2210.03629 --&gt;</p></div>"
+            "<div class=\"zotero-note znv1\"><p>&lt;!-- library:sync paper=2210.03629 --&gt;</p></div>"
         ));
         // Markdown-escaped leak inside NOTES.md (htmd output).
         assert!(looks_like_sync_note(
-            "\\<!-- agentero:sync paper=2210.03629 -->\n\n\\<h1>Title\\</h1>"
+            "\\<!-- library:sync paper=2210.03629 -->\n\n\\<h1>Title\\</h1>"
         ));
         // Double-escaped recursion.
         assert!(looks_like_sync_note(
-            "&amp;lt;!-- agentero:sync paper=2210.03629 --&amp;gt;"
+            "&amp;lt;!-- library:sync paper=2210.03629 --&amp;gt;"
         ));
         // Genuine user notes never match.
         assert!(!looks_like_sync_note("my reading notes about sync paper=1"));
@@ -487,7 +487,7 @@ mod tests {
 
     #[test]
     fn strip_leaked_blocks_keeps_user_content_and_frontmatter() {
-        let md = "---\naliases: [x]\n---\n\n# T\n\n> abs\n\n---\n\nmy real note\n\n---\n\n\\<!-- agentero:sync paper=2210.03629 -->\n\n\\<h1>ReAct\\</h1>\n\n\\<blockquote>\n\n\\<p>garbage\\</p>\n";
+        let md = "---\naliases: [x]\n---\n\n# T\n\n> abs\n\n---\n\nmy real note\n\n---\n\n\\<!-- library:sync paper=2210.03629 -->\n\n\\<h1>ReAct\\</h1>\n\n\\<blockquote>\n\n\\<p>garbage\\</p>\n";
         let cleaned = strip_leaked_sync_blocks(md);
         assert!(!looks_like_sync_note(&cleaned), "got: {cleaned}");
         assert!(
@@ -509,7 +509,7 @@ mod tests {
     fn strip_leaked_blocks_handles_multi_segment_garbage() {
         // Garbage whose own round-trips contain `---` lines: every segment
         // still carries the signature, so all of it goes.
-        let md = "# T\n\nuser\n\n---\n\n\\<!-- agentero:sync paper=a -->\n\npart1\n\n---\n\nagentero:sync paper=a part2\n";
+        let md = "# T\n\nuser\n\n---\n\n\\<!-- library:sync paper=a -->\n\npart1\n\n---\n\nlibrary:sync paper=a part2\n";
         let cleaned = strip_leaked_sync_blocks(md);
         assert!(cleaned.contains("user"), "got: {cleaned}");
         assert!(!cleaned.contains("part1"), "got: {cleaned}");
@@ -521,7 +521,7 @@ mod tests {
         assert!(!is_sync_marked("<p>user note</p>"));
         assert!(marked_paper_id("<p>user note</p>").is_none());
         // Partial markers are not treated as ours.
-        assert!(!is_sync_marked("<!-- agentero:sync paper=x -->"));
+        assert!(!is_sync_marked("<!-- library:sync paper=x -->"));
     }
 
     #[test]

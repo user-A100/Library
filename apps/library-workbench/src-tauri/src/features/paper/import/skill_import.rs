@@ -112,7 +112,7 @@ async fn default_branch(owner: &str, repo: &str) -> Result<String, AppError> {
     let url = format!("https://api.github.com/repos/{owner}/{repo}");
     let client = crate::core::http::client_builder()
         .timeout(Duration::from_secs(20))
-        .user_agent("Agentero/skill-import")
+        .user_agent("Library/skill-import")
         .build()
         .map_err(|e| AppError::message(format!("http client: {e}")))?;
     let response = client
@@ -223,7 +223,7 @@ fn install_from_archive(
             "installedAt": crate::core::time::now_rfc3339_millis(),
         });
         fs::write(
-            target.join("agentero-skill.json"),
+            target.join("library-skill.json"),
             serde_json::to_vec_pretty(&provenance)?,
         )?;
         results.push(SkillImportResult {
@@ -320,7 +320,7 @@ fn discover_candidates_from_tar(
 fn discovery_dir(discovery_id: &str) -> Result<PathBuf, AppError> {
     let id = uuid::Uuid::parse_str(discovery_id)
         .map_err(|_| AppError::message("invalid skill discovery id"))?;
-    Ok(std::env::temp_dir().join(format!("agentero-skill-discovery-{id}")))
+    Ok(std::env::temp_dir().join(format!("library-skill-discovery-{id}")))
 }
 
 fn decode_gzip(bytes: &[u8]) -> Result<Vec<u8>, AppError> {
@@ -424,7 +424,7 @@ mod tests {
 
     #[test]
     fn installs_monorepo_skipping_unusable_skills() {
-        let tag = format!("agentero-skill-install-{}", std::process::id());
+        let tag = format!("library-skill-install-{}", std::process::id());
         let vault = std::env::temp_dir().join(&tag);
         let _ = fs::remove_dir_all(&vault);
         fs::create_dir_all(&vault).unwrap();
@@ -484,7 +484,7 @@ mod tests {
             .join(".agents/skills/deep-research/SKILL.md")
             .is_file());
         assert!(vault
-            .join(".agents/skills/deep-research/agentero-skill.json")
+            .join(".agents/skills/deep-research/library-skill.json")
             .is_file());
         assert!(!vault.join(".agents/skills/templates").exists());
 

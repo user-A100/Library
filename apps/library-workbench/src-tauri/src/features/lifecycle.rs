@@ -150,7 +150,7 @@ pub fn emit_job_terminal(app: &AppHandle, job: &crate::core::jobs::JobSnapshot) 
 #[cfg(feature = "desktop")]
 fn emit_or_log<T: Serialize + Clone>(app: &AppHandle, event: &str, payload: T) {
     if let Err(e) = app.emit(event, payload) {
-        log::warn!(target: "agentero::lifecycle", "emit {event} failed: {e}");
+        log::warn!(target: "library::lifecycle", "emit {event} failed: {e}");
     }
 }
 

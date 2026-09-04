@@ -34,7 +34,7 @@ export function joinFrontmatter(frontmatter: string, body: string): string {
 	return frontmatter ? frontmatter + body : body;
 }
 
-/** Keys that are always list-valued in Agentero / Obsidian conventions. */
+/** Keys that are always list-valued in Library / Obsidian conventions. */
 const FRONTMATTER_LIST_KEYS = new Set(["aliases", "tags", "cssclasses"]);
 
 export type FrontmatterPropertyKind = "scalar" | "list" | "checkbox" | "date";

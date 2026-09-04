@@ -63,7 +63,7 @@ function citationMatchesFilter(citation: Citation, needle: string): boolean {
 
 /**
  * Right-sidebar reference list for the active paper: compact citation cards
- * from the `agentero-cite.json` sidecar (parse on demand, filter, open
+ * from the `library-cite.json` sidecar (parse on demand, filter, open
  * matched library papers, import unmatched ones via the magic-wand pipeline).
  */
 export function ReferencesPanel({
@@ -169,7 +169,7 @@ export function ReferencesPanel({
 			)}
 			<div
 				ref={listRef}
-				className="agentero-scroll min-h-0 flex-1 overflow-y-auto p-2"
+				className="library-scroll min-h-0 flex-1 overflow-y-auto p-2"
 			>
 				{visible.length === 0 ? (
 					<p className="px-2 py-6 text-center text-muted-foreground text-xs">

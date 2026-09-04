@@ -230,7 +230,7 @@ pub async fn agent_run_tool_lifecycle(
                 }
             }
             log::info!(
-                target: "agentero::agent",
+                target: "library::agent",
                 "tool_lifecycle ok template={template_id_for_log} action={action_label}"
             );
             emit_registry_changed(&app_for_emit);
@@ -238,7 +238,7 @@ pub async fn agent_run_tool_lifecycle(
         }
         Err(e) => {
             log::warn!(
-                target: "agentero::agent",
+                target: "library::agent",
                 "tool_lifecycle failed template={template_id_for_log} action={action_label}: {e}"
             );
             Ok(map_err(AppError::message(e)))

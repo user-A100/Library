@@ -74,7 +74,7 @@ pub async fn warm_agent(
 
     let result = agent_client_protocol::Client
         .builder()
-        .name("agentero")
+        .name("library")
         .with_handler(AcpTerminalHandler::new(terminals))
         .on_receive_notification(
             async move |notification: SessionNotification, _cx| {
@@ -166,7 +166,7 @@ pub async fn warm_agent(
                                 }
                                 Err(e) => {
                                     log::debug!(
-                                        target: "agentero::agent",
+                                        target: "library::agent",
                                         "agent={} warm set model failed (listed={}): pref={} err={}",
                                         agent_for_conn,
                                         listed,
@@ -202,7 +202,7 @@ pub async fn warm_agent(
                                 }
                                 Err(e) => {
                                     log::debug!(
-                                        target: "agentero::agent",
+                                        target: "library::agent",
                                         "agent={} warm set collaboration mode failed: pref={} err={}",
                                         agent_for_conn,
                                         pref,

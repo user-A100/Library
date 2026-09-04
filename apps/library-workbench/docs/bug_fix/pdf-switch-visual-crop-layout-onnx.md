@@ -4,7 +4,7 @@
 |---|---|
 | 创建日期 | 2026-08-08 |
 | 状态 | 已修复 |
-| 相关 Issue | [#230](https://github.com/poco-ai/Agentero/issues/230)、[#231](https://github.com/poco-ai/Agentero/issues/231)、[#252](https://github.com/poco-ai/Agentero/issues/252) |
+| 相关 Issue | [#230](https://github.com/poco-ai/Library/issues/230)、[#231](https://github.com/poco-ai/Library/issues/231)、[#252](https://github.com/poco-ai/Library/issues/252) |
 | 影响面 | PDF 视觉批注截图、Figures 缩略图裁剪、PDF 版面分析后台任务 |
 | 相关代码 | `src/components/viewer/pdf/pdf-viewer.tsx`、`src/components/viewer/pdf/region-crop.ts`、`src/lib/pdf/layout/enqueue-paper-layout.ts`、`src/lib/pdf/layout/headless-analyze.ts`、`src/lib/pdf/layout/run-analysis.ts` |
 

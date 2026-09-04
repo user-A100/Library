@@ -1,4 +1,4 @@
-//! `agentero layout *` — sidebar-aligned layout index (figures / tables / …).
+//! `library layout *` — sidebar-aligned layout index (figures / tables / …).
 
 use crate::error::{CliError, ExitCode};
 use crate::output::to_value;
@@ -207,9 +207,9 @@ fn load_index_items(
     if !index_abs.is_file() {
         let raw = dir.join("source").join(LAYOUT_RAW_FILE);
         let hint = if raw.is_file() {
-            "source/layout.json exists but layout-index.json is missing — open the paper in Agentero (or re-run layout analysis) to write the sidebar index"
+            "source/layout.json exists but layout-index.json is missing — open the paper in Library (or re-run layout analysis) to write the sidebar index"
         } else {
-            "no source/layout-index.json — open the paper in Agentero and run layout analysis (Figures) first"
+            "no source/layout-index.json — open the paper in Library and run layout analysis (Figures) first"
         };
         return Err(CliError::with_details(
             "layout_index_missing",

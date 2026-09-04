@@ -698,7 +698,7 @@ export function MarkdownEditor({
 									<ContextMenuTrigger asChild>
 										<EditorContainer
 											ref={editorContainerRef}
-											className="agentero-scroll h-full min-w-0 overflow-y-auto"
+											className="library-scroll h-full min-w-0 overflow-y-auto"
 											onScrollCapture={() => {
 												// Reposition instead of hard-dismiss: arrow-key list
 												// updates can reflow and fire scroll without leaving [[.

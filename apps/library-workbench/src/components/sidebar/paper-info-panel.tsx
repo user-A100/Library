@@ -399,7 +399,7 @@ function TagsEditor({
 	);
 }
 
-const HEIGHT_STORAGE_KEY = "agentero.paperInfoHeight";
+const HEIGHT_STORAGE_KEY = "library.paperInfoHeight";
 const MIN_CONTENT_HEIGHT = 120;
 const DEFAULT_CONTENT_HEIGHT = 320;
 const HEADER_HEIGHT = 32;
@@ -602,7 +602,7 @@ export function PaperInfoPanel({
 							{t("paperInfo.selectPrompt")}
 						</p>
 					) : (
-						<div className="agentero-scroll min-h-0 flex-1 overflow-y-auto pb-2">
+						<div className="library-scroll min-h-0 flex-1 overflow-y-auto pb-2">
 							<MetaRow icon={BookOpen} label={t("paperInfo.title")}>
 								<CopyValue
 									text={meta.title}

@@ -1,4 +1,4 @@
-//! `agentero mark *` — reading marks: highlight/批注 (annotations.json),
+//! `library mark *` — reading marks: highlight/批注 (annotations.json),
 //! ask shells and translate records (per-id `marks/<id>.json`).
 //!
 //! Text anchors are resolved with the PDFium text engine (`pdf_locate`), the
@@ -12,9 +12,9 @@ use crate::commands::layout::{self as layout_cmd, LayoutIndexItem};
 use crate::error::{CliError, ExitCode};
 use crate::prompt;
 use crate::resolve::{paper_dir, resolve_paper, resolve_vault, GlobalOpts};
-use agentero_lib::features::catalog::probe_paper_caps;
-use agentero_lib::features::import::pdf_parse::run_pdf_locate;
-use agentero_lib::features::pdf_locate::{annotations, LocateMatch, LocateRequest, NormRect};
+use library_lib::features::catalog::probe_paper_caps;
+use library_lib::features::import::pdf_parse::run_pdf_locate;
+use library_lib::features::pdf_locate::{annotations, LocateMatch, LocateRequest, NormRect};
 use clap::{Subcommand, ValueHint};
 use serde::Serialize;
 use serde_json::{json, Value};

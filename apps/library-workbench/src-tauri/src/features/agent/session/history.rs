@@ -63,7 +63,7 @@ pub async fn list_acp_sessions(
 
     let result = agent_client_protocol::Client
         .builder()
-        .name("agentero")
+        .name("library")
         .with_handler(AcpTerminalHandler::new(terminals))
         .on_receive_request(
             async move |request: RequestPermissionRequest, responder, _cx| {
@@ -400,7 +400,7 @@ pub async fn load_acp_session(
 
     let result = agent_client_protocol::Client
         .builder()
-        .name("agentero")
+        .name("library")
         .with_handler(AcpTerminalHandler::new(terminals))
         .on_receive_notification(
             async move |notification: SessionNotification, _cx| {

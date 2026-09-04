@@ -19,8 +19,8 @@ Agent 回复渲染。对话的连续性没有破坏：继续追问时模型仍�
 
 ## 2. 根因
 
-Agentero 不持久化会话历史，重启后历史来自 ACP `session/list` + `session/load`
-回放。问题出在 Claude 侧的 transcript 反序列化（上游行为，非 Agentero 生成）：
+Library 不持久化会话历史，重启后历史来自 ACP `session/list` + `session/load`
+回放。问题出在 Claude 侧的 transcript 反序列化（上游行为，非 Library 生成）：
 
 1. Claude Code 的 `deserializeMessagesWithInterruptDetection` 在 load/resume 时
    跑一串过滤器：`filterUnresolvedToolUses` → `filterOrphanedThinkingOnlyMessages`
@@ -30,9 +30,9 @@ Agentero 不持久化会话历史，重启后历史来自 ACP `session/list` + `
    `NO_RESPONSE_REQUESTED = "No response requested."`。
 3. `claude-agent-acp` 的 `replaySessionHistory` 把 `getSessionMessages()` 的
    结果逐条原样转成 `session/update` 回放（仅跳过合成登录消息），占位文本因此
-   进入 Agentero 的 transcript UI。
+   进入 Library 的 transcript UI。
 
-真实回答正文被上游过滤器丢弃属于 Claude SDK 行为，Agentero 无法恢复；能做的
+真实回答正文被上游过滤器丢弃属于 Claude SDK 行为，Library 无法恢复；能做的
 是不把合成占位当作回答展示。
 
 ## 3. 修复
@@ -50,7 +50,7 @@ tool/plan/reasoning 部分混排，只剔除占位文本部分。过滤只作用
 
 ## 4. 验证
 
-- `cargo test -p agentero replay_builder`：新增
+- `cargo test -p library replay_builder`：新增
   `drops_synthetic_placeholder_agent_turns`、
   `keeps_real_parts_in_turns_mixed_with_a_placeholder`，连同既有 9 个用例全部通过。
 - 探针（最小 stdio ACP 客户端 `initialize` + `session/load`）确认

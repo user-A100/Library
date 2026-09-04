@@ -238,7 +238,7 @@ mod open_bundle_tests {
 
     fn temp_vault(name: &str) -> PathBuf {
         let vault =
-            std::env::temp_dir().join(format!("agentero-open-bundle-{name}-{}", Uuid::new_v4()));
+            std::env::temp_dir().join(format!("library-open-bundle-{name}-{}", Uuid::new_v4()));
         fs::create_dir_all(&vault).expect("create temp vault");
         vault
     }

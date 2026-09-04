@@ -10,7 +10,7 @@ const MAX_SELECTED_SKILLS: usize = 5;
 
 /// How a given Agent CLI expects skills to be activated in the **user-visible prompt**.
 ///
-/// Agentero always *also* injects the full `SKILL.md` body (size-limited) so agents without
+/// Library always *also* injects the full `SKILL.md` body (size-limited) so agents without
 /// a native skill system still receive instructions. The mention style is for agents that
 /// natively parse skill triggers (e.g. Codex `$skill-id`).
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -19,11 +19,11 @@ pub enum SkillMentionStyle {
     Dollar,
     /// Claude Code style slash skills / commands: `/paper-reader`
     Slash,
-    /// No native trigger — Agentero injects body only; do not pretend `$`/`/` activate anything.
+    /// No native trigger — Library injects body only; do not pretend `$`/`/` activate anything.
     InjectedOnly,
 }
 
-/// Map Agentero agent template → native skill mention style.
+/// Map Library agent template → native skill mention style.
 pub fn skill_mention_style(template: &AgentTemplate) -> SkillMentionStyle {
     match template {
         AgentTemplate::CodexAcp => SkillMentionStyle::Dollar,
@@ -163,17 +163,17 @@ fn skill_section_preamble(style: SkillMentionStyle, skill_ids: &[String]) -> Str
             "\n\n## Active local skills\n\
              This agent activates skills with the **$skill-id** syntax (e.g. {list}).\n\
              Prefer following the agent's native skill if it resolves the same id; \
-             otherwise follow the full SKILL.md text Agentero injects below.\n\n"
+             otherwise follow the full SKILL.md text Library injects below.\n\n"
         ),
         SkillMentionStyle::Slash => format!(
             "\n\n## Active local skills\n\
              This agent typically activates skills/commands with the **/skill-id** syntax (e.g. {list}).\n\
-             Prefer the native skill when available; otherwise follow the full SKILL.md text Agentero injects below.\n\n"
+             Prefer the native skill when available; otherwise follow the full SKILL.md text Library injects below.\n\n"
         ),
         SkillMentionStyle::InjectedOnly => format!(
-            "\n\n## Active local skills (Agentero-injected)\n\
-             This agent does **not** use Agentero Composer `$` as a runtime skill trigger. \
-             Follow the SKILL.md instructions Agentero injects below for: {list}.\n\
+            "\n\n## Active local skills (Library-injected)\n\
+             This agent does **not** use Library Composer `$` as a runtime skill trigger. \
+             Follow the SKILL.md instructions Library injects below for: {list}.\n\
              Do not wait for a separate $ or / command — the instructions are already in this prompt.\n\n"
         ),
     }

@@ -1,6 +1,6 @@
 //! Streamable HTTP MCP listener (loopback only).
 
-use super::tools::AgenteroMcp;
+use super::tools::LibraryMcp;
 use super::McpController;
 use crate::core::error::AppError;
 use axum::Router;
@@ -30,7 +30,7 @@ pub async fn serve(
     let mcp_service = StreamableHttpService::new(
         {
             let ctrl = Arc::clone(&ctrl);
-            move || Ok(AgenteroMcp::new(Arc::clone(&ctrl)))
+            move || Ok(LibraryMcp::new(Arc::clone(&ctrl)))
         },
         LocalSessionManager::default().into(),
         config,

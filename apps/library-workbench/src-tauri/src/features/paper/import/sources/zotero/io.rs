@@ -100,7 +100,7 @@ pub async fn export_catalog(args: PaperExportArgs) -> Result<PaperExportResult, 
         format: format.clone(),
         content: text,
         count: items.len(),
-        filename: format!("agentero-library.{ext}"),
+        filename: format!("library-library.{ext}"),
     })
 }
 
@@ -314,7 +314,7 @@ pub fn paper_record_to_zotero_item(r: &PaperRecord) -> Value {
     if let Some(v) = r.meta_source.as_ref().filter(|s| !s.is_empty()) {
         map.insert("libraryCatalog".into(), json!(v));
     } else {
-        map.insert("libraryCatalog".into(), json!("Agentero"));
+        map.insert("libraryCatalog".into(), json!("Library"));
     }
     if !extra_parts.is_empty() {
         map.insert("extra".into(), json!(extra_parts.join("\n")));

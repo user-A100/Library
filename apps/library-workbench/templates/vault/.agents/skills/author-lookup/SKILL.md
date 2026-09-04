@@ -6,7 +6,7 @@ description: >-
   链接，逐项标注来源后写入 {paper}/NOTES.md（frontmatter + 「联系方式与链接」小节），
   并为作者生成信息搜集报告写入 {paper}/attachments/。
   Use for finding a paper's author email / homepage / github and its OpenReview
-  page in a Agentero vault.
+  page in a Library vault.
 ---
 
 # 作者信息与外链检索
@@ -14,7 +14,7 @@ description: >-
 为论文补齐**可联系入口与外部链接**：一作与通讯作者的 email / 个人主页 / GitHub，以及该
 论文的 **OpenReview** 页面。每条结果都要**给出来源**；查不到就留空，绝不臆造邮箱、主页或账号。
 
-## 输入（Agentero vault）
+## 输入（Library vault）
 
 - 目标是 `papers/` 下的**论文文件夹**（Vault 相对路径，如 `papers/1706.03762`）。
 - 先读本地资料，拿到检索线索（标题、作者、DOI、arXiv id）：

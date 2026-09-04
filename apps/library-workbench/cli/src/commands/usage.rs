@@ -1,8 +1,8 @@
-//! `agentero usage *` — device-local activity log in XDG `usage.sqlite`.
+//! `library usage *` — device-local activity log in XDG `usage.sqlite`.
 
 use crate::error::CliError;
 use crate::resolve::{resolve_vault, GlobalOpts};
-use agentero_lib::core::usage::{
+use library_lib::core::usage::{
     clear_all, clear_vault, list_events, since_rfc3339_days, summarize, usage_db_path, ListFilter,
 };
 use clap::{Subcommand, ValueHint};

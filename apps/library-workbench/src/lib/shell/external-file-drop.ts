@@ -2,7 +2,7 @@
  * OS file drops on the webview. `dragDropEnabled: false` so HTML5 DnD
  * stays available (Windows WebView2 otherwise swallows it). Path-less
  * File bytes are staged via Host `paper_stage_import_file` into
- * `~/.agentero/import-tmp/`. Tauri `onDragDropEvent` is a no-op extra
+ * `~/.library/import-tmp/`. Tauri `onDragDropEvent` is a no-op extra
  * if a platform still emits it.
  *
  * Without preventDefault, dropping a PDF can navigate the webview to the
@@ -172,7 +172,7 @@ export function snapshotDataTransfer(dt: DataTransfer | null): {
  * Resolve absolute paths for dropped PDFs from a **snapshot** taken in the
  * drop handler (see `snapshotDataTransfer`).
  * 1) Prefer absolute path metadata.
- * 2) Else stage File bytes via Host into `~/.agentero/import-tmp/`.
+ * 2) Else stage File bytes via Host into `~/.library/import-tmp/`.
  */
 export async function resolveDroppedPdfPaths(
 	dtOrSnapshot: DataTransfer | null | ReturnType<typeof snapshotDataTransfer>,
@@ -259,12 +259,12 @@ export async function resolveDroppedPdfPaths(
 /** Whether a path looks like our drop materialization staging area. */
 export function isImportTempPath(path: string): boolean {
 	const n = path.replace(/\\/g, "/");
-	return n.includes("/.agentero/import-tmp/");
+	return n.includes("/.library/import-tmp/");
 }
 
 /**
  * Best-effort cleanup of staging files after import.
- * Only deletes paths under `~/.agentero/import-tmp/`.
+ * Only deletes paths under `~/.library/import-tmp/`.
  */
 export async function cleanupImportTempPaths(paths: string[]): Promise<void> {
 	if (!isTauri() || !paths.length) return;

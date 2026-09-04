@@ -1395,7 +1395,7 @@ mod tests {
 
     #[test]
     fn move_under_path_rewrites_prefix() {
-        let dir = env::temp_dir().join(format!("agentero-move-test-{}", std::process::id()));
+        let dir = env::temp_dir().join(format!("library-move-test-{}", std::process::id()));
         let _ = fs::remove_dir_all(&dir);
         fs::create_dir_all(&dir).unwrap();
         {
@@ -1435,7 +1435,7 @@ mod tests {
 
     #[test]
     fn update_meta_patches_fields_and_syncs_aliases() {
-        let dir = env::temp_dir().join(format!("agentero-update-meta-{}", std::process::id()));
+        let dir = env::temp_dir().join(format!("library-update-meta-{}", std::process::id()));
         let _ = fs::remove_dir_all(&dir);
         let paper_dir = dir.join("papers").join("x");
         fs::create_dir_all(&paper_dir).unwrap();
@@ -1519,7 +1519,7 @@ mod tests {
 
     #[test]
     fn list_missing_publication_filters_null_and_empty() {
-        let dir = env::temp_dir().join(format!("agentero-missing-pub-{}", std::process::id()));
+        let dir = env::temp_dir().join(format!("library-missing-pub-{}", std::process::id()));
         let _ = fs::remove_dir_all(&dir);
         fs::create_dir_all(&dir).unwrap();
         {
@@ -1661,7 +1661,7 @@ mod tests {
 
     #[test]
     fn rebuild_from_disk_reimports_from_notes() {
-        let dir = env::temp_dir().join(format!("agentero-rescan-{}", std::process::id()));
+        let dir = env::temp_dir().join(format!("library-rescan-{}", std::process::id()));
         let _ = fs::remove_dir_all(&dir);
         let paper_dir = dir.join("papers").join("x");
         fs::create_dir_all(&paper_dir).unwrap();
@@ -1735,7 +1735,7 @@ mod tests {
 
     #[test]
     fn ensure_row_for_path_heals_orphaned_folder() {
-        let dir = env::temp_dir().join(format!("agentero-ensure-row-{}", std::process::id()));
+        let dir = env::temp_dir().join(format!("library-ensure-row-{}", std::process::id()));
         let _ = fs::remove_dir_all(&dir);
         let paper_dir = dir.join("papers").join("x");
         fs::create_dir_all(&paper_dir).unwrap();
@@ -1817,7 +1817,7 @@ mod tests {
 
     #[test]
     fn find_duplicates_reports_duplicate_ids_and_paths() {
-        let dir = env::temp_dir().join(format!("agentero-dup-detect-{}", std::process::id()));
+        let dir = env::temp_dir().join(format!("library-dup-detect-{}", std::process::id()));
         let _ = fs::remove_dir_all(&dir);
         fs::create_dir_all(&dir).unwrap();
         {
@@ -1838,7 +1838,7 @@ mod tests {
 
     #[test]
     fn find_by_identifier_returns_zotero_fields() {
-        let dir = env::temp_dir().join(format!("agentero-find-id-{}", std::process::id()));
+        let dir = env::temp_dir().join(format!("library-find-id-{}", std::process::id()));
         let _ = fs::remove_dir_all(&dir);
         fs::create_dir_all(&dir).unwrap();
         {
@@ -1865,7 +1865,7 @@ mod tests {
 
     #[test]
     fn list_all_unique_by_id_prefers_existing_path_then_newest() {
-        let dir = env::temp_dir().join(format!("agentero-dup-view-{}", std::process::id()));
+        let dir = env::temp_dir().join(format!("library-dup-view-{}", std::process::id()));
         let _ = fs::remove_dir_all(&dir);
         fs::create_dir_all(&dir).unwrap();
         fs::create_dir_all(dir.join("papers/a")).unwrap();
@@ -1888,7 +1888,7 @@ mod tests {
 
     #[test]
     fn list_all_unique_by_id_prefers_path_that_exists_on_disk() {
-        let dir = env::temp_dir().join(format!("agentero-dup-exists-{}", std::process::id()));
+        let dir = env::temp_dir().join(format!("library-dup-exists-{}", std::process::id()));
         let _ = fs::remove_dir_all(&dir);
         fs::create_dir_all(&dir).unwrap();
         fs::create_dir_all(dir.join("papers/old")).unwrap();
@@ -1908,7 +1908,7 @@ mod tests {
 
     #[test]
     fn repair_duplicates_removes_extra_rows() {
-        let dir = env::temp_dir().join(format!("agentero-dup-repair-{}", std::process::id()));
+        let dir = env::temp_dir().join(format!("library-dup-repair-{}", std::process::id()));
         let _ = fs::remove_dir_all(&dir);
         fs::create_dir_all(&dir).unwrap();
         fs::create_dir_all(dir.join("papers/keep")).unwrap();
@@ -1936,7 +1936,7 @@ mod tests {
     /// Prints both durations (`cargo test ... -- --nocapture`).
     #[test]
     fn list_all_reuses_persistent_connection() {
-        let dir = env::temp_dir().join(format!("agentero-conn-cache-{}", std::process::id()));
+        let dir = env::temp_dir().join(format!("library-conn-cache-{}", std::process::id()));
         let _ = fs::remove_dir_all(&dir);
         fs::create_dir_all(&dir).unwrap();
         {
@@ -1978,7 +1978,7 @@ mod tests {
 
     #[test]
     fn with_catalog_recovers_after_db_deleted_externally() {
-        let dir = env::temp_dir().join(format!("agentero-conn-stale-{}", std::process::id()));
+        let dir = env::temp_dir().join(format!("library-conn-stale-{}", std::process::id()));
         let _ = fs::remove_dir_all(&dir);
         fs::create_dir_all(&dir).unwrap();
 
@@ -1993,7 +1993,7 @@ mod tests {
         // Simulate the vault's catalog being deleted externally. WAL keeps the
         // unlinked inode alive, so a stale handle would still "work" against a
         // ghost database; with_catalog must detect the missing file and reopen.
-        fs::remove_dir_all(dir.join(".agentero")).unwrap();
+        fs::remove_dir_all(dir.join(".library")).unwrap();
         assert_eq!(list_all(&dir).unwrap().len(), 0);
         assert!(super::super::schema::catalog_db_path(&dir).is_file());
 

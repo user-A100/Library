@@ -391,11 +391,11 @@ async fn run_control_loop(
                                         }
                                     }
                                     Ok(RelayControlMessage::Pong { .. }) => {}
-                                    Err(error) => log::warn!(target: "agentero::bridge", "invalid Relay control message: {error}"),
+                                    Err(error) => log::warn!(target: "library::bridge", "invalid Relay control message: {error}"),
                                 }
                             }
                             Ok(RelayFrame::Close) => break,
-                            Ok(RelayFrame::Binary(_)) => log::warn!(target: "agentero::bridge", "unexpected binary Relay control frame"),
+                            Ok(RelayFrame::Binary(_)) => log::warn!(target: "library::bridge", "unexpected binary Relay control frame"),
                             Err(error) => {
                                 set_error(&app, &shared, error.to_string());
                                 break;
@@ -1233,7 +1233,7 @@ mod tests {
     #[test]
     fn rpc_path_rejects_parent_directory_escape() {
         let vault =
-            std::env::temp_dir().join(format!("agentero-bridge-rpc-{}", uuid::Uuid::new_v4()));
+            std::env::temp_dir().join(format!("library-bridge-rpc-{}", uuid::Uuid::new_v4()));
         fs::create_dir_all(&vault).expect("create vault");
         assert!(vault_relative_path(&vault, "../secrets.txt", false).is_err());
         fs::remove_dir_all(vault).expect("clean vault");
@@ -1248,7 +1248,7 @@ mod tests {
     #[test]
     fn bridge_pdf_reads_vault_relative_chunks_with_metadata() {
         let vault =
-            std::env::temp_dir().join(format!("agentero-bridge-pdf-{}", uuid::Uuid::new_v4()));
+            std::env::temp_dir().join(format!("library-bridge-pdf-{}", uuid::Uuid::new_v4()));
         let paper_dir = vault.join("papers/example");
         fs::create_dir_all(&paper_dir).expect("create paper dir");
         fs::write(paper_dir.join("source.pdf"), b"%PDF-1.7 bridge test")

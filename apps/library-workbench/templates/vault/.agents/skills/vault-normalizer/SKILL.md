@@ -1,14 +1,14 @@
 ---
 name: vault-normalizer
 version: 2
-description: Normalize an existing research directory into an Agentero vault layout. Use when reorganizing files, papers, notes, PDFs, TeX sources, marks, assets, attachments, or legacy Zotero/Obsidian-style folders to match Agentero directory and catalog conventions.
+description: Normalize an existing research directory into an Library vault layout. Use when reorganizing files, papers, notes, PDFs, TeX sources, marks, assets, attachments, or legacy Zotero/Obsidian-style folders to match Library directory and catalog conventions.
 ---
 
 # Vault Normalizer
 
 ## Goal
 
-Convert an existing research directory into an Agentero-compatible Vault without losing user-written notes or original files.
+Convert an existing research directory into an Library-compatible Vault without losing user-written notes or original files.
 
 ## Safety rules
 
@@ -16,7 +16,7 @@ Convert an existing research directory into an Agentero-compatible Vault without
 - Preserve user-written Markdown, PDFs, TeX/source archives, annotations, Obsidian `[[wikilinks]]`, and any existing `AGENTS.md` content.
 - If a directory already has `AGENTS.md`, read it as local instructions and do not replace it; only propose an append/merge draft when the user asks.
 - Prefer copying or staged moves when the source directory is not already a Vault.
-- Never treat `.agentero/catalog.sqlite` as disposable cache; it is the authoritative paper collection and metadata store.
+- Never treat `.library/catalog.sqlite` as disposable cache; it is the authoritative paper collection and metadata store.
 - Do not make root `PAPERS.md`, `library.bib`, or per-paper `metadata.json` the source of truth. They are optional exports or projections.
 - Treat link repair as a separate, reviewable change. Do not invent missing
   notes, select an ambiguous candidate, or rewrite a user-authored link without
@@ -25,7 +25,7 @@ Convert an existing research directory into an Agentero-compatible Vault without
 ## Target layout
 
 ```text
-agentero-vault/
+library-vault/
 ├── AGENTS.md
 ├── papers/
 │   ├── <paper-id-or-citekey>/
@@ -42,7 +42,7 @@ agentero-vault/
 ├── assets/                 # optional non-paper media
 ├── .agents/
 │   └── skills/
-└── .agentero/
+└── .library/
     ├── catalog.sqlite
     ├── config.json
     └── .trash/
@@ -61,18 +61,18 @@ agentero-vault/
 - For new organization, prefer `notes/` for concept notes and cross-paper notes, and `plans/` for research plans, TODOs, and drafts; do not force-move existing folders that already work for the user.
 - Markdown-embedded images belong beside the Markdown file in `./assets/` and should use relative links like `![alt](./assets/file.png)`.
 - PDF selection artifacts belong in `{paper}/marks/*.json`; do not write them into the PDF binary or catalog body.
-- `.agentero/` is application state and should not be shown or edited as ordinary notes.
+- `.library/` is application state and should not be shown or edited as ordinary notes.
 
 ## Normalization workflow
 
 1. Resolve whether the target is already a Vault:
-   - Minimum app structure: `papers/` plus `.agentero/catalog.sqlite` or an app/CLI path to initialize it. `notes/`, `plans/`, and `AGENTS.md` are recommended but not required for preserving an existing organization.
+   - Minimum app structure: `papers/` plus `.library/catalog.sqlite` or an app/CLI path to initialize it. `notes/`, `plans/`, and `AGENTS.md` are recommended but not required for preserving an existing organization.
    - If `AGENTS.md` already exists, treat it as authoritative local guidance and keep it unchanged.
-   - If `agentero` exists, prefer `agentero vault info --json` or `agentero vault check --json`.
+   - If `library` exists, prefer `library vault info --json` or `library vault check --json`.
 2. Inventory the existing directory:
    - Identify PDFs, paper folders, TeX/source folders, Markdown notes, images/assets, BibTeX files, exported `PAPERS.md`, Zotero exports, and loose attachments.
    - Separate user-authored files from generated files.
-   - When `agentero wiki check --json` is available, run it before migration and
+   - When `library wiki check --json` is available, run it before migration and
      retain the complete `missing` / `ambiguous` / `invalidFragment` baseline.
      The command is read-only; a non-zero result carries the report in
      `error.details`.
@@ -82,9 +82,9 @@ agentero-vault/
    - Risk: overwrite, ambiguous paper identity, duplicate PDF, missing metadata,
      or a wikilink target affected by the move
 4. Create or ensure the Vault skeleton:
-   - Required app structure: `papers/`, `.agents/skills/`, `.agentero/`; create `notes/` and `plans/` only when useful for the user's organization.
+   - Required app structure: `papers/`, `.agents/skills/`, `.library/`; create `notes/` and `plans/` only when useful for the user's organization.
    - Ensure `AGENTS.md` exists only if missing. If it already exists, keep it unchanged.
-   - Use `agentero vault create <path> --json` when available; otherwise create only missing directories and ask the app/CLI to initialize catalog later.
+   - Use `library vault create <path> --json` when available; otherwise create only missing directories and ask the app/CLI to initialize catalog later.
 5. Normalize paper units:
    - Put each paper under `papers/<topic...>/<id-or-citekey>/`.
    - Put the main PDF at `{paper}/{id}.pdf` when identity is known; otherwise keep the original filename and record ambiguity.
@@ -95,19 +95,19 @@ agentero-vault/
    - Recommend `notes/` for concept notes and literature maps, and `plans/` for plans/TODOs/drafts, but keep existing folder names when preserving them is clearer or safer.
    - Keep Obsidian wikilinks intact.
 7. Rebuild or repair catalog metadata:
-   - Prefer `agentero import id <identifier> --parent <papers/topic> --json` for known DOI/arXiv/URL items.
+   - Prefer `library import id <identifier> --parent <papers/topic> --json` for known DOI/arXiv/URL items.
    - For disk folders that already contain papers, use the app Rescan or CLI catalog commands if available.
    - Do not invent title, authors, year, DOI, or tags; mark unknowns explicitly.
 8. Verify:
-   - Run `agentero vault check --json` or `agentero vault info --json` if available.
+   - Run `library vault check --json` or `library vault info --json` if available.
    - Confirm that paper paths, local PDFs, `NOTES.md`, `PAPER.md`/`source/`, and `marks/` are discoverable.
-   - Run `agentero wiki check --json` again. For a staged subset, pass its
+   - Run `library wiki check --json` again. For a staged subset, pass its
      Vault-relative Markdown file or directory to isolate that scope.
    - Compare the post-migration report with the baseline and separate
      pre-existing issues from links broken by this migration.
    - If the CLI command is unavailable, report that semantic link validation
      was not completed; do not substitute a regex-only parser and claim parity
-     with Agentero.
+     with Library.
    - Summarize remaining ambiguities and any files intentionally left in place.
 
 ## Wikilink diagnostics

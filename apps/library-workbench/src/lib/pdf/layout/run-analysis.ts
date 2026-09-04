@@ -501,7 +501,7 @@ export async function runDocumentLayoutAnalysis(
 
 		switch (p.stage) {
 			case "downloading-model": {
-				// Host may still be writing the file; plugin loads via agentero-model://.
+				// Host may still be writing the file; plugin loads via library-model://.
 				// Map model download into the first 5% so the bar never jumps to 100%
 				// before page analysis starts.
 				const pct = p.total > 0 ? (p.loaded / p.total) * 100 : 0;

@@ -9,7 +9,7 @@
 
 | # | 议题 | 结论 |
 |---|---|---|
-| Q1 | 和广场其它来源的关系 | **一个**子节点 `agentero:plaza/feeds`，原生 panel（与 Skill 推荐同型）。**不**给每条订阅挂侧栏子节点 |
+| Q1 | 和广场其它来源的关系 | **一个**子节点 `library:plaza/feeds`，原生 panel（与 Skill 推荐同型）。**不**给每条订阅挂侧栏子节点 |
 | Q2 | 和 Folo / RSSHub | **不嵌、不打进包**。Folo 只参考交互；RSSHub / 邮件转 RSS 是用户自备的 URL |
 | Q3 | 数据权威 | 订阅与条目缓存走 **XDG**，**不写** catalog、**不写** Vault。入库才进 catalog |
 | Q4 | MVP 吃什么 | 用户粘贴的 **http(s) RSS / Atom / JSON Feed**。arXiv 分区给快捷芯片。X / Scholar / `@handle` **不做解析**，空态说明需先有 feed URL |
@@ -34,16 +34,16 @@
 ## 2. 信息架构
 
 ```
-🌐 广场                     agentero:plaza
+🌐 广场                     library:plaza
   ├── Cool Papers
   ├── ModelScope 论文
   ├── Skill 推荐
-  └── 📡 订阅               agentero:plaza/feeds     ← 本篇
+  └── 📡 订阅               library:plaza/feeds     ← 本篇
 ```
 
 | 项 | 约定 |
 |---|---|
-| 路径 | `agentero:plaza/feeds`；虚拟，永不落盘 |
+| 路径 | `library:plaza/feeds`；虚拟，永不落盘 |
 | 注册 | `PLAZA_SOURCES` 一条：`id: "feeds"`，`panel: "feeds"`，`url: null` |
 | 侧栏 | 与 Skill 推荐相同：单击打开 panel；无删除 / 拖拽 / Finder |
 | 图标 | Lucide `Rss`；en **Feeds**；zh-CN **订阅** |
@@ -104,7 +104,7 @@ MVP **不做**：`@handle` 展开、OPML、登录态、RSSHub 拼接。
 - 失败 `notifyError`，不在侧栏挂错误条。
 - 列表卡摘要只示纯文本 3 行。详情打开时走 `feeds_resolve_body`：已缓存 `bodyMarkdown` 则直接用；否则若 RSS 已是全文（或 arXiv / DOI 落地页）转 Markdown；博客摘要带 `[...]` 或 `paper_url` 为空（可能从落地页 metadata 确认论文身份）则抓原文 HTML，抽 `<article>` / 常见正文容器后 `htmd` 成 Markdown，并顺手解析 `citation_doi` 等回填 `paper_url`。渲染复用 `MessageResponse`（Streamdown + `$…$`）。`\begin{equation}` 等块环境归一成 `$$…$$` 显示公式：抓取侧（`body.rs`）与渲染侧（`math-normalize.ts`）都剥掉 KaTeX 不支持的 `equation` / `multline` / `flalign` 外壳，`align` / `gather` 等保留；环境内的 HTML 残留（`<br />` 换行、实体）在抽取时清理。占位符定宽编号，防 `LATEXBLOCK1` 前缀误替换 `LATEXBLOCK10`。
 - 点标题 = 主操作。另给一个外链图标，论文卡也可打开原文。
-- 抓原文页用浏览器 UA + cookie store 的 client：部分站点（如 spaces.ac.cn 的 WAF）首访回 403 + Set-Cookie + `window.location` 重定向壳页，`fetch_article` 检测到这类挑战页会带 Cookie 自动重发一次。抓取失败记 `agentero::feeds` warn 日志，回退 RSS 摘要。
+- 抓原文页用浏览器 UA + cookie store 的 client：部分站点（如 spaces.ac.cn 的 WAF）首访回 403 + Set-Cookie + `window.location` 重定向壳页，`fetch_article` 检测到这类挑战页会带 Cookie 自动重发一次。抓取失败记 `library::feeds` warn 日志，回退 RSS 摘要。
 
 不做第三种「提醒卡」、图墙、视频墙、全文阅读栏（经典三栏的第三栏）。
 
@@ -114,10 +114,10 @@ MVP **不做**：`@handle` 展开、OPML、登录态、RSSHub 拼接。
 
 | 层 | 路径 | 内容 |
 |---|---|---|
-| 库 | `$XDG_DATA_HOME/agentero/feeds.sqlite` | 订阅 + 条目缓存 |
-| 不进 | `.agentero/catalog.sqlite`、Vault 文件、`settings.json` | — |
+| 库 | `$XDG_DATA_HOME/library/feeds.sqlite` | 订阅 + 条目缓存 |
+| 不进 | `.library/catalog.sqlite`、Vault 文件、`settings.json` | — |
 
-macOS 上即 `~/Library/Application Support/agentero/feeds.sqlite`（与 `usage.sqlite` 同一 XDG data 约定，见 [`../backend/usage.md`](../backend/usage.md)）。
+macOS 上即 `~/Library/Application Support/library/feeds.sqlite`（与 `usage.sqlite` 同一 XDG data 约定，见 [`../backend/usage.md`](../backend/usage.md)）。
 
 **不**把订阅塞进 `AppSettings`：那是 UI 偏好，订阅是用户数据，条目还会涨。
 
@@ -173,7 +173,7 @@ CREATE INDEX items_timeline ON items (published_at DESC, first_seen_at DESC);
 - 只用 http / https。桌面应用**允许**局域网 / localhost（用户可能订本机 FreshRSS）。
 - 跟随重定向，但最终 URL 必须仍是 http(s)。
 - 走现有 Host HTTP 客户端（含用户配置的网络代理）。
-- User-Agent：`Agentero/<version> (feeds)`。
+- User-Agent：`Library/<version> (feeds)`。
 - 解析：Rust [`feed-rs`](https://crates.io/crates/feed-rs)（RSS 0.9–2.0 / Atom / JSON Feed）。
 
 论文线索（写入 `paper_url`，按先匹配先得）：

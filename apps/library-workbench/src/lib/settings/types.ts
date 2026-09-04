@@ -61,7 +61,7 @@ export const DEFAULT_LIBRARY_COLUMNS: LibraryColumnPref[] =
 	LIBRARY_COLUMN_KEYS.map((key) => ({ key, visible: true }));
 
 /**
- * How Agentero responds to agent permission escalations.
+ * How Library responds to agent permission escalations.
  * - `restricted`: decline requests (Codex uses workspace-write).
  * - `ask`: forward each request to the user for an explicit decision.
  * - `auto`: auto-approve every request (YOLO; Codex uses danger-full-access).
@@ -87,7 +87,7 @@ export const AUTO_UPDATE_INTERNAL_LINKS: AutoUpdateInternalLinks[] = [
  * - `standard`: built-in structured skeleton
  * - `title-only`: title heading only
  * - `blank`: empty file
- * - `custom`: copy the vault template `.agentero/templates/NOTES.md`
+ * - `custom`: copy the vault template `.library/templates/NOTES.md`
  */
 export type PaperNoteMode = "standard" | "title-only" | "blank" | "custom";
 
@@ -130,7 +130,7 @@ export type AppSettings = {
 	autoUpdateInternalLinks: AutoUpdateInternalLinks;
 	/**
 	 * How NOTES.md is initialized on paper import. `custom` copies the vault
-	 * template `.agentero/templates/NOTES.md`. Default: built-in skeleton.
+	 * template `.library/templates/NOTES.md`. Default: built-in skeleton.
 	 */
 	paperNoteMode: PaperNoteMode;
 	/**
@@ -176,7 +176,7 @@ export type AppSettings = {
 	 */
 	batchImportConcurrency: number;
 	/**
-	 * Prefill the Markdown export dialog's "Agentero watermark" checkbox.
+	 * Prefill the Markdown export dialog's "Library watermark" checkbox.
 	 * Default **off**; per-export choice can still override.
 	 */
 	exportWatermarkEnabled: boolean;

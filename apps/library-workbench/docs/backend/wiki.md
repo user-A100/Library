@@ -23,7 +23,7 @@
 - 嵌入目标解析（供前端 `![[...]]`）
 - 链接感知重命名/移动；标题重命名事务
 - 索引：`.md` 变更防抖重建（前端调度 + Host 重建）
-- 只读语义检查：`WikiIndex::check_links` 按全库、Markdown 文件或目录返回状态计数与问题 occurrence；CLI 暴露为 `agentero wiki check [<source>] --json`
+- 只读语义检查：`WikiIndex::check_links` 按全库、Markdown 文件或目录返回状态计数与问题 occurrence；CLI 暴露为 `library wiki check [<source>] --json`
 
 解析、resolve、嵌入投影、前端导航与显式标题重命名共享“唯一连续后缀”规则。完整路径自然也是自身后缀；不存在或有歧义的 path 保持既有 `invalidFragment` / `ambiguous` 结果，不回退到任意同名叶标题。标题重命名根据已解析的 canonical path 计算后缀在完整路径中的偏移，只改写引用实际包含的被改名段。
 
@@ -38,17 +38,17 @@
 
 ## 只读完整性检查
 
-`agentero wiki check` 每次先构建或校验 Wiki snapshot，再从解析后的 occurrence 生成报告。它不会新建缺失目标、替用户选择歧义候选或修改 stale fragment。
+`library wiki check` 每次先构建或校验 Wiki snapshot，再从解析后的 occurrence 生成报告。它不会新建缺失目标、替用户选择歧义候选或修改 stale fragment。
 
 ```text
-agentero wiki check [Vault 相对文件或目录] --json
+library wiki check [Vault 相对文件或目录] --json
   → WikiIndex rebuild / cache validation
   → check_links(scope)
   → resolved / missing / ambiguous / invalidFragment
   → 有问题时 wikilink_check_failed + error.details
 ```
 
-单文件作用域用于 paper-reader 的写后验收；全库或目录作用域用于 vault-normalizer 的迁移前后对比。CLI 缺失时 Skill 必须明确报告未完成语义校验，不能用 regex 扫描冒充与 Agentero resolver 等价。
+单文件作用域用于 paper-reader 的写后验收；全库或目录作用域用于 vault-normalizer 的迁移前后对比。CLI 缺失时 Skill 必须明确报告未完成语义校验，不能用 regex 扫描冒充与 Library resolver 等价。
 
 ## 数据流（简）
 

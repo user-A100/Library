@@ -1,8 +1,8 @@
-//! `agentero trash *`
+//! `library trash *`
 
 use crate::error::CliError;
 use crate::resolve::{resolve_vault, GlobalOpts};
-use agentero_lib::features::trash;
+use library_lib::features::trash;
 use clap::Subcommand;
 use serde_json::{json, Value};
 

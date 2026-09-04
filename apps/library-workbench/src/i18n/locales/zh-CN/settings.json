@@ -147,7 +147,7 @@
 		"export": {
 			"section": "笔记导出",
 			"watermark": {
-				"label": "默认添加 Agentero 水印"
+				"label": "默认添加 Library 水印"
 			}
 		},
 		"privacy": {
@@ -345,10 +345,10 @@
 		},
 		"uninstallDialog": {
 			"title": "卸载 {{name}}？",
-			"lead": "Agentero 将执行以下卸载步骤：",
+			"lead": "Library 将执行以下卸载步骤：",
 			"dirsLabel": "要删除的目录",
 			"copyAria": "复制到剪贴板",
-			"registryOnly": "仅移除 Agentero 注册项，磁盘上的文件保留。",
+			"registryOnly": "仅移除 Library 注册项，磁盘上的文件保留。",
 			"confirm": "卸载"
 		},
 		"remote": {
@@ -525,8 +525,8 @@
 			"visualMarks": "视觉批注"
 		},
 		"sectionHints": {
-			"vault": "检查顶层 papers/、notes/、.agentero/ 目录是否齐全。",
-			"catalog": "检查 .agentero/catalog.sqlite 是否存在，以及 schema 是否与当前应用一致。",
+			"vault": "检查顶层 papers/、notes/、.library/ 目录是否齐全。",
+			"catalog": "检查 .library/catalog.sqlite 是否存在，以及 schema 是否与当前应用一致。",
 			"wikilinks": "检查笔记中的本地双链是否可解析（缺失、歧义、无效标题锚点）。",
 			"aliases": "检查论文 NOTES.md 是否具备至少两个可区分的 frontmatter aliases。",
 			"visualMarks": "将旧版 agent-trace 批注升级为嵌套 visual v2（纯批注也可单独保存）。"
@@ -597,7 +597,7 @@
 			"openFailed": "无法打开日志文件夹。"
 		},
 		"update": {
-			"idle": "检查 Agentero 是否有新版本",
+			"idle": "检查 Library 是否有新版本",
 			"unsupported": "已安装的桌面应用可使用自动更新",
 			"checking": "正在检查更新...",
 			"upToDate": "当前已是最新版本",
@@ -613,8 +613,8 @@
 			"tagUpdating": "更新中…",
 			"tagDownloading": "更新中 {{progress}}%",
 			"tagInstalling": "安装中…",
-			"toastTitle": "Agentero {{version}} 已可用",
-			"toastDescription": "下载已验证的更新并重启 Agentero"
+			"toastTitle": "Library {{version}} 已可用",
+			"toastDescription": "下载已验证的更新并重启 Library"
 		},
 		"cli": {
 			"label": "命令行工具",
@@ -645,9 +645,9 @@
 		},
 		"finder": {
 			"label": "访达集成",
-			"description": "在访达文件夹右键菜单中添加“用 Agentero 打开”",
+			"description": "在访达文件夹右键菜单中添加“用 Library 打开”",
 			"descriptionInstalled": "在访达中右键文件夹即可作为 Vault 打开",
-			"stale": "Agentero 位置已变化，更新以修复菜单项",
+			"stale": "Library 位置已变化，更新以修复菜单项",
 			"install": "安装",
 			"update": "更新",
 			"uninstall": "移除",

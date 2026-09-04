@@ -33,20 +33,20 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ github.ref_name }}
-          name: Agentero ${{ github.ref_name }}
+          name: Library ${{ github.ref_name }}
           draft: true
           prerelease: ${{ contains(github.ref_name, '-') }}
           body: |
-            Installers and CLI for Agentero ${{ github.ref_name }}.
+            Installers and CLI for Library ${{ github.ref_name }}.
 
             ## Desktop
             Platform installers from Tauri (see assets below).
 
             ## Android
-            `Agentero_<version>_aarch64.apk` — arm64 devices, Android 7.0+.
+            `Library_<version>_aarch64.apk` — arm64 devices, Android 7.0+.
             Sideload it directly; the app is a remote client for your desktop Vault.
 
-            ## CLI (`agentero`)
+            ## CLI (`library`)
             Headless Vault / Catalog machine interface (no BYOA). **Not embedded** in desktop installers (smaller packages; #285).
 
             After installing the desktop app:
@@ -54,14 +54,14 @@ jobs:
             - Standalone CLI archives below remain available for headless-only machines.
 
             ```bash
-            agentero --version
-            agentero open ~/research   # or: agentero ~/research
-            agentero vault which --json
+            library --version
+            library open ~/research   # or: library ~/research
+            library vault which --json
             ```
 
             Source install (slow; pulls desktop Rust deps):
             ```bash
-            cargo install --git https://github.com/${{ github.repository }} --tag ${{ github.ref_name }} --locked --package agentero-cli
+            cargo install --git https://github.com/${{ github.repository }} --tag ${{ github.ref_name }} --locked --package library-cli
             ```
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -182,7 +182,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           # PostHog project API key baked in at compile time (build.rs);
           # empty/absent secret compiles telemetry out. See docs/backend/telemetry.md.
-          AGENTERO_POSTHOG_KEY: ${{ secrets.POSTHOG_KEY }}
+          LIBRARY_POSTHOG_KEY: ${{ secrets.POSTHOG_KEY }}
           # Tauri updater signature, independent from Apple code signing.
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
@@ -199,7 +199,7 @@ jobs:
           # the prepare step via GITHUB_ENV only when non-empty.
         with:
           tagName: ${{ github.ref_name }}
-          releaseName: Agentero ${{ github.ref_name }}
+          releaseName: Library ${{ github.ref_name }}
           # Body is set by the prepare job; keep draft + same tag.
           releaseDraft: true
           prerelease: ${{ contains(github.ref_name, '-') }}
@@ -331,7 +331,7 @@ jobs:
           fi
           OUT_DIR="dist-android"
           mkdir -p "$OUT_DIR"
-          ASSET="Agentero_${VERSION}_${TARGET}.apk"
+          ASSET="Library_${VERSION}_${TARGET}.apk"
           mv "$SRC" "${OUT_DIR}/${ASSET}"
           (cd "$OUT_DIR" && sha256sum "$ASSET" > "${ASSET}.sha256")
           echo "APK_ASSET=${OUT_DIR}/${ASSET}" >> "$GITHUB_ENV"
@@ -370,7 +370,7 @@ jobs:
         if: runner.os == 'Windows'
         uses: ilammy/msvc-dev-cmd@v1
 
-      # agentero-cli path-depends agentero_lib (Tauri), so Linux still needs WebKit link libs.
+      # library-cli path-depends library_lib (Tauri), so Linux still needs WebKit link libs.
       - name: Install Linux dependencies
         if: startsWith(matrix.platform, 'ubuntu-')
         run: |
@@ -405,8 +405,8 @@ jobs:
           cp "$tmp/lib/libpdfium.dylib" src-tauri/pdfium/libpdfium.dylib
           rm -rf "$tmp"
 
-      - name: Build agentero CLI (release)
-        run: cargo build -p agentero-cli --release
+      - name: Build library CLI (release)
+        run: cargo build -p library-cli --release
 
       - name: Package CLI artifact
         shell: bash
@@ -417,19 +417,19 @@ jobs:
           OUT_DIR="dist-cli"
           mkdir -p "$OUT_DIR"
 
-          STAGE="agentero-cli-${VERSION}-${HOST}"
+          STAGE="library-cli-${VERSION}-${HOST}"
           mkdir -p "$STAGE"
-          # Cargo bin is `agentero-cli` (no collision with GUI `agentero`);
-          # archive still exposes the user-facing name `agentero`.
+          # Cargo bin is `library-cli` (no collision with GUI `library`);
+          # archive still exposes the user-facing name `library`.
           if [[ "${{ runner.os }}" == "Windows" ]]; then
-            cp "target/release/agentero-cli.exe" "$STAGE/agentero.exe"
+            cp "target/release/library-cli.exe" "$STAGE/library.exe"
             powershell.exe -NoProfile -Command \
-              "Compress-Archive -Path '${STAGE}/agentero.exe' -DestinationPath '${OUT_DIR}/${STAGE}.zip' -Force"
+              "Compress-Archive -Path '${STAGE}/library.exe' -DestinationPath '${OUT_DIR}/${STAGE}.zip' -Force"
             echo "CLI_ASSET=${OUT_DIR}/${STAGE}.zip" >> "$GITHUB_ENV"
           else
-            cp "target/release/agentero-cli" "$STAGE/agentero"
-            chmod +x "$STAGE/agentero"
-            tar -C "$STAGE" -czf "${OUT_DIR}/${STAGE}.tar.gz" agentero
+            cp "target/release/library-cli" "$STAGE/library"
+            chmod +x "$STAGE/library"
+            tar -C "$STAGE" -czf "${OUT_DIR}/${STAGE}.tar.gz" library
             echo "CLI_ASSET=${OUT_DIR}/${STAGE}.tar.gz" >> "$GITHUB_ENV"
           fi
           ls -la "$OUT_DIR"

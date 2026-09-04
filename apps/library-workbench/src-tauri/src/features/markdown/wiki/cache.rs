@@ -12,7 +12,7 @@
 //! fingerprints (size + mtime) to decide between a full restore and an
 //! incremental rebuild of changed files.
 
-use crate::core::paths::agentero_cache_dir;
+use crate::core::paths::library_cache_dir;
 use crate::features::wiki::models::{InternalLinkOccurrence, ResolvedLink, WikiDocument};
 use rusqlite::{params, Connection, OpenFlags, OptionalExtension, Transaction};
 use serde::{Deserialize, Serialize};
@@ -76,7 +76,7 @@ fn vault_key(vault_root: &Path) -> String {
 }
 
 pub(crate) fn wiki_cache_path(vault_root: &Path) -> PathBuf {
-    agentero_cache_dir()
+    library_cache_dir()
         .join("wiki")
         .join(format!("{}.sqlite", vault_key(vault_root)))
 }

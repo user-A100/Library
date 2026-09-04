@@ -21,9 +21,9 @@ pub const LONG_TIMEOUT: Duration = Duration::from_secs(60);
 
 /// Product User-Agent sent by all `scholar_api` clients.
 pub const USER_AGENT: &str = concat!(
-    "Agentero/",
+    "Library/",
     env!("CARGO_PKG_VERSION"),
-    " (+https://github.com/poco-ai/agentero; mailto:agentero@users.noreply.github.com)"
+    " (+https://github.com/poco-ai/library; mailto:library@users.noreply.github.com)"
 );
 
 /// Global concurrency limit across all `scholar_api` HTTP calls. Keeps polite

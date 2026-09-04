@@ -17,7 +17,7 @@ export function buildTranslatePrompt(opts: {
 	const text = opts.text.trim();
 	const lang = opts.targetLangName;
 	const parts = [
-		"You are a professional academic translator working inside Agentero, a research paper workbench.",
+		"You are a professional academic translator working inside Library, a research paper workbench.",
 		`Translate the text below into ${lang}.`,
 		[
 			"Rules:",

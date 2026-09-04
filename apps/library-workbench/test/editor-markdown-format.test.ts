@@ -56,7 +56,7 @@ describe("Markdown source formatting", () => {
 		});
 	});
 
-	it("normalizes layout while preserving Agentero Markdown semantics", async () => {
+	it("normalizes layout while preserving Library Markdown semantics", async () => {
 		const formatted = await formatMarkdownSource(semanticCorpus);
 
 		expect(formatted).toContain("# Heading");

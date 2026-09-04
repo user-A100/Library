@@ -11,7 +11,7 @@ pnpm ios:release:check   # 发布前检查
 # the archive, then re-run `xcodebuild -exportArchive` with an ExportOptions
 # that maps the bundle id to the profile UUID.
 PROFILE_DIR="$HOME/Library/Developer/Xcode/UserData/Provisioning Profiles"
-PROFILE_PATH="${PROFILE_DIR}/agentero-app-store.mobileprovision"
+PROFILE_PATH="${PROFILE_DIR}/library-app-store.mobileprovision"
 if [[ ! -f "$PROFILE_PATH" ]]; then
     echo "::error::Provisioning profile not found at ${PROFILE_PATH}" >&2
     echo "Install it from App Store Connect / Xcode first." >&2
@@ -30,7 +30,7 @@ pnpm tauri ios build --config src-tauri/tauri.ios.conf.json \
     --target aarch64 --build-number "$(date +%y%m%d%H%M)" \
     --export-method app-store-connect
 
-ARCHIVE="src-tauri/gen/apple/build/agentero_iOS.xcarchive"
+ARCHIVE="src-tauri/gen/apple/build/library_iOS.xcarchive"
 EXPORT_PLIST="src-tauri/gen/apple/build/ExportOptions.fixed.plist"
 
 # Tauri's auto-generated ExportOptions.plist omits `provisioningProfiles`,
@@ -57,7 +57,7 @@ cat > "$EXPORT_PLIST" <<EOF
 	<true/>
 	<key>provisioningProfiles</key>
 	<dict>
-		<key>com.poco-ai.agentero</key>
+		<key>workbench.library.app</key>
 		<string>${PROFILE_UUID}</string>
 	</dict>
 </dict>
@@ -69,7 +69,7 @@ xcodebuild -exportArchive \
     -exportPath "src-tauri/gen/apple/build/arm64" \
     -exportOptionsPlist "$EXPORT_PLIST" >/dev/null
 
-IPA="src-tauri/gen/apple/build/arm64/Agentero.ipa"
+IPA="src-tauri/gen/apple/build/arm64/Library.ipa"
 if ! unzip -l "$IPA" 2>/dev/null | grep -q "embedded.mobileprovision"; then
     echo "::error::embedded.mobileprovision is missing from ${IPA}; refusing to upload." >&2
     exit 1

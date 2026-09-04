@@ -17,7 +17,7 @@ export function PdfOutlinePanel({
 	if (!showOutline || outline.length === 0) return null;
 
 	return (
-		<aside className="agentero-scroll absolute inset-y-0 left-0 z-20 w-80 border-r bg-background/95 pt-11 pb-2 backdrop-blur-sm">
+		<aside className="library-scroll absolute inset-y-0 left-0 z-20 w-80 border-r bg-background/95 pt-11 pb-2 backdrop-blur-sm">
 			<div className="px-2">
 				<OutlineTree nodes={outline} depth={0} onGoToPage={onGoToPage} />
 			</div>

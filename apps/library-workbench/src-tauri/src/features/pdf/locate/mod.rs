@@ -594,16 +594,16 @@ mod tests {
 
     /// Check a real paper end to end:
     /// ```text
-    /// AGENTERO_LOCATE_LIVE_PDF=/path/paper.pdf \
-    /// AGENTERO_LOCATE_LIVE_QUOTE="…verbatim sentence…" \
-    /// cargo test -p agentero --lib live_locate -- --ignored --nocapture
+    /// LIBRARY_LOCATE_LIVE_PDF=/path/paper.pdf \
+    /// LIBRARY_LOCATE_LIVE_QUOTE="…verbatim sentence…" \
+    /// cargo test -p library --lib live_locate -- --ignored --nocapture
     /// ```
     #[test]
-    #[ignore = "requires AGENTERO_LOCATE_LIVE_PDF"]
+    #[ignore = "requires LIBRARY_LOCATE_LIVE_PDF"]
     fn live_locate_round_trip() {
-        let path = std::env::var("AGENTERO_LOCATE_LIVE_PDF").expect("set AGENTERO_LOCATE_LIVE_PDF");
+        let path = std::env::var("LIBRARY_LOCATE_LIVE_PDF").expect("set LIBRARY_LOCATE_LIVE_PDF");
         let quote =
-            std::env::var("AGENTERO_LOCATE_LIVE_QUOTE").expect("set AGENTERO_LOCATE_LIVE_QUOTE");
+            std::env::var("LIBRARY_LOCATE_LIVE_QUOTE").expect("set LIBRARY_LOCATE_LIVE_QUOTE");
         let pdf = std::fs::read(&path).expect("read pdf");
         let result = locate_in_pdf(&pdf, &LocateRequest::new(&quote)).expect("locate");
         let hit = result.matches.first().expect("no match");

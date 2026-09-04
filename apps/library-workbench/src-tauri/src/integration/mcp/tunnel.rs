@@ -2,7 +2,7 @@
 //!
 //! Spawns and owns a `tunnel-client run` child so the loopback MCP surface is
 //! reachable from ChatGPT without the user keeping a terminal open. The child
-//! lives and dies with Agentero on purpose — same lifetime as the MCP listener
+//! lives and dies with Library on purpose — same lifetime as the MCP listener
 //! it fronts. See `docs/backend/mcp.md`.
 
 use crate::core::http::effective_proxy_url;
@@ -145,7 +145,7 @@ fn run_args(
         // loopback and must stay direct; tunnel-client does not honor
         // NO_PROXY for the MCP route, so a global --http-proxy would break it.
         args.push("--control-plane.http-proxy".to_string());
-        args.push("env:AGENTERO_TUNNEL_PROXY".to_string());
+        args.push("env:LIBRARY_TUNNEL_PROXY".to_string());
     }
     args
 }
@@ -317,7 +317,7 @@ impl McpTunnelController {
             .env_remove("HTTPS_PROXY")
             .kill_on_drop(true);
         if let Some(url) = proxy.as_deref() {
-            cmd.env("AGENTERO_TUNNEL_PROXY", url);
+            cmd.env("LIBRARY_TUNNEL_PROXY", url);
         }
         #[cfg(windows)]
         {
@@ -330,7 +330,7 @@ impl McpTunnelController {
             Ok(child) => child,
             Err(e) => {
                 log::warn!(
-                    target: "agentero::mcp::tunnel",
+                    target: "library::mcp::tunnel",
                     "failed to spawn {}: {e}",
                     binary.display()
                 );
@@ -339,7 +339,7 @@ impl McpTunnelController {
         };
         let pid = child.id();
         log::info!(
-            target: "agentero::mcp::tunnel",
+            target: "library::mcp::tunnel",
             "tunnel start pid={pid:?} mcp_url={mcp_url} tunnel_id={tunnel_id}"
         );
 
@@ -447,7 +447,7 @@ impl McpTunnelController {
             return;
         }
         let code = status.map(|s| s.code().unwrap_or(-1)).ok();
-        log::info!(target: "agentero::mcp::tunnel", "tunnel exited code={code:?}");
+        log::info!(target: "library::mcp::tunnel", "tunnel exited code={code:?}");
         let unexpected = code.is_none();
         if let Ok(mut g) = self.inner.lock() {
             g.running = false;
@@ -608,7 +608,7 @@ mod tests {
         assert!(joined.contains("--control-plane.tunnel-id"));
         assert!(joined.contains("env:CONTROL_PLANE_API_KEY"));
         assert!(!joined.contains("sk-secret"));
-        assert!(joined.contains("--control-plane.http-proxy env:AGENTERO_TUNNEL_PROXY"));
+        assert!(joined.contains("--control-plane.http-proxy env:LIBRARY_TUNNEL_PROXY"));
         assert!(!joined.contains("--http-proxy"));
         assert!(joined.contains("127.0.0.1:0"));
     }

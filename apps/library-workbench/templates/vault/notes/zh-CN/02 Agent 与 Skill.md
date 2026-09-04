@@ -1,6 +1,6 @@
 # Agent 与 Skill
 
-Agentero 采用 **BYOA**（Bring Your Own Agent）：由你在本机安装并登录兼容 ACP 的 Agent，Agentero 负责把当前 Vault 上下文交给它。应用内不需要填写模型 API Key。
+Library 采用 **BYOA**（Bring Your Own Agent）：由你在本机安装并登录兼容 ACP 的 Agent，Library 负责把当前 Vault 上下文交给它。应用内不需要填写模型 API Key。
 
 ## Agent 面板
 
@@ -30,15 +30,15 @@ Agent 回复过程中仍可继续输入，后续消息会进入队列，当前�
 
 在 `.agents/skills/` 下新建文件夹并放入 `SKILL.md`。
 
-或者在魔棒处输入你想下载的 Skill 的链接，Agentero 会自动下载并安装。
+或者在魔棒处输入你想下载的 Skill 的链接，Library 会自动下载并安装。
 
 ### 内置 Skill
 
 内置 Skill 包括：
 
 - `paper-reader` — 精读论文并写入 `NOTES.md`。
-- `agentero-cli` — 通过 CLI 执行 Vault 操作。
-- `vault-normalizer` — 将现有研究目录整理为 Agentero Vault 布局。
+- `library-cli` — 通过 CLI 执行 Vault 操作。
+- `vault-normalizer` — 将现有研究目录整理为 Library Vault 布局。
 - `deep-research` — 多轮研究并带引用。
 - `idea-evaluator` — 多角度评估研究想法。
 

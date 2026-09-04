@@ -143,9 +143,9 @@ export function installDockviewSashFrameLoop(root: HTMLElement): () => void {
 		if (flush) dispatcher.flush();
 		else dispatcher.cancel();
 		activePointerId = null;
-		activeSash?.classList.remove("agentero-dock-sash-dragging");
+		activeSash?.classList.remove("library-dock-sash-dragging");
 		activeSash = null;
-		root.classList.remove("agentero-dock-sash-active");
+		root.classList.remove("library-dock-sash-active");
 	};
 
 	const handlePointerDown = (event: PointerEvent) => {
@@ -158,8 +158,8 @@ export function installDockviewSashFrameLoop(root: HTMLElement): () => void {
 		activeSash = supportsClosest(event.target)
 			? event.target.closest(".dv-sash")
 			: null;
-		activeSash?.classList.add("agentero-dock-sash-dragging");
-		root.classList.add("agentero-dock-sash-active");
+		activeSash?.classList.add("library-dock-sash-dragging");
+		root.classList.add("library-dock-sash-active");
 		event.preventDefault();
 	};
 	const handlePointerMove = (event: PointerEvent) => {

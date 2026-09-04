@@ -1,13 +1,13 @@
-site_name: Agentero 文档
-site_description: Agentero 本地优先 Agent 科研工作台文档
-repo_url: https://github.com/poco-ai/agentero
-repo_name: poco-ai/agentero
+site_name: Library 文档
+site_description: Library 本地优先 Agent 科研工作台文档
+repo_url: https://github.com/poco-ai/library
+repo_name: poco-ai/library
 edit_uri: edit/main/docs/
 
 theme:
   name: material
   language: zh
-  logo: assets/agentero-app-icon.svg
+  logo: assets/library-app-icon.svg
   palette:
     scheme: default
     primary: black

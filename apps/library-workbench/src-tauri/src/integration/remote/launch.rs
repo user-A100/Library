@@ -188,7 +188,7 @@ pub async fn materialize_skills_to_work(session: &RemoteSession) -> Result<(), A
     let _ = session
         .fs
         .write(
-            ".agents/.agentero-remote-mirror",
+            ".agents/.library-remote-mirror",
             b"ok\n",
             WriteOpts {
                 create_parents: true,
@@ -208,7 +208,7 @@ mod tests {
             .duration_since(UNIX_EPOCH)
             .unwrap()
             .as_nanos();
-        let path = std::env::temp_dir().join(format!("agentero-remote-skills-{n}"));
+        let path = std::env::temp_dir().join(format!("library-remote-skills-{n}"));
         std::fs::create_dir_all(&path).unwrap();
         path
     }

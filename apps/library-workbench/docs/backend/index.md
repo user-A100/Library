@@ -1,6 +1,6 @@
 # 后端
 
-Tauri 2 + Rust Host：文件系统、Catalog、索引、ACP Client、远程 Vault。CLI（`cli/`）path 依赖同一 `agentero_lib`。
+Tauri 2 + Rust Host：文件系统、Catalog、索引、ACP Client、远程 Vault。CLI（`cli/`）path 依赖同一 `library_lib`。
 
 > 整体架构与跨层工作流见 [../architecture.md](../architecture.md)。
 
@@ -74,11 +74,11 @@ src-tauri/src/
 | 层 | 存什么 | 位置 |
 |---|---|---|
 | 文件 | NOTES、PDF、TeX、marks、assets | Vault 内 |
-| Catalog SQLite | 论文集合 + metadata | `.agentero/catalog.sqlite` |
-| 应用设置 | UI / Agent 注册表 / 偏好 | XDG `~/.config/agentero/` |
-| 使用记录 | 打开 / 下载 / Agent 等活动 | XDG data `~/.local/share/agentero/usage.sqlite` |
+| Catalog SQLite | 论文集合 + metadata | `.library/catalog.sqlite` |
+| 应用设置 | UI / Agent 注册表 / 偏好 | XDG `~/.config/library/` |
+| 使用记录 | 打开 / 下载 / Agent 等活动 | XDG data `~/.local/share/library/usage.sqlite` |
 | 广场订阅 | 订阅名单 + 条目缓存 | XDG data `feeds.sqlite`（不进 catalog） |
-| 版面 ONNX | PP-DocLayoutV3（ModelScope → HF） | XDG cache `~/.cache/agentero/models/` |
+| 版面 ONNX | PP-DocLayoutV3（ModelScope → HF） | XDG cache `~/.cache/library/models/` |
 | 可重建索引 | 双链图 | 内存 / 可重建缓存，非业务权威 |
 
 原则：Store/设置不存论文 meta；`PAPERS.md` / `library.bib` 默认不生成，仅导出。

@@ -35,7 +35,7 @@
 
 1. 用户在工具栏点击 **魔棒**（或 `⇧⌘I`）。
 2. 粘贴 **链接**（如 `https://arxiv.org/abs/1706.03762`、`https://doi.org/10.…`）或 **编号**（如 `1706.03762`、`10.1038/…`）。
-3. Agentero 用 **本机 Translator Runtime**（Search / 必要 Web）解析出书目元数据。
+3. Library 用 **本机 Translator Runtime**（Search / 必要 Web）解析出书目元数据。
 4. 将条目加入 **Papers**：
    - **默认目标**：Vault 的 `papers/` 根下，`papers/<id>/`。
    - **上下文目标**：若文件树当前选中（或等价「当前打开」）的是 `papers/` 下的**组织子文件夹**（非 paper 本体），则写入  
@@ -189,15 +189,15 @@ UI 阅读：优先 catalog 远程 URL；`source/` 为 arXiv TeX 归档；`PAPER.
 | 方案 | 优点 | 缺点 | 结论 |
 |---|---|---|---|
 | A. 仅自写 Crossref/arXiv 客户端 | 无 AGPL、实现简单 | 覆盖面远小于 Zotero；ISBN/PMID/ADS 等要逐个做 | 可作为 **fallback** |
-| B. Agentero 进程内嵌 JS 翻译器引擎 | 零外部进程 | AGPL 传染风险、打包复杂 | **不做**（除非产品整体 AGPL） |
+| B. Library 进程内嵌 JS 翻译器引擎 | 零外部进程 | AGPL 传染风险、打包复杂 | **不做**（除非产品整体 AGPL） |
 | C. **本机 sidecar：translation-server** | 复用全量 Search Translator；进程边界清晰；可热更新 translators | 需管理子进程生命周期 | **推荐主路径** |
 | D. 用户自备 URL 指向外部 server | 灵活 | 隐私/ToS/可用性不可控 | 高级设置可选 |
 
-**默认策略**：Agentero 启动后按需拉起本地 Translator Runtime；不可用时降级到内置轻量客户端（DOI→doi.org/Crossref，arXiv→export API），并在 UI 标明「精简模式」。
+**默认策略**：Library 启动后按需拉起本地 Translator Runtime；不可用时降级到内置轻量客户端（DOI→doi.org/Crossref，arXiv→export API），并在 UI 标明「精简模式」。
 
 ### 2.3 与 Zotero 魔棒的对应关系
 
-| Zotero | Agentero |
+| Zotero | Library |
 |---|---|
 | `lookup.js` UI | `MagicWand` 弹层 |
 | `extractIdentifiers()` | `lookup:parse` / Host `parse.rs` |
@@ -206,7 +206,7 @@ UI 阅读：优先 catalog 远程 URL；`source/` 为 arXiv TeX 归档；`PAPER.
 | 写入 Zotero SQLite | 写 Vault 文件 + **catalog.sqlite** |
 | 可选附件 | 本阶段可选：有 `pdf_url`/`arxiv_id` 再走 source 抓取 |
 
-参考实现（上游，不 fork 进 Agentero 主仓逻辑）：
+参考实现（上游，不 fork 进 Library 主仓逻辑）：
 
 - UI：[`zotero/zotero` `lookup.js`](https://github.com/zotero/zotero/blob/main/chrome/content/zotero/lookup.js)
 - 解析：[`zotero/utilities` `extractIdentifiers`](https://github.com/zotero/utilities)
@@ -225,7 +225,7 @@ UI 阅读：优先 catalog 远程 URL；`source/` 为 arXiv TeX 归档；`PAPER.
 | **DOI** | `10.1038/nature12373`、`https://doi.org/10.…` | DOI Content Negotiation → Crossref / DataCite / CSL |
 | **ISBN** | `978-0-262-03384-8`、`0838985890` | LoC / WorldCat 等 ISBN Search Translator |
 | **PMID** | `24297125`、`PMID:24297125` | NCBI E-utilities via PubMed Translator |
-| **arXiv** | `1706.03762`、`arXiv:1706.03762v1`、abs URL | arXiv Search Translator 或 Agentero arXiv API |
+| **arXiv** | `1706.03762`、`arXiv:1706.03762v1`、abs URL | arXiv Search Translator 或 Library arXiv API |
 | **ADS Bibcode** | `2015ApJ...810...89S` | ADS 相关 Search Translator |
 
 批量：魔棒输入框支持一次粘贴多个标识符，按**换行 / 回车、逗号 `,`、分号 `;`、中文逗号 `，`、中文分号 `；`**拆分（正则 `/[\n\r,;，；]+/`）。空格**不再**是分隔符 —— 论文标题与 `npx skills add …` 都含空格，必须整段送到 Host。Host 侧 `classify_segment`（`src-tauri/src/features/import/batch.rs`）按以下顺序判定每一段：
@@ -241,7 +241,7 @@ UI 阅读：优先 catalog 远程 URL；`source/` 为 arXiv TeX 归档；`PAPER.
 
 ### 3.2 解析优先级（对齐 Zotero `extractIdentifiers`）
 
-对同一段输入文本，**按序**尝试（命中一类后，Zotero 原逻辑会停止后续类型；Agentero 建议：
+对同一段输入文本，**按序**尝试（命中一类后，Zotero 原逻辑会停止后续类型；Library 建议：
 
 - **单条粘贴框**：采用 Zotero 同序，降低数字误识别为 PMID。
 - **显式多行「每行一个」模式**：逐行独立解析，允许一行 DOI、一行 arXiv 混合。
@@ -274,7 +274,7 @@ interface ParsedIdentifier {
 
 ### 3.4 标题搜索（S2 ∥ arXiv 并行竞速）
 
-**Zotero translator 无法承担这一步。** translation-server 的 `POST /search`（§4.2）是标识符入口，Zotero Search Translators 只做「标识符 → 元数据」，没有自由文本检索能力；Agentero 本地也没有 JS runtime 来跑 translator。因此标题搜索必须直连检索 API。
+**Zotero translator 无法承担这一步。** translation-server 的 `POST /search`（§4.2）是标识符入口，Zotero Search Translators 只做「标识符 → 元数据」，没有自由文本检索能力；Library 本地也没有 JS runtime 来跑 translator。因此标题搜索必须直连检索 API。
 
 兼容性通过分工保留：**搜索只负责「文本 → 候选标识符」**，用户选中后把 `identifier`（arXiv ID 优先，其次 DOI）重新提交 `lookup_import_batch`，Translator 仍是元数据的唯一事实来源，入库管道不分叉。
 
@@ -296,7 +296,7 @@ interface ParsedIdentifier {
 
 | 模式 | 说明 | 默认 |
 |---|---|---|
-| `bundled` | Agentero 附带/下载 sidecar 二进制或 Docker 镜像说明；Host 管理端口与生命周期 | 是（桌面） |
+| `bundled` | Library 附带/下载 sidecar 二进制或 Docker 镜像说明；Host 管理端口与生命周期 | 是（桌面） |
 | `external` | 用户在设置中填 `http://127.0.0.1:1969` | 可选 |
 | `off` | 仅用内置 fallback 客户端 | 降级 |
 
@@ -313,7 +313,7 @@ interface TranslatorRuntimeConfig {
 ```
 
 **User-Agent**：对外请求应带可识别后缀，例如  
-`agentero-translation/0.1 (+https://github.com/poco-ai/agentero; contact@…)`，避免伪装成无标识爬虫（与 translation-server README 建议一致）。
+`library-translation/0.1 (+https://github.com/poco-ai/library; contact@…)`，避免伪装成无标识爬虫（与 translation-server README 建议一致）。
 
 ### 4.2 HTTP API（与官方 translation-server 对齐）
 
@@ -337,13 +337,13 @@ curl -d '10.2307/4486062' \
 
 - **Request**：`Content-Type: text/plain`，body = 文件全文。  
 - **Response**：`200` + **Zotero API JSON 数组**（与 `/search` 相同 item 形状）。  
-- Agentero：`paper_import` → map → catalog + paper 壳。
+- Library：`paper_import` → map → catalog + paper 壳。
 
 #### `POST /export` — Zotero items → BibTeX/RIS/…（Library 导出已用）
 
 - **Request**：`Content-Type: application/json`，body = **items 数组**（非单个 object）。  
 - **Query**：`format=bibtex|biblatex|ris|csljson|…`  
-- Agentero：catalog 行先 `paper_record_to_zotero_item` 再调 `/export`。
+- Library：catalog 行先 `paper_record_to_zotero_item` 再调 `/export`。
 
 ### 4.3 健康检查与懒启动
 
@@ -366,7 +366,7 @@ lookup:search 被调用
 | `/search` 超时 | `lookup.timeout`；该 ID 标记 failed，其它 ID 继续 |
 | 无匹配书目 | `lookup.not_found` |
 | Runtime 返回部分成功 | 返回成功草稿 + 失败列表（对齐 Zotero「部分失败仍继续」） |
-| fallback 成功 | `source: 'fallback'`，libraryCatalog 填 `Agentero (Crossref)` 等 |
+| fallback 成功 | `source: 'fallback'`，libraryCatalog 填 `Library (Crossref)` 等 |
 
 ---
 
@@ -578,11 +578,11 @@ await ensure_paper_assets(paperDir, metadata); // PDF + arXiv LaTeX → source/
 
 ### 7.1 许可
 
-| 组件 | 许可（典型） | Agentero 用法 |
+| 组件 | 许可（典型） | Library 用法 |
 |---|---|---|
 | `zotero/translators` | 多为 AGPL-3.0 | **仅在 sidecar 进程内**使用与分发 |
 | `zotero/translate` / translation-server | AGPL-3.0 | 旁路进程；源码按 AGPL 提供或指向上游 |
-| Agentero 主应用 | 以仓库 LICENSE 为准 | 通过 **HTTP localhost** 调用 sidecar，不把 translators 链进主二进制 |
+| Library 主应用 | 以仓库 LICENSE 为准 | 通过 **HTTP localhost** 调用 sidecar，不把 translators 链进主二进制 |
 
 产品文案建议：
 
@@ -592,7 +592,7 @@ await ensure_paper_assets(paperDir, metadata); // PDF + arXiv LaTeX → source/
 ### 7.2 隐私与网络
 
 - 标识符与查询会发往 **第三方书目服务**（Crossref、PubMed、出版社 DOI 解析等），由各 Translator 决定，**不经 Zotero 公司服务器**（自托管 Runtime 时）。
-- Agentero 默认 **不**把 Vault 路径或笔记内容发给 Translator Runtime（Search 路径只传 ID）。
+- Library 默认 **不**把 Vault 路径或笔记内容发给 Translator Runtime（Search 路径只传 ID）。
 - 遵守目标站 ToS；控制并发与超时；批量入库限流。
 
 ### 7.3 local-first
@@ -821,7 +821,7 @@ arXiv URL 推导：
 - 映射：每条**拼装成 Zotero-API-JSON item** → 复用 `map_zotero_item` + `enrich_remote_urls` + `write_paper_shell` + `paper_record_from_meta` + catalog upsert，落到 `{parent_dir}/{id}/`（id/citekey 与魔棒 / 文件导入一致）。
 - 附件 PDF URL：`map_zotero_item` 未给出 `pdf_url` 时，采用 Connector `attachments[]` 里的 PDF 链接（浏览器侧捕获，ACM/IEEE 等常仅经此暴露）。
 - 中文摘要：为不超 Connector 15s 超时，壳先以原文写入；**后台**三引擎并行竞速翻译摘要，成功则安全替换 `NOTES.md` 的 `>` 摘要块（mtime 守卫，用户已编辑或 MT 全失败则跳过）。
-- 标签：用户标签原样保留；Zotero 自动标签（网络翻译器加的来源/状态标签，`itemTags.type ≠ 0`）保留并加 `@zotero:` 前缀，因此在 Agentero 的标签界面中隐藏。arXiv 学科分类（`Computer Science - Machine Learning` 等）无论来自魔棒 Translator 还是 Zotero 条目，都加 `@arxiv:` 前缀，同样隐藏。旧库无 `type` 列时回退为将全部标签视为用户标签。collection 名仍作为组织标签补充。
+- 标签：用户标签原样保留；Zotero 自动标签（网络翻译器加的来源/状态标签，`itemTags.type ≠ 0`）保留并加 `@zotero:` 前缀，因此在 Library 的标签界面中隐藏。arXiv 学科分类（`Computer Science - Machine Learning` 等）无论来自魔棒 Translator 还是 Zotero 条目，都加 `@arxiv:` 前缀，同样隐藏。旧库无 `type` 列时回退为将全部标签视为用户标签。collection 名仍作为组织标签补充。
 - PDF：对话框 **“把 PDF 复制进知识库”** 勾选项（默认开）。勾选时从 `storage/<attachmentKey>/` 拷到 `{paper}/{id}.pdf` 并 liteparse `PAPER.md`；不勾则只留书目，`pdf_url` 供按需下载。
 - 去重：按 arXiv id / DOI / 归一化标题跳过重复（re-run 与既有）；不同文献 citekey 相撞时目录追加后缀。**不覆盖** `NOTES.md`。开启分类建文件夹时，去重命中的旧论文若不在其分类文件夹内（如早期平铺导入），会**自动移入**并改写 catalog 路径（目标已占用则保留原位，失败自动回滚；结果含 `relocated` 计数），重迁移即收敛到 Zotero 树。
 - 自愈：迁移前 `prune_missing` 清掉「文件夹已被手动删除」的 catalog 孤儿行，防止幽灵条目占位、去重误跳过导致无法重导（结果含 `pruned` 计数）。
@@ -847,7 +847,7 @@ arXiv URL 推导：
 
 - 沿用「拷 `zotero.sqlite`+WAL/SHM 到临时目录」方案（`copy_zotero_sqlite`）。
 - **元数据**：仅填补空字段（year/doi/arxiv/abstract/publication/creators 等），永不覆盖已有值。
-- **笔记**：只拉取**非 Agentero 标记**的子笔记（用户手写的），`htmd` 转 MD 后幂等追加进 NOTES.md。
+- **笔记**：只拉取**非 Library 标记**的子笔记（用户手写的），`htmd` 转 MD 后幂等追加进 NOTES.md。
 - **批注**：`itemAnnotations` 转 MD 块幂等追加（与迁移同格式，内容级去重）。
 - **冲突**：水位之后两侧都变更（Zotero 笔记 dateModified 与 NOTES.md mtime 都新于水位）→ 跳过该篇笔记拉取并计入 conflicts 列表报告，不自动合并。
 - **不做**：不自动导入 Zotero 新增条目（那是迁移的职责）；Zotero 侧删除不联动删 paper。
@@ -855,9 +855,9 @@ arXiv URL 推导：
 ### 推送（离线直写，Zotero 必须关闭）
 
 - **预检**：`BEGIN IMMEDIATE` 写锁探测，SQLITE_BUSY → 报错「请先关闭 Zotero」。
-- **备份**：每次推送前复制 `zotero.sqlite`（+wal/shm）到 `<zoteroDir>/agentero-backups/zotero-<时间戳>.sqlite`，保留最近 5 份。
-- **标记块协议**：NOTES.md → `pulldown-cmark` 转 HTML（先净化为可读内容：剥离 YAML frontmatter、删除内部 `---`/`***`/`___` 分隔线避免 `<hr />` 泛滥（首个文本决定 Zotero 笔记标题）、清理 htmd 零宽空格、`> [!type]` callout 转加粗标签、`[[双链]]` 转纯文本），**纸壳（标题+摘要）忠实保留**——推送是 NOTES.md 的镜像，不静默丢内容；纸壳仅用于判断“无正文可推”（shell-only 不建笔记，并回收旧标记笔记），包裹 `<!-- agentero:sync paper=<id> -->…<!-- /agentero:sync -->`，并**必须**再包一层 Zotero 7 富文本笔记格式 `<div class="zotero-note znv1"><div data-schema-version="9">…</div></div>`——缺少该包装时 Zotero 会把内容当作遗留纯文本笔记：标签当文字显示、下次保存整体转义（`&lt;p&gt;`）并摧毁标记（已在真实库验证）。
-- **去重与认领**：按宽松签名 `agentero:sync paper=<id>`（LIKE 通配符已转义）匹配——原始与已被转义的标记都能认领；命中多条时更新最早一条、其余移入 Zotero 回收站（`deletedItems`，可恢复）；内容与库中一致则不写入（避免每轮无谓 churn）。**永不触碰无标记的用户笔记**。
+- **备份**：每次推送前复制 `zotero.sqlite`（+wal/shm）到 `<zoteroDir>/library-backups/zotero-<时间戳>.sqlite`，保留最近 5 份。
+- **标记块协议**：NOTES.md → `pulldown-cmark` 转 HTML（先净化为可读内容：剥离 YAML frontmatter、删除内部 `---`/`***`/`___` 分隔线避免 `<hr />` 泛滥（首个文本决定 Zotero 笔记标题）、清理 htmd 零宽空格、`> [!type]` callout 转加粗标签、`[[双链]]` 转纯文本），**纸壳（标题+摘要）忠实保留**——推送是 NOTES.md 的镜像，不静默丢内容；纸壳仅用于判断“无正文可推”（shell-only 不建笔记，并回收旧标记笔记），包裹 `<!-- library:sync paper=<id> -->…<!-- /library:sync -->`，并**必须**再包一层 Zotero 7 富文本笔记格式 `<div class="zotero-note znv1"><div data-schema-version="9">…</div></div>`——缺少该包装时 Zotero 会把内容当作遗留纯文本笔记：标签当文字显示、下次保存整体转义（`&lt;p&gt;`）并摧毁标记（已在真实库验证）。
+- **去重与认领**：按宽松签名 `library:sync paper=<id>`（LIKE 通配符已转义）匹配——原始与已被转义的标记都能认领；命中多条时更新最早一条、其余移入 Zotero 回收站（`deletedItems`，可恢复）；内容与库中一致则不写入（避免每轮无谓 churn）。**永不触碰无标记的用户笔记**。
 - **回流防御与自愈**：拉取/迁移跳过一切含同步签名的笔记（无论标记完整、被 Zotero 转义还是被 Markdown 转义）；拉取前先对 NOTES.md 自愈——剔除 `---` 分隔的泄漏同步块（历史版本回流造成的垃圾），frontmatter 与用户内容逐字保留。
 - **事务**：整轮单事务，任一条失败整体回滚（备份可恢复）。
 - **已知边界**（已对真实 Zotero 7 库验证触发器）：`items`/`itemNotes` 无写入 `syncQueue` 的触发器 → 推送的笔记**本地 Zotero 可见**，但需在 Zotero 内编辑过才会被其云同步上传。UI 推送警示中明示。彻底方案（伴生 Zotero 插件经官方 JS API 读写）为后续升级路径。

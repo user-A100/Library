@@ -87,7 +87,7 @@ describe("external-file-drop", () => {
 		expect(isPdfFileName("a.pdf")).toBe(true);
 		expect(isPdfFileName("a.PDF")).toBe(true);
 		expect(isPdfFileName("a.md")).toBe(false);
-		expect(isImportTempPath("/Users/me/.agentero/import-tmp/1-x.pdf")).toBe(
+		expect(isImportTempPath("/Users/me/.library/import-tmp/1-x.pdf")).toBe(
 			true,
 		);
 		expect(isImportTempPath("/Users/me/Desktop/x.pdf")).toBe(false);

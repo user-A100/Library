@@ -28,9 +28,9 @@ import type {
 	TreeRenameDraft,
 } from "../types";
 
-/** Virtual rows and `agentero:` pseudo paths have no OS location. */
+/** Virtual rows and `library:` pseudo paths have no OS location. */
 function canRevealPath(path: string): boolean {
-	return Boolean(path) && !path.startsWith("agentero:");
+	return Boolean(path) && !path.startsWith("library:");
 }
 
 export type TreeContextMenuState = {
@@ -260,7 +260,7 @@ export function useTreeContextMenu({
 					}
 				: undefined,
 		onAddToChat:
-			!targetIsVirtual && menu.path && !menu.path.startsWith("agentero:")
+			!targetIsVirtual && menu.path && !menu.path.startsWith("library:")
 				? () => {
 						setMenu(null);
 						broadcastAgentAttachContext([menu.path]);

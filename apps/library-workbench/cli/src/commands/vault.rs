@@ -1,11 +1,11 @@
-//! `agentero vault *`
+//! `library vault *`
 
 use crate::config;
 use crate::error::CliError;
 use crate::output::to_value;
 use crate::resolve::{looks_like_vault, resolve_vault, GlobalOpts};
-use agentero_lib::features::catalog::{self, papers};
-use agentero_lib::features::vault as vault_svc;
+use library_lib::features::catalog::{self, papers};
+use library_lib::features::vault as vault_svc;
 use clap::{Subcommand, ValueHint};
 use serde::Serialize;
 use serde_json::{json, Value};
@@ -219,7 +219,7 @@ fn check(globals: &GlobalOpts) -> Result<Value, CliError> {
     let path = vault.to_string_lossy().to_string();
     let mut issues = Vec::new();
 
-    for dir in ["papers", "notes", ".agentero"] {
+    for dir in ["papers", "notes", ".library"] {
         if !vault.join(dir).is_dir() {
             issues.push(CheckIssue {
                 code: "missing_dir".into(),

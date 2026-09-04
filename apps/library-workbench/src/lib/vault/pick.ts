@@ -24,7 +24,7 @@ export async function pickVaultDirectory(): Promise<string | null> {
 	return path ?? null;
 }
 
-/** Pick a directory that will be scaffolded as a new Agentero vault. */
+/** Pick a directory that will be scaffolded as a new Library vault. */
 export async function pickCreateVaultDirectory(): Promise<string | null> {
 	if (!isTauri()) {
 		throw new Error(i18n.t("app:vault.createDesktopOnly"));
@@ -42,8 +42,8 @@ export async function pickCreateVaultDirectory(): Promise<string | null> {
 }
 
 /**
- * Scaffold a Agentero vault at `path` (Host: vault_create).
- * Creates papers/notes/.agentero, AGENTS.md, catalog.sqlite.
+ * Scaffold a Library vault at `path` (Host: vault_create).
+ * Creates papers/notes/.library, AGENTS.md, catalog.sqlite.
  * Does not create PAPERS.md / library.bib. Does not overwrite existing files.
  */
 export async function createVault(

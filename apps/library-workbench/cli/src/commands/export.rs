@@ -1,9 +1,9 @@
-//! `agentero export *`
+//! `library export *`
 
 use crate::error::CliError;
 use crate::output::to_value;
 use crate::resolve::{resolve_vault, GlobalOpts};
-use agentero_lib::features::zotero::{self, PaperExportArgs};
+use library_lib::features::zotero::{self, PaperExportArgs};
 use clap::{Subcommand, ValueHint};
 use serde_json::{json, Value};
 use std::fs;

@@ -146,7 +146,7 @@ impl S3Client {
                 // the HEAD CAS degrades to GET → PUT, converging via the
                 // engine's merge retries instead of atomic swap.
                 log::warn!(
-                    target: "agentero::sync",
+                    target: "library::sync",
                     "PUT {key}: backend lacks conditional writes; degrading to plain PUT"
                 );
                 self.conditional_writes.store(false, Ordering::Relaxed);
@@ -187,7 +187,7 @@ impl S3Client {
         let status = resp.status();
         if status.is_success() {
             if let Err(e) = self.delete(&key).await {
-                log::warn!(target: "agentero::sync", "probe cleanup {key}: {e}");
+                log::warn!(target: "library::sync", "probe cleanup {key}: {e}");
             }
             return Ok(true);
         }
@@ -198,7 +198,7 @@ impl S3Client {
             }
         }
         log::warn!(
-            target: "agentero::sync",
+            target: "library::sync",
             "conditional-write probe inconclusive ({status}); assuming supported"
         );
         Ok(true)
@@ -317,7 +317,7 @@ impl S3Client {
                 Ok(resp) => return Ok(resp),
                 Err(e) if e.is_connect() || e.is_request() => {
                     log::warn!(
-                        target: "agentero::sync",
+                        target: "library::sync",
                         "{method} {key} attempt {}: {e}",
                         attempt + 1
                     );

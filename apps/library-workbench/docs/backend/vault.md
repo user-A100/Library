@@ -11,7 +11,7 @@
   → vault_create / 打开已有
   → papers/ notes/ .agents/skills/ AGENTS.md
   → notes/ 下三篇本地化新手教程（缺失时才写入）
-  → .agentero/catalog.sqlite
+  → .library/catalog.sqlite
   → 前端加载树（Create 后自动打开 notes/01 ...）
 ```
 
@@ -52,7 +52,7 @@
 
 | Command | 说明 |
 |---|---|
-| `path_trash` | 移入 `.agentero/.trash/`（含 catalog 快照） |
+| `path_trash` | 移入 `.library/.trash/`（含 catalog 快照） |
 | `path_list_trash` | 列表 |
 | `path_restore_item` | 恢复 |
 | `path_purge_item` / `path_purge_trash` | 永久删除 / 清空 |

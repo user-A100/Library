@@ -397,7 +397,7 @@ describe("tab session persistence", () => {
 
 	it("still loads legacy tabs[] + activeIndex without layout", () => {
 		localStorage.setItem(
-			"agentero-open-tabs",
+			"library-open-tabs",
 			JSON.stringify({
 				tabs: [
 					{ path: "/vault/a.md", mode: "markdown" },

@@ -16,7 +16,7 @@ use tokio::sync::{oneshot, Mutex as AsyncMutex};
 pub use crate::features::settings::DEFAULT_CONNECTOR_PORT;
 
 const CONNECTOR_API_VERSION: &str = "2";
-const AGENTERO_CONNECTOR_VERSION: &str = "0.1.0-agentero";
+const LIBRARY_CONNECTOR_VERSION: &str = "0.1.0-library";
 
 #[derive(Debug, Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -212,7 +212,7 @@ impl ConnectorController {
                 g.last_error = None;
             }
             log::debug!(
-                target: "agentero::connector",
+                target: "library::connector",
                 "set_vault handle={}",
                 raw.as_deref().unwrap_or("(none)")
             );
@@ -267,7 +267,7 @@ impl ConnectorController {
         let g = self.inner.lock().unwrap_or_else(|e| e.into_inner());
         let handle = g.vault_handle.clone().ok_or_else(|| {
             AppError::message(
-                "No vault open — open a local or remote vault in Agentero first (Connector needs an active vault)",
+                "No vault open — open a local or remote vault in Library first (Connector needs an active vault)",
             )
         })?;
         Ok((handle, g.parent_dir.clone()))
@@ -995,9 +995,9 @@ impl ConnectorController {
             }
         });
         let vault_name = if handle.as_deref().is_some_and(|h| h.starts_with("remote:")) {
-            "Agentero Remote Vault"
+            "Library Remote Vault"
         } else {
-            vault_name_owned.as_deref().unwrap_or("Agentero Vault")
+            vault_name_owned.as_deref().unwrap_or("Library Vault")
         };
 
         let targets = if let Some(h) = handle.as_deref() {
@@ -1155,7 +1155,7 @@ impl ConnectorController {
 
     pub fn response_headers() -> [(&'static str, &'static str); 2] {
         [
-            ("X-Zotero-Version", AGENTERO_CONNECTOR_VERSION),
+            ("X-Zotero-Version", LIBRARY_CONNECTOR_VERSION),
             ("X-Zotero-Connector-API-Version", CONNECTOR_API_VERSION),
         ]
     }
@@ -1230,7 +1230,7 @@ mod tests {
     #[tokio::test]
     async fn target_change_while_browser_download_is_pending_only_updates_desired_parent() {
         let vault = std::env::temp_dir().join(format!(
-            "agentero-connector-pending-{}",
+            "library-connector-pending-{}",
             uuid::Uuid::new_v4()
         ));
         let ctrl = ConnectorController::new();
@@ -1284,7 +1284,7 @@ mod tests {
     #[tokio::test]
     async fn failed_attachment_still_finalizes_shell_when_target_is_unchanged() {
         let vault = std::env::temp_dir().join(format!(
-            "agentero-connector-failed-{}",
+            "library-connector-failed-{}",
             uuid::Uuid::new_v4()
         ));
         let ctrl = ConnectorController::new();
@@ -1318,7 +1318,7 @@ mod tests {
     async fn overlapping_attachment_writers_finalize_only_after_the_last_writer() {
         let ctrl = ConnectorController::new();
         let vault = std::env::temp_dir().join(format!(
-            "agentero-connector-writers-{}",
+            "library-connector-writers-{}",
             uuid::Uuid::new_v4()
         ));
         ctrl.set_vault(Some(vault.to_string_lossy().to_string()));

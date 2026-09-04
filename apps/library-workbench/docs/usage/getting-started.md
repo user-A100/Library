@@ -1,6 +1,6 @@
 # 安装与首次使用
 
-本教程带你完成第一次打开 Agentero、创建 Vault，并确认工作区可用。
+本教程带你完成第一次打开 Library、创建 Vault，并确认工作区可用。
 
 ## 准备工作
 
@@ -14,11 +14,11 @@
 
 Linux 桌面包在 Ubuntu 22.04 上构建。更旧的发行版（如 Ubuntu 20.04，仅有 webkit2gtk 4.0）请先升级系统。
 
-从 [发布页](https://github.com/poco-ai/agentero/releases) 或官网下载与系统匹配的桌面版本。macOS 也可用 Homebrew：
+从 [发布页](https://github.com/releases) 或官网下载与系统匹配的桌面版本。macOS 也可用 Homebrew：
 
 ```bash
-brew tap poco-ai/agentero
-brew install --cask agentero
+brew tap poco-ai/library
+brew install --cask library
 ```
 
 开发者可在仓库根目录运行：
@@ -32,11 +32,11 @@ pnpm tauri dev
 
 ### Linux：`libwebkit2gtk-4.1-0` 无法满足
 
-安装 `.deb` 时若缺少 `libwebkit2gtk-4.1-0`（常见于 Ubuntu 20.04）：请升级到 **22.04+**，或尝试发布页的 **AppImage**。见 [#253](https://github.com/poco-ai/Agentero/issues/253)。
+安装 `.deb` 时若缺少 `libwebkit2gtk-4.1-0`（常见于 Ubuntu 20.04）：请升级到 **22.04+**，或尝试发布页的 **AppImage**。见 [#253](https://github.com/poco-ai/Library/issues/253)。
 
 ## 创建第一个 Vault
 
-1. 启动 Agentero。
+1. 启动 Library。
 2. 在欢迎页选择 **Create Vault**。
 3. 选择一个长期保存研究资料的位置，例如 `~/Documents/ResearchVault`。
 4. 等待左侧文件树和中间 Library 加载完成。
@@ -55,13 +55,13 @@ ResearchVault/
 ├── .agents/
 │   └── skills/
 ├── AGENTS.md
-└── .agentero/
+└── .library/
     └── catalog.sqlite
 ```
 
 - `notes/` 下的三篇教程会按当前语言自动生成，首次创建 Vault 后会自动打开第一篇。
 - 这些教程只是普通 Markdown，你可以自由编辑或删除；删除后不会自动恢复。
-- 不要手动编辑 `.agentero/catalog.sqlite`。论文正文和笔记可以直接用外部编辑器修改，但结构化论文元数据应通过 Agentero 操作。
+- 不要手动编辑 `.library/catalog.sqlite`。论文正文和笔记可以直接用外部编辑器修改，但结构化论文元数据应通过 Library 操作。
 
 ## 打开已有 Vault
 
@@ -106,8 +106,8 @@ ResearchVault/
 | `papers/<paper>/*.pdf` | PDF 原文 |
 | `papers/<paper>/source/` | arXiv 等来源的 TeX 或其它源文件 |
 | `papers/<paper>/attachments/` | 可选支撑材料（补充 PDF、幻灯片、代码仓库）；有文件时文件树论文行才可展开 |
-| `.agentero/catalog.sqlite` | Library 使用的论文集合和元数据 |
-| `~/.local/share/agentero/usage.sqlite` | 本机使用记录（不在 Vault 内；设置 → 通用 → 隐私可关或清除） |
+| `.library/catalog.sqlite` | Library 使用的论文集合和元数据 |
+| `~/.local/share/library/usage.sqlite` | 本机使用记录（不在 Vault 内；设置 → 通用 → 隐私可关或清除） |
 
 建议定期备份整个 Vault。若使用 Git，优先提交 Markdown、JSON、TeX 和其它源文件；`catalog.sqlite` 也应随 Vault 一起备份，以保留 Library 元数据。
 

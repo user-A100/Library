@@ -35,7 +35,7 @@ pub struct FileEntry {
 /// Must stay a superset of the watcher's ignore rules so sync state and
 /// catalog SQLite never travel through the blob store.
 pub(crate) fn is_ignored_name(name: &str) -> bool {
-    matches!(name, ".agentero" | ".git" | "node_modules" | ".DS_Store") || name.ends_with(".tmp")
+    matches!(name, ".library" | ".git" | "node_modules" | ".DS_Store") || name.ends_with(".tmp")
 }
 
 /// Which bulky, re-derivable paper assets participate in sync. Notes,
@@ -204,11 +204,11 @@ mod tests {
 
     #[test]
     fn scan_skips_internal_dirs_and_reuses_base_hashes() {
-        let vault = std::env::temp_dir().join(format!("agentero-scan-{}", Uuid::new_v4()));
-        fs::create_dir_all(vault.join(".agentero/sync")).unwrap();
+        let vault = std::env::temp_dir().join(format!("library-scan-{}", Uuid::new_v4()));
+        fs::create_dir_all(vault.join(".library/sync")).unwrap();
         fs::create_dir_all(vault.join("papers/x")).unwrap();
-        fs::write(vault.join(".agentero/catalog.sqlite"), b"db").unwrap();
-        fs::write(vault.join(".agentero/sync/base.json"), b"{}").unwrap();
+        fs::write(vault.join(".library/catalog.sqlite"), b"db").unwrap();
+        fs::write(vault.join(".library/sync/base.json"), b"{}").unwrap();
         fs::write(vault.join("papers/x/NOTES.md"), b"# x\n").unwrap();
         fs::write(vault.join("papers/x/.DS_Store"), b"junk").unwrap();
 
@@ -228,7 +228,7 @@ mod tests {
 
     #[test]
     fn scan_skips_scope_excluded_files() {
-        let vault = std::env::temp_dir().join(format!("agentero-scan-{}", Uuid::new_v4()));
+        let vault = std::env::temp_dir().join(format!("library-scan-{}", Uuid::new_v4()));
         fs::create_dir_all(vault.join("papers/x/source")).unwrap();
         fs::create_dir_all(vault.join("papers/x/attachments")).unwrap();
         fs::write(vault.join("papers/x/NOTES.md"), b"# x\n").unwrap();

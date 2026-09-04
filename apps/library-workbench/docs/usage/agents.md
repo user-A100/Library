@@ -1,6 +1,6 @@
 # 接入 Agent
 
-Agentero 使用 **BYOA**（Bring Your Own Agent）：Agent 由你安装和登录，Agentero 负责把当前 Vault 的上下文交给它，并展示结果。应用**不**捆绑模型，也**不**要求你在 Agentero 内填写模型 API Key。
+Library 使用 **BYOA**（Bring Your Own Agent）：Agent 由你安装和登录，Library 负责把当前 Vault 的上下文交给它，并展示结果。应用**不**捆绑模型，也**不**要求你在 Library 内填写模型 API Key。
 
 ## 支持方式
 
@@ -32,19 +32,19 @@ Agentero 使用 **BYOA**（Bring Your Own Agent）：Agent 由你安装和登录
 
 1. 打开 **Settings → Agent**，在已安装或已注册的 Agent 行点 **Trash** 按钮。
 2. 确认对话框展示该 Agent 的 logo 与将要执行的清理项：
-   - Agentero 静默安装的 npm 全局包（如 `opencode-ai`、`@anthropic-ai/claude-code` 等）逐个 `npm uninstall -g`；
-   - Agentero 管理的目录（dsh 的 `~/.agentero/dsh-acp`、Kimi Code 的 `~/.kimi-code`）整体删除。
+   - Library 静默安装的 npm 全局包（如 `opencode-ai`、`@anthropic-ai/claude-code` 等）逐个 `npm uninstall -g`；
+   - Library 管理的目录（dsh 的 `~/.library/dsh-acp`、Kimi Code 的 `~/.kimi-code`）整体删除。
 3. 确认后行内显示卸载进度，完成后注册项一并移除，行回到「未安装」状态。
 
 清理范围与保留项：
 
 - **不清理**：官方安装器或 Homebrew 安装的 CLI、shell 配置中官方 installer 写入的 PATH 行、Agent 会话历史。这些无法可靠定位或属于用户数据，均保留。
-- **仅移除注册项**：对没有可管理卸载路径的 Agent（如 Hermes、纯 PATH 探测到的 CLI），对话框会注明只删 Agentero 注册项，磁盘文件不动。
+- **仅移除注册项**：对没有可管理卸载路径的 Agent（如 Hermes、纯 PATH 探测到的 CLI），对话框会注明只删 Library 注册项，磁盘文件不动。
 - **自定义 Agent**：走同一确认对话框，但只移除注册项（自定义 Agent 的二进制由用户自管）。
 
 ## 使用 Skill
 
-Agentero 的 Skill 是放在 Vault `.agents/skills/<name>/` 下的 prompt 包，含 `SKILL.md` 与可选的 `scripts/`、`references/`、`assets/`。
+Library 的 Skill 是放在 Vault `.agents/skills/<name>/` 下的 prompt 包，含 `SKILL.md` 与可选的 `scripts/`、`references/`、`assets/`。
 
 ### 安装 Skill
 
@@ -53,7 +53,7 @@ Agentero 的 Skill 是放在 Vault `.agents/skills/<name>/` 下的 prompt 包，
 3. 在弹出的选择窗口中勾选要安装的 Skill；已安装的会标记出来，不会被覆盖。
 4. 确认后 Skill 写入 `.agents/skills/<name>/`，即可在 Agent 工作流中使用。
 
-Skill 来源不受 Agentero 审计，安装第三方 Skill 等于引入外部指令，请自行判断信任度。
+Skill 来源不受 Library 审计，安装第三方 Skill 等于引入外部指令，请自行判断信任度。
 
 ### 运行 Skill
 

@@ -226,7 +226,7 @@ mod tests {
 
     fn temp_vault(name: &str) -> PathBuf {
         let vault = std::env::temp_dir().join(format!(
-            "agentero-reading-activity-{name}-{}",
+            "library-reading-activity-{name}-{}",
             Uuid::new_v4()
         ));
         fs::create_dir_all(&vault).expect("create temp vault");

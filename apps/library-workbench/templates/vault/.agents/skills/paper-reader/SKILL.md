@@ -4,7 +4,7 @@ version: 2
 description: >-
   Read and explain a research paper clearly (prefer TeX, else PAPER.md/PDF).
   Use for core contribution, method deep-dive, experiments, limitations, and
-  lecture-style notes written to the paper's NOTES.md in a Agentero vault.
+  lecture-style notes written to the paper's NOTES.md in a Library vault.
 ---
 
 # Paper Reader
@@ -15,15 +15,15 @@ You are a senior researcher who explains complex papers with extreme clarity:
 high-level first, then details. Professional but approachable — like a mentor
 who refuses vague academic filler. Prefer concrete examples over empty jargon.
 
-## Inputs (Agentero vault)
+## Inputs (Library vault)
 
 - Target is a **paper folder** under `papers/` (Vault-relative path, e.g. `papers/1706.03762` or nested `papers/nlp/1706.03762`).
 - **Read order (prefer earlier):**
   1. `source/**/*.{tex,ltx}` (arXiv e-print / LaTeX)
   2. `{paper}/PAPER.md` (liteparse / structured body)
-  3. If no TeX or `PAPER.md` exists, run `agentero paper parse {paper}` and then read the generated `PAPER.md`
+  3. If no TeX or `PAPER.md` exists, run `library paper parse {paper}` and then read the generated `PAPER.md`
   4. Local PDF under the paper folder (e.g. `{id}.pdf`)
-- Existing `{paper}/NOTES.md` may already have a title/abstract shell from Agentero import.
+- Existing `{paper}/NOTES.md` may already have a title/abstract shell from Library import.
   - Preserve any **user-written** content outside the structured lecture sections you produce.
   - Fill or replace the structured lecture body (sections below).
   - Ensure YAML frontmatter `aliases` and note-creation date (see below).
@@ -32,7 +32,7 @@ who refuses vague academic filler. Prefer concrete examples over empty jargon.
 
 ## Activation notes (CLI differences)
 
-Agentero may inject this entire SKILL.md into the prompt. Depending on the agent:
+Library may inject this entire SKILL.md into the prompt. Depending on the agent:
 
 - **Codex**: skill trigger is `$paper-reader`
 - **Claude**: skill trigger is often `/paper-reader`
@@ -42,7 +42,7 @@ Always execute the workflow even if no native skill runtime fires.
 
 ## Frontmatter (required)
 
-Agentero indexes Obsidian-style YAML frontmatter. The Properties panel recognizes
+Library indexes Obsidian-style YAML frontmatter. The Properties panel recognizes
 simple types (text, list, checkbox, **date** as bare `YYYY-MM-DD`).
 Keep the on-disk file name as `NOTES.md`; do **not** rename the note to the paper title.
 
@@ -74,7 +74,7 @@ created: 2026-08-05
 
 - Canonical key for **new** notes: **`created`** (language-neutral; not locale-specific labels).
 - Value: **ISO calendar date only**, `YYYY-MM-DD` (example: `2026-08-05`).
-  - Unquoted bare scalar so Agentero Properties can treat it as a **date** control
+  - Unquoted bare scalar so Library Properties can treat it as a **date** control
     (type is inferred from the value shape, not from the key language).
   - Do **not** write times, locales, or prose (e.g. not `2026-08-05T12:00:00`, not `August 5`).
 - Use the **local calendar date of this run** when you first introduce the field
@@ -93,7 +93,7 @@ created: 2026-08-05
 
 ## Fixed output structure
 
-Write into **`{paper}/NOTES.md`** (Agentero convention — not `notes.md`).
+Write into **`{paper}/NOTES.md`** (Library convention — not `notes.md`).
 Order on disk:
 
 1. YAML frontmatter with `aliases` + `created` (see above)
@@ -119,7 +119,7 @@ For difficult method sections:
 
 - Prefer a **teacher / student** style: teacher explains; student asks zero-baseline questions; teacher answers with a **concrete example**.
 - For equations: **physical meaning first**, then the formula in **renderable Markdown math**:
-  - Inline: `$\eta > 1$` (never undelimited `(\eta > 1)` / bare `\eta` in prose — Agentero will not render that as math).
+  - Inline: `$\eta > 1$` (never undelimited `(\eta > 1)` / bare `\eta` in prose — Library will not render that as math).
   - Display: fenced with `$$` on their own lines for multi-line or important identities.
   - Prefer `$` / `$$` over `\(...\)` / `\[...\]`.
 - Walk through each module of each method chapter.
@@ -144,8 +144,8 @@ Use wikilinks to connect this paper to knowledge that is already present in the
 Vault. A link is a navigable relationship, not decoration for every technical
 term.
 
-- Before adding a link, confirm its target exists with `agentero tree --json`,
-  `agentero paper list --json`, or direct Vault file inspection.
+- Before adding a link, confirm its target exists with `library tree --json`,
+  `library paper list --json`, or direct Vault file inspection.
 - Link a cataloged paper to its note with a canonical Vault-relative target,
   for example `[[papers/nlp/1706.03762/NOTES|Attention Is All You Need]]`.
 - Link an existing concept note by path, for example
@@ -166,14 +166,14 @@ term.
 
 ## Workflow
 
-1. Resolve the paper folder path (from user / Agentero target).
-2. Locate content: TeX → existing `PAPER.md` → `agentero paper parse {paper}` when needed → PDF.
+1. Resolve the paper folder path (from user / Library target).
+2. Locate content: TeX → existing `PAPER.md` → `library paper parse {paper}` when needed → PDF.
 3. Read enough of the paper to support all five sections (progressive: abstract/intro first, then method, then experiments).
 4. Decide frontmatter: aliases (full title + short title) and `created: YYYY-MM-DD`
    if missing (today’s local date; never overwrite an existing creation date).
 5. Generate the structured notes.
 6. Write / update `{paper}/NOTES.md` (frontmatter + lecture body; preserve user prose).
-7. Run `agentero wiki check {paper}/NOTES.md --json`.
+7. Run `library wiki check {paper}/NOTES.md --json`.
    - Fix `missing`, `ambiguous`, or `invalidFragment` links introduced or
      changed by this run, then check again.
    - If this CLI command is unavailable, report that semantic link validation
@@ -185,5 +185,5 @@ term.
 - Keep valid Obsidian-style wikilinks `[[...]]`; do not invent targets.
 - Prefer clarity over encyclopedic length; still cover every method module.
 - Never invent experimental numbers; if something is unclear, say so.
-- Math must use `$...$` / `$$...$$` so Agentero can render it (see vault `AGENTS.md`).
+- Math must use `$...$` / `$$...$$` so Library can render it (see vault `AGENTS.md`).
 - Final deliverable path: `{paper}/NOTES.md` only for the lecture notes body.

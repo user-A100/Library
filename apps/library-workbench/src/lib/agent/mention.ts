@@ -7,7 +7,7 @@ import type { ComposerStateStorage } from "@/lib/agent/composer-state";
 import { normalizeContextPath } from "@/lib/agent/context-path-icon";
 import { readJsonStorage, writeJsonStorage } from "@/lib/core/storage";
 
-const RECENT_PREFIX = "agentero-agent-mention-recent-v1";
+const RECENT_PREFIX = "library-agent-mention-recent-v1";
 const RECENT_LIMIT = 12;
 const DEFAULT_MENU_LIMIT = 8;
 

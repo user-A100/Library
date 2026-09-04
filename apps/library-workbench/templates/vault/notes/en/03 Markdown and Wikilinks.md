@@ -1,6 +1,6 @@
 # Markdown & Wikilinks
 
-Agentero notes are plain Markdown files. You can edit them inside the app or with any external editor.
+Library notes are plain Markdown files. You can edit them inside the app or with any external editor.
 
 ## Basic Markdown
 
@@ -63,7 +63,7 @@ Common commands:
 Standard Markdown links work in the editor:
 
 ```markdown
-[Agentero site](https://example.com)
+[Library site](https://example.com)
 ```
 
 Type the full `[label](url)` form (the closing `)` turns it into a link), paste the same syntax, or use the context menu / slash command **Add external link** — that inserts a link node with a placeholder label and opens the edit bubble for display text and URL. Click an existing link to edit; **⌘/Ctrl+click**, middle-click, or right-click opens it in your system browser. Relative links to other vault notes use in-app navigation instead.
@@ -112,7 +112,7 @@ Use `@` for PDF highlights and visual annotations. Copy the `id` from the Annota
 - `#` heading · `^` text block · `|` display name · `@` annotation; press `tab` to complete and `enter` to confirm.
 - Annotation targets must use a path (`NOTES`, `paper.pdf`, or `papers/…/NOTES`), not only the paper's display title.
 
-Agentero indexes all `[[...]]` links for the **Backlinks** panel and **Graph** view.
+Library indexes all `[[...]]` links for the **Backlinks** panel and **Graph** view.
 
 ## Embeds
 
@@ -134,7 +134,7 @@ Embedded content stays in sync with the source. Editing the original file update
 
 ## Images
 
-Paste an image into a Markdown note and Agentero stores it under the note's `assets/` folder:
+Paste an image into a Markdown note and Library stores it under the note's `assets/` folder:
 
 ```markdown
 ![diagram](./assets/diagram.png)

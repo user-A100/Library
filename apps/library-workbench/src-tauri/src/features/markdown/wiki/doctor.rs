@@ -922,7 +922,7 @@ mod tests {
 
     #[test]
     fn deterministic_plan_fixes_missing_path_and_heading() {
-        let vault = std::env::temp_dir().join(format!("agentero-wiki-doctor-{}", Uuid::new_v4()));
+        let vault = std::env::temp_dir().join(format!("library-wiki-doctor-{}", Uuid::new_v4()));
         write(
             &vault.join("notes/Source.md"),
             "See [[Attentoin Is All You Need]] and [[papers/demo/NOTES#Methd]].\n",

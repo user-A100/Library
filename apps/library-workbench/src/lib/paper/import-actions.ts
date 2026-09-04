@@ -379,7 +379,7 @@ export async function importLocalPdf(opts?: {
 }): Promise<void> {
 	const vaultPath = getVaultPath();
 	if (!vaultPath || libraryStore.getState().ioBusy) return;
-	// Paths under ~/.agentero/import-tmp from path-less WKWebView drops.
+	// Paths under ~/.library/import-tmp from path-less WKWebView drops.
 	const stagingPaths = (opts?.entries ?? [])
 		.map((e) => e.filePath)
 		.filter(isImportTempPath);

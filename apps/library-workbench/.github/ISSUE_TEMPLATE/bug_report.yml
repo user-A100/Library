@@ -50,7 +50,7 @@ body:
       description: 请填写操作系统、应用版本等信息
       placeholder: |
         - OS: macOS 15.5 / Windows 11 / Ubuntu 24.04
-        - Agentero 版本: 0.5.2
+        - Library 版本: 0.5.2
         - 安装方式: 官网下载 / Homebrew / 自行编译
     validations:
       required: true

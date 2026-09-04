@@ -625,10 +625,10 @@ pub(crate) fn atomic_write(path: &Path, contents: &[u8]) -> Result<(), String> {
         .file_name()
         .and_then(|name| name.to_str())
         .unwrap_or("markdown");
-    // `.agentero-rename-` marks the temp for the vault watcher (content
+    // `.library-rename-` marks the temp for the vault watcher (content
     // modify, not a user rename); the `.tmp` suffix keeps sync scans away.
     let opts = crate::core::fs::AtomicOpts {
-        temp_name: Some(format!(".{name}.agentero-rename-{}.tmp", Uuid::new_v4())),
+        temp_name: Some(format!(".{name}.library-rename-{}.tmp", Uuid::new_v4())),
         ..Default::default()
     };
     crate::core::fs::atomic_write_with(path, contents, &opts).map_err(|error| error.to_string())
@@ -662,7 +662,7 @@ mod tests {
     }
 
     fn temp_vault() -> PathBuf {
-        let root = std::env::temp_dir().join(format!("agentero-wiki-rename-{}", Uuid::new_v4()));
+        let root = std::env::temp_dir().join(format!("library-wiki-rename-{}", Uuid::new_v4()));
         fs::create_dir_all(&root).expect("create vault");
         root
     }

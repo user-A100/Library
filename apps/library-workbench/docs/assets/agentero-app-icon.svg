@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024" role="img" aria-label="Agentero">
-  <title>Agentero</title>
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024" role="img" aria-label="Library">
+  <title>Library</title>
   <!-- macOS ~10% transparent margin; bg = cream #12 -->
   <g transform="translate(100 100) scale(0.8046875)">
     <rect width="1024" height="1024" rx="224" fill="#FAF7F2"/>

@@ -91,7 +91,7 @@ fn is_paper_unit(dir: &Path) -> bool {
     if dir.join("metadata.json").is_file() {
         return true;
     }
-    // `{id}.pdf` at paper root (Agentero layout)
+    // `{id}.pdf` at paper root (Library layout)
     if let Some(stem) = dir.file_name().and_then(|s| s.to_str()) {
         if dir.join(format!("{stem}.pdf")).is_file() {
             return true;
@@ -122,7 +122,7 @@ mod tests {
     #[test]
     fn list_skips_paper_units() {
         let tmp =
-            std::env::temp_dir().join(format!("agentero-connector-targets-{}", std::process::id()));
+            std::env::temp_dir().join(format!("library-connector-targets-{}", std::process::id()));
         let _ = fs::remove_dir_all(&tmp);
         fs::create_dir_all(tmp.join("papers/nlp")).unwrap();
         fs::create_dir_all(tmp.join("papers/nlp/1706.03762")).unwrap();

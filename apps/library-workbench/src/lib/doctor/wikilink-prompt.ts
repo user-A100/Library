@@ -52,7 +52,7 @@ export function buildDoctorWikilinkAgentPrompt(input: {
 
 	const copy = zh
 		? {
-				role: "你在帮助修复 Agentero Vault 中失效的本地双链。",
+				role: "你在帮助修复 Library Vault 中失效的本地双链。",
 				vault: `Vault 路径：${input.vaultPath}`,
 				taskTitle: "任务：",
 				tasks: [
@@ -70,7 +70,7 @@ export function buildDoctorWikilinkAgentPrompt(input: {
 				closing: "准备好后，只回复编号计划。在我确认 OK 之前不要写入。",
 			}
 		: {
-				role: "You are helping repair broken Vault-local wiki links in Agentero.",
+				role: "You are helping repair broken Vault-local wiki links in Library.",
 				vault: `Vault path: ${input.vaultPath}`,
 				taskTitle: "Task:",
 				tasks: [

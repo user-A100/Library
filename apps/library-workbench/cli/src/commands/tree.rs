@@ -1,4 +1,4 @@
-//! `agentero tree`
+//! `library tree`
 
 use crate::error::CliError;
 use crate::output::to_value;
@@ -68,7 +68,7 @@ fn walk_dir(
         .map(|e| e.path())
         .filter(|p| {
             let name = p.file_name().and_then(|s| s.to_str()).unwrap_or("");
-            // Skip heavy / hidden noise except .agentero and .agents
+            // Skip heavy / hidden noise except .library and .agents
             if name == ".git" || name == "node_modules" || name == "target" {
                 return false;
             }

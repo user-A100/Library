@@ -31,7 +31,7 @@ export {
 	installDockviewSashFrameLoop,
 	isDockviewSashTarget,
 } from "@/lib/workspace/dockview-sash";
-export { agenteroDockTheme } from "@/lib/workspace/dockview-theme";
+export { libraryDockTheme } from "@/lib/workspace/dockview-theme";
 export { evictPdfBuffers, nextPdfLru } from "@/lib/workspace/pdf-retention";
 export {
 	clearClosedTabs,

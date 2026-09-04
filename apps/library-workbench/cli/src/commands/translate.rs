@@ -1,13 +1,13 @@
-//! `agentero translate` — free machine translation for scripts and Agents.
+//! `library translate` — free machine translation for scripts and Agents.
 //!
-//! Deliberately free-MT only: the CLI config (`~/.config/agentero/config.toml`)
+//! Deliberately free-MT only: the CLI config (`~/.config/library/config.toml`)
 //! is isolated from GUI settings, so commercial BYOK keys are not available here.
 //!
 //! @see docs/development/mark-cli-roadmap.md §6.3
 
 use crate::error::CliError;
 use crate::resolve::GlobalOpts;
-use agentero_lib::features::translate::{
+use library_lib::features::translate::{
     free_mt_to_zh, translate_text, TranslateTextArgs, FREE_PROVIDERS,
 };
 use serde_json::{json, Value};

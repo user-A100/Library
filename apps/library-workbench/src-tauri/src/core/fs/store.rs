@@ -8,7 +8,7 @@
 //! Contracts preserved from the originals:
 //! - temp files end in `.tmp` by default — `features/sync/snapshot.rs`
 //!   excludes `*.tmp` from vault scans, so temps are never synced;
-//! - wiki rename passes a `.agentero-rename-` temp name so
+//! - wiki rename passes a `.library-rename-` temp name so
 //!   `features/watcher` classifies the swap as a content modify instead of a
 //!   user rename;
 //! - the deliberate FSEvents exceptions (doctor alias repair, refs cite
@@ -138,9 +138,9 @@ mod tests {
     fn custom_temp_name_is_honored_and_cleaned_up() {
         let dir = tempfile::tempdir().expect("tempdir");
         let path = dir.path().join("NOTES.md");
-        // Watcher contract: wiki temps carry the `.agentero-rename-` marker.
+        // Watcher contract: wiki temps carry the `.library-rename-` marker.
         let opts = AtomicOpts {
-            temp_name: Some(".NOTES.md.agentero-rename-deadbeef.tmp".into()),
+            temp_name: Some(".NOTES.md.library-rename-deadbeef.tmp".into()),
             ..Default::default()
         };
 
@@ -149,7 +149,7 @@ mod tests {
         assert_eq!(fs::read(&path).expect("read"), b"x");
         assert!(!dir
             .path()
-            .join(".NOTES.md.agentero-rename-deadbeef.tmp")
+            .join(".NOTES.md.library-rename-deadbeef.tmp")
             .exists());
     }
 

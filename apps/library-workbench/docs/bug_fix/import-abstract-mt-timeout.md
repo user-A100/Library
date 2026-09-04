@@ -39,7 +39,7 @@
 
 ### 2.2 单篇导入端到端：`2607.21804`
 
-CLI：`agentero --json -v <temp-vault> import id 2607.21804`  
+CLI：`library --json -v <temp-vault> import id 2607.21804`  
 论文：*Adversarial Prompts for Acceptance Collapse in Speculative Decoding*  
 结果：`usedTranslator=true`，PDF ✅，TeX ✅，无 `PAPER.md`（有 TeX 跳过 liteparse）；`NOTES.md` 摘要为中文。
 
@@ -225,9 +225,9 @@ wall_success_parallel ≈ min(success_ms) (取最先成功)
 node test/scripts/probe-translator.mjs
 
 # 端到端导入计时（需已 build CLI）
-VAULT=$(mktemp -d /tmp/agentero-import-XXXXXX)
-cargo run -p agentero-cli -- vault create "$VAULT" -q
-/usr/bin/time -p ./target/debug/agentero --json -v "$VAULT" import id 2607.21804
+VAULT=$(mktemp -d /tmp/library-import-XXXXXX)
+cargo run -p library-cli -- vault create "$VAULT" -q
+/usr/bin/time -p ./target/debug/library --json -v "$VAULT" import id 2607.21804
 ```
 
 摘要 MT 可用与 Host 同 URL 的脚本对照串行/并行 wall；或依赖导入后 `NOTES.md` 是否为中文 + 导入总时长对照。

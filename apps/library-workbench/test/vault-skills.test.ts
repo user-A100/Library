@@ -27,7 +27,7 @@ describe("seededSkillIdsFromCreated", () => {
 
 	it("normalizes backslashes", () => {
 		expect(
-			seededSkillIdsFromCreated([".agents\\skills\\agentero-cli\\SKILL.md"]),
-		).toEqual(["agentero-cli"]);
+			seededSkillIdsFromCreated([".agents\\skills\\library-cli\\SKILL.md"]),
+		).toEqual(["library-cli"]);
 	});
 });

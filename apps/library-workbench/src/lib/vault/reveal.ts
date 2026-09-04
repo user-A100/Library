@@ -21,7 +21,7 @@ export function revealInOsLabelKey():
  */
 export async function revealInFileManager(path: string): Promise<void> {
 	const trimmed = path.trim();
-	if (!trimmed || trimmed.startsWith("agentero:")) {
+	if (!trimmed || trimmed.startsWith("library:")) {
 		throw new Error("Cannot reveal a virtual path.");
 	}
 	if (!isTauri()) {
@@ -36,7 +36,7 @@ export async function revealInFileManager(path: string): Promise<void> {
  */
 export async function openInTerminal(path: string): Promise<void> {
 	const trimmed = path.trim();
-	if (!trimmed || trimmed.startsWith("agentero:")) {
+	if (!trimmed || trimmed.startsWith("library:")) {
 		throw new Error("Cannot open a virtual path in the terminal.");
 	}
 	if (!isTauri()) {

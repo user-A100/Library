@@ -179,7 +179,7 @@ pub(crate) async fn apply_probe_result(
     // A folder exists at the target without a catalog row (orphan) — never
     // clobber it; keep the placeholder and just land the metadata.
     if vault.join(&new_rel).exists() {
-        log::warn!(target: "agentero::import",
+        log::warn!(target: "library::import",
             "recognize rename target exists without catalog row: {new_rel}");
         meta_update_in_place(vault, &mut record, probe, "recognize")?;
         return Ok(RecognizeApply::MetaUpdated);
@@ -212,7 +212,7 @@ async fn rename_to_canonical(
     }
     if let Err(e) = std::fs::rename(&old_pdf, &new_pdf) {
         // Typically the viewer holds the file open (Windows); metadata only.
-        log::warn!(target: "agentero::import", "recognize pdf rename failed: {e}");
+        log::warn!(target: "library::import", "recognize pdf rename failed: {e}");
         meta_update_in_place(vault, &mut record, probe, "recognize")?;
         return Ok(RecognizeApply::MetaUpdated);
     }
@@ -248,7 +248,7 @@ async fn rename_to_canonical(
             if let Err(e) = papers::upsert_paper(vault, &record) {
                 // Paths are already consistent; stale metadata is recoverable
                 // (Edit Metadata / re-recognition) — never fail the job.
-                log::warn!(target: "agentero::import",
+                log::warn!(target: "library::import",
                     "post-rename metadata upsert failed: {e}");
             }
             if record.title != old_title {
@@ -280,7 +280,7 @@ async fn rename_to_canonical(
         Err(message) => {
             // Roll the pre-rename pdf back so `{id}.pdf` stays consistent.
             let _ = std::fs::rename(&new_pdf, &old_pdf);
-            log::warn!(target: "agentero::import",
+            log::warn!(target: "library::import",
                 "recognize rename transaction failed, keeping placeholder: {message}");
             meta_update_in_place(vault, &mut record, probe, "recognize")?;
             Ok(RecognizeApply::MetaUpdated)
@@ -316,7 +316,7 @@ fn merge_placeholder_into(
         crate::features::import::paper_import::unique_attachment_path(&attachments, &pdf)
     };
     if let Err(e) = std::fs::rename(&pdf, &dest) {
-        log::warn!(target: "agentero::import", "merge pdf move failed: {e}");
+        log::warn!(target: "library::import", "merge pdf move failed: {e}");
         meta_update_in_place(vault, record, probe, "recognize")?;
         return Ok(RecognizeApply::MetaUpdated);
     }
@@ -336,7 +336,7 @@ fn merge_placeholder_into(
 
     papers::delete_under_path(vault, path_rel)?;
     if let Err(e) = std::fs::remove_dir_all(&placeholder_dir) {
-        log::warn!(target: "agentero::import",
+        log::warn!(target: "library::import",
             "placeholder folder removal failed: {e} ({path_rel})");
     }
 
@@ -378,7 +378,7 @@ mod tests {
 
     fn temp_vault() -> PathBuf {
         let vault =
-            std::env::temp_dir().join(format!("agentero-recognize-apply-{}", uuid::Uuid::new_v4()));
+            std::env::temp_dir().join(format!("library-recognize-apply-{}", uuid::Uuid::new_v4()));
         std::fs::create_dir_all(&vault).expect("create vault");
         vault
     }

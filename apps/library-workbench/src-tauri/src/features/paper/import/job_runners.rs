@@ -203,17 +203,17 @@ fn recognize_metadata_runner(
         // Follow-ups run against the paper's final path (post rename/merge).
         let final_path = match &outcome {
             Ok(crate::features::import::recognize_apply::RecognizeApply::Renamed { from, to }) => {
-                log::info!(target: "agentero::import",
+                log::info!(target: "library::import",
                     "recognized paper renamed: {from} -> {to}");
                 to.clone()
             }
             Ok(crate::features::import::recognize_apply::RecognizeApply::Merged { into }) => {
-                log::info!(target: "agentero::import",
+                log::info!(target: "library::import",
                     "recognized paper merged into existing entry: {into}");
                 into.clone()
             }
             Ok(crate::features::import::recognize_apply::RecognizeApply::Skipped(reason)) => {
-                log::info!(target: "agentero::import",
+                log::info!(target: "library::import",
                     "recognition not applied ({reason}): {path}");
                 path.clone()
             }

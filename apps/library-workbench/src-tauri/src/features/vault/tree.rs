@@ -24,7 +24,7 @@ const IGNORE_NAMES: &[&str] = &[
     "node_modules",
     "target",
     "dist",
-    ".agentero",
+    ".library",
     ".venv",
     "venv",
     "__pycache__",
@@ -359,7 +359,7 @@ mod tests {
     use super::*;
 
     fn temp_root(tag: &str) -> PathBuf {
-        let dir = std::env::temp_dir().join(format!("agentero-tree-{tag}-{}", std::process::id()));
+        let dir = std::env::temp_dir().join(format!("library-tree-{tag}-{}", std::process::id()));
         let _ = fs::remove_dir_all(&dir);
         fs::create_dir_all(&dir).unwrap();
         dir

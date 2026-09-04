@@ -15,7 +15,7 @@ export type AgentComposerState = {
 /** Storage surface for composer draft + mention recents (tests inject mocks). */
 export type ComposerStateStorage = StorageLike;
 
-const COMPOSER_STATE_PREFIX = "agentero-agent-composer-state-v1";
+const COMPOSER_STATE_PREFIX = "library-agent-composer-state-v1";
 
 function uniqueStrings(value: unknown): string[] {
 	if (!Array.isArray(value)) return [];

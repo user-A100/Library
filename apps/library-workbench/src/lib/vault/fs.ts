@@ -192,7 +192,7 @@ export async function removeVaultPath(path: string): Promise<void> {
 		throw new Error(i18n.t("app:vault.writeDesktopOnly"));
 	}
 	const trimmed = path.trim();
-	if (!trimmed || trimmed.startsWith("agentero:")) {
+	if (!trimmed || trimmed.startsWith("library:")) {
 		throw new Error(i18n.t("sidebar:fileTree.deleteInvalid"));
 	}
 	const remote = parseRemoteJoinedPath(trimmed);

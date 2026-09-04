@@ -417,7 +417,7 @@ export function useAgentSend({
 			const resumeSessionId = resumeAllowed
 				? (providerContinueId ?? undefined)
 				: undefined;
-			// Terminal/stream events are correlated by the fresh Agentero runtime
+			// Terminal/stream events are correlated by the fresh Library runtime
 			// id, not the provider id used to resume ACP. Keep this empty until the
 			// host accepts the request, then bind it to accepted.sessionId below.
 			pendingSubmissionSessionIdRef.current = null;

@@ -7,7 +7,7 @@ use std::sync::{Arc, OnceLock};
 use std::time::Duration;
 use tokio::sync::{OwnedSemaphorePermit, Semaphore};
 
-const CROSSREF_MAILTO: &str = "agentero@users.noreply.github.com";
+const CROSSREF_MAILTO: &str = "library@users.noreply.github.com";
 const ONLINE_REFERENCE_CONCURRENCY: usize = 2;
 
 fn online_reference_limiter() -> &'static Arc<Semaphore> {

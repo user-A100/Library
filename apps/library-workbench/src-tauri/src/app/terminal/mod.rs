@@ -109,7 +109,7 @@ fn open_terminal_confirm_remote_install_unix(
     destination: &str,
     install_command: &str,
 ) -> Result<(), AppError> {
-    let dir = std::env::temp_dir().join("agentero-install");
+    let dir = std::env::temp_dir().join("library-install");
     fs::create_dir_all(&dir)
         .map_err(|e| AppError::message(format!("failed to create temp dir: {e}")))?;
     let path = dir.join(format!("remote-install-{}.sh", std::process::id()));
@@ -124,7 +124,7 @@ set +e
 DEST='{dest_q}'
 CMD='{cmd_q}'
 echo ""
-echo "Agentero — remote install helper"
+echo "Library — remote install helper"
 echo "Host:  $DEST"
 echo "Command (on remote login shell):"
 echo "  $CMD"
@@ -143,7 +143,7 @@ if [ "$status" -eq 0 ]; then
   echo "Done. Verifying on remote…"
   ssh -T "$DEST" "bash -lc $(printf '%q' 'command -v claude-agent-acp || command -v opencode || command -v openclaw || command -v hermes || true; ls -la \"$HOME/.local/bin\" 2>/dev/null | head -20')" || true
   echo ""
-  echo "Return to Agentero → Settings → Agent and click Refresh."
+  echo "Return to Library → Settings → Agent and click Refresh."
 else
   echo "Command exited with status $status."
   echo "Tip: if npm needs a writable prefix, use:"
@@ -309,7 +309,7 @@ fn open_terminal_confirm_command_unix(command: &str) -> Result<(), AppError> {
 
 #[cfg(not(windows))]
 fn write_confirm_script_unix(command: &str) -> Result<PathBuf, AppError> {
-    let dir = std::env::temp_dir().join("agentero-install");
+    let dir = std::env::temp_dir().join("library-install");
     fs::create_dir_all(&dir)
         .map_err(|e| AppError::message(format!("failed to create temp dir: {e}")))?;
     let path = dir.join(format!("install-{}.sh", std::process::id()));
@@ -319,7 +319,7 @@ fn write_confirm_script_unix(command: &str) -> Result<PathBuf, AppError> {
         r#"#!/usr/bin/env bash
 set +e
 echo ""
-echo "Agentero — install helper"
+echo "Library — install helper"
 echo "Command:"
 echo "  {command}"
 echo ""
@@ -331,7 +331,7 @@ bash -lc '{quoted}'
 status=$?
 echo ""
 if [ "$status" -eq 0 ]; then
-  echo "Done. Return to Agentero → Settings → Agent and click Refresh."
+  echo "Done. Return to Library → Settings → Agent and click Refresh."
 else
   echo "Command exited with status $status."
 fi
@@ -355,7 +355,7 @@ echo "You can close this window."
 
 #[cfg(windows)]
 fn open_terminal_confirm_command_windows(command: &str) -> Result<(), AppError> {
-    let dir = std::env::temp_dir().join("agentero-install");
+    let dir = std::env::temp_dir().join("library-install");
     fs::create_dir_all(&dir)
         .map_err(|e| AppError::message(format!("failed to create temp dir: {e}")))?;
     let path = dir.join(format!("install-{}.cmd", std::process::id()));
@@ -363,7 +363,7 @@ fn open_terminal_confirm_command_windows(command: &str) -> Result<(), AppError> 
     let body = format!(
         "@echo off\r\n\
 echo.\r\n\
-echo Agentero - install helper\r\n\
+echo Library - install helper\r\n\
 echo Command:\r\n\
 echo   {command}\r\n\
 echo.\r\n\
@@ -375,7 +375,7 @@ echo Running...\r\n\
 set STATUS=%ERRORLEVEL%\r\n\
 echo.\r\n\
 if %STATUS%==0 (\r\n\
-  echo Done. Return to Agentero Settings - Agent and click Refresh.\r\n\
+  echo Done. Return to Library Settings - Agent and click Refresh.\r\n\
 ) else (\r\n\
   echo Command exited with status %STATUS%.\r\n\
 )\r\n\
@@ -504,7 +504,7 @@ mod tests {
 
     #[test]
     fn cwd_for_directory_is_self() {
-        let dir = std::env::temp_dir().join(format!("agentero-term-dir-{}", std::process::id()));
+        let dir = std::env::temp_dir().join(format!("library-term-dir-{}", std::process::id()));
         let _ = fs::remove_dir_all(&dir);
         fs::create_dir_all(&dir).unwrap();
         let got = terminal_cwd_for_path(&dir).unwrap();
@@ -514,7 +514,7 @@ mod tests {
 
     #[test]
     fn cwd_for_file_is_parent() {
-        let dir = std::env::temp_dir().join(format!("agentero-term-file-{}", std::process::id()));
+        let dir = std::env::temp_dir().join(format!("library-term-file-{}", std::process::id()));
         let _ = fs::remove_dir_all(&dir);
         fs::create_dir_all(&dir).unwrap();
         let file = dir.join("note.md");

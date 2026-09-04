@@ -66,7 +66,7 @@ export function DockviewViewport({
 
 		const ownerDocument = viewport.ownerDocument;
 		const ownerWindow = ownerDocument.defaultView;
-		const workspace = hostRef.current?.closest(".agentero-dockview") ?? null;
+		const workspace = hostRef.current?.closest(".library-dockview") ?? null;
 		const requestFrame = (callback: FrameRequestCallback) =>
 			ownerWindow
 				? ownerWindow.requestAnimationFrame(callback)

@@ -189,7 +189,7 @@ function AppearancePaneInner({
 								uiTheme}
 						</span>
 					</div>
-					<div className="agentero-scroll grid max-h-[15rem] grid-cols-2 auto-rows-[7.25rem] gap-2 overflow-y-auto pr-1 sm:grid-cols-3">
+					<div className="library-scroll grid max-h-[15rem] grid-cols-2 auto-rows-[7.25rem] gap-2 overflow-y-auto pr-1 sm:grid-cols-3">
 						{previewThemes.map((item) => {
 							const colors = isDark ? item.dark : item.light;
 							const selected = item.name === uiTheme;

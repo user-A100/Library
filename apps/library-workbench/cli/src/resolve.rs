@@ -4,7 +4,7 @@ use crate::config;
 use crate::error::CliError;
 use crate::output::OutputFormat;
 use crate::style::Style;
-use agentero_lib::features::catalog::papers::{self, PaperRecord};
+use library_lib::features::catalog::papers::{self, PaperRecord};
 use std::path::{Path, PathBuf};
 
 #[derive(Debug, Clone)]
@@ -28,7 +28,7 @@ impl GlobalOpts {
                 return Some(t.to_string());
             }
         }
-        if let Ok(env) = std::env::var("AGENTERO_TRANSLATOR_URL") {
+        if let Ok(env) = std::env::var("LIBRARY_TRANSLATOR_URL") {
             let t = env.trim();
             if !t.is_empty() {
                 return Some(t.to_string());
@@ -59,13 +59,13 @@ pub fn resolve_vault(globals: &GlobalOpts) -> Result<PathBuf, CliError> {
         });
     }
 
-    // 2. AGENTERO_VAULT
-    if let Ok(env) = std::env::var("AGENTERO_VAULT") {
+    // 2. LIBRARY_VAULT
+    if let Ok(env) = std::env::var("LIBRARY_VAULT") {
         let t = env.trim();
         if !t.is_empty() {
             let p = PathBuf::from(t);
             return canonicalize_existing(&p).map_err(|_| {
-                CliError::vault_not_found(format!("AGENTERO_VAULT is not a directory: {t}"))
+                CliError::vault_not_found(format!("LIBRARY_VAULT is not a directory: {t}"))
             });
         }
     }
@@ -93,7 +93,7 @@ pub fn resolve_vault(globals: &GlobalOpts) -> Result<PathBuf, CliError> {
     }
 
     Err(CliError::vault_not_found(
-        "could not resolve vault (pass --vault, set AGENTERO_VAULT, cd into a vault, or config set default_vault)",
+        "could not resolve vault (pass --vault, set LIBRARY_VAULT, cd into a vault, or config set default_vault)",
     ))
 }
 
@@ -116,13 +116,13 @@ fn canonicalize_existing(p: &Path) -> Result<PathBuf, CliError> {
     Ok(abs.canonicalize().unwrap_or(abs))
 }
 
-/// True if path looks like an Agentero vault root.
+/// True if path looks like an Library vault root.
 pub fn looks_like_vault(root: &Path) -> bool {
-    let catalog = root.join(".agentero").join("catalog.sqlite");
+    let catalog = root.join(".library").join("catalog.sqlite");
     if catalog.is_file() {
         return true;
     }
-    root.join("papers").is_dir() && root.join("notes").is_dir() && root.join(".agentero").is_dir()
+    root.join("papers").is_dir() && root.join("notes").is_dir() && root.join(".library").is_dir()
 }
 
 fn walk_up_vault(start: &Path) -> Option<PathBuf> {

@@ -78,7 +78,7 @@ describe("Markdown editor context menu", () => {
 					type: string;
 					url: string;
 					children: unknown;
-					agenteroEditId?: string;
+					libraryEditId?: string;
 			  }
 			| undefined;
 		expect(link).toMatchObject({
@@ -86,10 +86,10 @@ describe("Markdown editor context menu", () => {
 			url: "",
 			children: [{ text: "label" }],
 		});
-		expect(typeof link?.agenteroEditId).toBe("string");
+		expect(typeof link?.libraryEditId).toBe("string");
 		expect(editor.api.string([])).toBe("Before label after");
-		expect(peekExternalLinkEditId(editor)).toBe(link?.agenteroEditId);
-		clearExternalLinkEditRequest(editor, link?.agenteroEditId ?? "");
+		expect(peekExternalLinkEditId(editor)).toBe(link?.libraryEditId);
+		clearExternalLinkEditRequest(editor, link?.libraryEditId ?? "");
 		expect(peekExternalLinkEditId(editor)).toBeNull();
 	});
 

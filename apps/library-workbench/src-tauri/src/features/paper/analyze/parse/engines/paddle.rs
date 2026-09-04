@@ -150,16 +150,16 @@ mod tests {
     /// field path can be re-checked when the service schema moves.
     ///
     /// ```sh
-    /// AGENTERO_PADDLE_LIVE_PDF=/tmp/x.pdf AGENTERO_PADDLE_API_KEY=… \
-    ///   cargo test -p agentero --lib -- live_paddle --ignored --nocapture
+    /// LIBRARY_PADDLE_LIVE_PDF=/tmp/x.pdf LIBRARY_PADDLE_API_KEY=… \
+    ///   cargo test -p library --lib -- live_paddle --ignored --nocapture
     /// ```
     #[tokio::test]
     #[ignore = "live network + billed API key"]
     async fn live_paddle_body_parse() {
-        let pdf = std::env::var("AGENTERO_PADDLE_LIVE_PDF").expect("set AGENTERO_PADDLE_LIVE_PDF");
+        let pdf = std::env::var("LIBRARY_PADDLE_LIVE_PDF").expect("set LIBRARY_PADDLE_LIVE_PDF");
         let api_key =
-            std::env::var("AGENTERO_PADDLE_API_KEY").expect("set AGENTERO_PADDLE_API_KEY");
-        let model = std::env::var("AGENTERO_PADDLE_MODEL")
+            std::env::var("LIBRARY_PADDLE_API_KEY").expect("set LIBRARY_PADDLE_API_KEY");
+        let model = std::env::var("LIBRARY_PADDLE_MODEL")
             .unwrap_or_else(|_| DEFAULT_PADDLE_BODY_MODEL.to_string());
         println!("model={model}");
 

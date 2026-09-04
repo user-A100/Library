@@ -270,7 +270,7 @@ export function AskPopover({
 			<div
 				ref={scrollPortRef}
 				className={cn(
-					"agentero-scroll h-full min-h-0 flex-1 overflow-x-hidden overflow-y-auto",
+					"library-scroll h-full min-h-0 flex-1 overflow-x-hidden overflow-y-auto",
 					"[scrollbar-gutter:stable]",
 				)}
 				role="log"

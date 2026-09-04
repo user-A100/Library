@@ -1,7 +1,7 @@
 /**
  * Bidirectional Zotero sync API (Host `zotero_sync`).
  * Pull: metadata fill / child notes / annotations → vault.
- * Push: NOTES.md → Agentero-marked Zotero child note (offline write,
+ * Push: NOTES.md → Library-marked Zotero child note (offline write,
  * Zotero must be closed; mandatory backup). See docs/backend/identifier-lookup.md §17.
  */
 

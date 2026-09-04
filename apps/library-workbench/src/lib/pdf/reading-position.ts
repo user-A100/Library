@@ -6,7 +6,7 @@
 
 import { readJsonStorage, writeJsonStorage } from "@/lib/core/storage";
 
-const KEY = "agentero-pdf-reading-pos";
+const KEY = "library-pdf-reading-pos";
 
 function readMap(): Record<string, number> {
 	const parsed = readJsonStorage<unknown>(KEY, {});

@@ -124,7 +124,7 @@ export function EditorStatusBar({ filePath, vaultPath }: EditorStatusBarProps) {
 							count: backlinks.length,
 						})}
 					</div>
-					<div className="agentero-scroll max-h-64 overflow-y-auto p-1.5">
+					<div className="library-scroll max-h-64 overflow-y-auto p-1.5">
 						{backlinks.length === 0 ? (
 							<p className="px-1.5 py-2 text-xs text-muted-foreground">
 								{t("statusBar.noBacklinks")}

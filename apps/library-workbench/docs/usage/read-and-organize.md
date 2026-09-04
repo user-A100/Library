@@ -52,7 +52,7 @@ PDF 阅读器支持：
 - 点击条目跳转到 PDF 对应位置；可开启叠加层查看模型原始框。
 - 鼠标悬停在插图/表/算法/有编号公式区域会在框右上角显示「单击进行批注」提示；单击打开视觉批注编辑器。
 
-原始结果缓存到 `{paper}/source/layout.json`，侧栏索引写入 `{paper}/source/layout-index.json`，可用 CLI `agentero layout list|get` 读取。
+原始结果缓存到 `{paper}/source/layout.json`，侧栏索引写入 `{paper}/source/layout-index.json`，可用 CLI `library layout list|get` 读取。
 
 ## 参考文献（References）
 
@@ -102,7 +102,7 @@ PDF 工具栏还有 **全文翻译**（Languages，在视觉批注旁）：依�
 ## 与我的研究的关系
 ```
 
-`NOTES.md` 是普通 Markdown，可在 Agentero、Obsidian、VS Code 等中继续编辑。粘贴图片会写入同目录 `assets/` 并插入相对路径引用。编辑器工具栏的 **属性 / Properties** 可编辑 YAML frontmatter（如 `aliases`），不必改文件名也能用论文标题做双链搜索。
+`NOTES.md` 是普通 Markdown，可在 Library、Obsidian、VS Code 等中继续编辑。粘贴图片会写入同目录 `assets/` 并插入相对路径引用。编辑器工具栏的 **属性 / Properties** 可编辑 YAML frontmatter（如 `aliases`），不必改文件名也能用论文标题做双链搜索。
 
 ## 使用双链
 
@@ -115,7 +115,7 @@ Obsidian 兼容语法：
 这条高亮见 [[papers/…/NOTES@批注id|短摘录]]。
 ```
 
-输入 `[[` 后可从文件 / 标题 / block / 批注等候选中选择（`#` 标题 · `^` 文本块 · `|` 显示名 · `@` 批注；↑↓ 循环，tab 补全，enter 确认）。`@` 用于 PDF 划词或视觉批注；target 用路径，不要只用论文展示标题。保存后更新编辑器状态栏的反链。通过 Agentero 移动或重命名时，会修复已解析到该目标的链接。文献引用图在 References 侧栏，不随双链改动刷新。
+输入 `[[` 后可从文件 / 标题 / block / 批注等候选中选择（`#` 标题 · `^` 文本块 · `|` 显示名 · `@` 批注；↑↓ 循环，tab 补全，enter 确认）。`@` 用于 PDF 划词或视觉批注；target 用路径，不要只用论文展示标题。保存后更新编辑器状态栏的反链。通过 Library 移动或重命名时，会修复已解析到该目标的链接。文献引用图在 References 侧栏，不随双链改动刷新。
 
 更细的编辑器语义见 [双链 UI](../frontend/wiki.md)。
 

@@ -192,7 +192,7 @@ mod tests {
         assert_eq!(resolve_vault(raw).unwrap(), dir);
         assert_eq!(resolve_vault(&format!(" {raw} ")).unwrap(), dir);
 
-        let missing = dir.join("agentero-no-such-vault-dir");
+        let missing = dir.join("library-no-such-vault-dir");
         let err = resolve_vault(missing.to_str().unwrap()).unwrap_err();
         assert_eq!(err.to_string(), "vault path is not a directory");
     }
@@ -200,7 +200,7 @@ mod tests {
     #[test]
     fn resolve_paper_dir_sanitizes_and_requires_directory() {
         let tmp =
-            std::env::temp_dir().join(format!("agentero-resolve-paper-{}", uuid::Uuid::new_v4()));
+            std::env::temp_dir().join(format!("library-resolve-paper-{}", uuid::Uuid::new_v4()));
         std::fs::create_dir_all(tmp.join("papers/x")).expect("create paper dir");
 
         let (dir, rel) = resolve_paper_dir(&tmp, " /papers//x ").expect("resolve paper dir");

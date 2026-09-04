@@ -48,7 +48,7 @@ let entries = match fs::read_dir(dir) {
 
 ```text
 trashPathsAndNotify
-  → path_trash（远程 rename/copy 到 .agentero/.trash/）  // 可成功
+  → path_trash（远程 rename/copy 到 .library/.trash/）  // 可成功
   → refreshTree → loadVaultTree
       → 对 papers/ 等 eager 树递归 remote_list
       → 若仍 list 到已删除的 papers/test → SFTP NoSuchFile → 整树失败

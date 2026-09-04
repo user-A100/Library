@@ -1,12 +1,12 @@
 /**
- * Vault NOTES.md starter template (`.agentero/templates/NOTES.md`).
+ * Vault NOTES.md starter template (`.library/templates/NOTES.md`).
  * Used by the `custom` paperNoteMode; seeded on demand from Settings → General.
  */
 
 import { invokeApi } from "@/lib/core/ipc";
 
 export type NotesTemplateSeedResult = {
-	/** `false` when `.agentero/templates/NOTES.md` already exists. */
+	/** `false` when `.library/templates/NOTES.md` already exists. */
 	created: boolean;
 };
 

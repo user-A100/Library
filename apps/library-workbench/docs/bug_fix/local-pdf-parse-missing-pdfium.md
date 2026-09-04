@@ -17,8 +17,8 @@ build script 把 PDFium 下载到**构建机**的 OS 缓存目录，并把那个
 打包产物里这些位置全都没有 dylib：
 
 ```
-$ ls /Applications/Agentero.app/Contents/MacOS/
-agentero  agentero-cli          # 没有 libpdfium.dylib，也没有 Frameworks/
+$ ls /Applications/Library.app/Contents/MacOS/
+library  library-cli          # 没有 libpdfium.dylib，也没有 Frameworks/
 ```
 
 `tauri.conf.json` 的 `bundle` 只声明了 `externalBin`，既没有 `resources` 也没有
@@ -59,7 +59,7 @@ Set PDFIUM_LIB_PATH to the directory containing libpdfium.dylib
 **运行时定位**
 
 - `pdf_parse::bundled_pdfium_dir()` 从 `current_exe` 探测 `../Frameworks`、
-  `pdfium/`、`../lib/agentero/pdfium`（deb/AppImage）等位置，作为
+  `pdfium/`、`../lib/library/pdfium`（deb/AppImage）等位置，作为
   `PDFIUM_LIB_PATH` 传给解析子进程；外部已设置该环境变量时不覆盖。
 
 **让真实原因可见**
@@ -70,17 +70,17 @@ Set PDFIUM_LIB_PATH to the directory containing libpdfium.dylib
 - `PaperParseResult` 增加 `error: Option<String>`，只在真正失败时设置；跳过
   （有 TeX / 已有 `PAPER.md` / 无 PDF / 已在解析中）与取消都不算失败。
 - `run_parse_body_job` 见到 `error` 就把 job 标记 `Failed`，任务面板的错误详情
-  因此能显示真实原因；`agentero paper parse` 同样改为返回非零错误。
+  因此能显示真实原因；`library paper parse` 同样改为返回非零错误。
 
 ## 遗留
 
-`agentero-cli` 被「设置 → 安装 CLI」拷到 `~/.local/bin/agentero` 后离开 bundle，
+`library-cli` 被「设置 → 安装 CLI」拷到 `~/.local/bin/library` 后离开 bundle，
 仍然找不到 PDFium —— 另开 issue 处理。
 
 ## 验证
 
-- `cargo fmt --all`、`cargo clippy -p agentero -p agentero-cli --all-targets`
-- `cargo test -p agentero pdf_parse`
+- `cargo fmt --all`、`cargo clippy -p library -p library-cli --all-targets`
+- `cargo test -p library pdf_parse`
 - `pnpm tauri build --bundles app` 后 `Contents/Frameworks/libpdfium.dylib` 在位
 - 临时移走 `~/Library/Caches/pdfium-rs`（模拟干净机器）后，打包应用导入本地 PDF
   仍能生成 `PAPER.md`

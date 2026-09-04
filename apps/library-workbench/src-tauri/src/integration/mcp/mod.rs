@@ -172,7 +172,7 @@ impl McpController {
         };
         let Some(handle) = handle else {
             return Err(AppError::message(
-                "No vault open — open a local vault in Agentero first",
+                "No vault open — open a local vault in Library first",
             ));
         };
         if handle.starts_with("remote:") {

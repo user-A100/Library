@@ -21,7 +21,7 @@ import { useWikiNav } from "@/lib/wiki/nav-context";
 type LinkEl = TElement & {
 	url?: string;
 	/** Set on slash/context-menu insert; cleared after the edit popover opens. */
-	agenteroEditId?: string;
+	libraryEditId?: string;
 };
 
 export function LinkElement(props: PlateElementProps) {

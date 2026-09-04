@@ -1,6 +1,6 @@
 const SCROLLING_CLASS = "scrolling";
 const HIDE_DELAY_MS = 800;
-const TIMEOUT_KEY = Symbol("agentero-scrollbar-timeout");
+const TIMEOUT_KEY = Symbol("library-scrollbar-timeout");
 
 function handleScroll(event: Event) {
 	const target = event.target;
@@ -8,8 +8,8 @@ function handleScroll(event: Event) {
 
 	const classes = target.classList;
 	if (
-		!classes.contains("agentero-scroll") &&
-		!classes.contains("agentero-scroll-both")
+		!classes.contains("library-scroll") &&
+		!classes.contains("library-scroll-both")
 	) {
 		return;
 	}

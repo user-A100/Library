@@ -201,7 +201,7 @@ export const PdfViewer = memo(function PdfViewer(props: PdfViewerProps) {
 				marquee: { enabled: false },
 			}),
 			createPluginRegistration(AnnotationPluginPackage, {
-				annotationAuthor: "Agentero",
+				annotationAuthor: "Library",
 				colorPresets: HIGHLIGHT_HEX_LIST,
 				selectAfterCreate: false,
 				deactivateToolAfterCreate: true,
@@ -230,7 +230,7 @@ export const PdfViewer = memo(function PdfViewer(props: PdfViewerProps) {
 
 	if (!source && !sourceBytes) {
 		return (
-			<div id="agentero-pdf-host" className={hostClass}>
+			<div id="library-pdf-host" className={hostClass}>
 				<p className="p-6 text-center text-muted-foreground text-sm">
 					{t("pdf.empty")}
 				</p>
@@ -240,7 +240,7 @@ export const PdfViewer = memo(function PdfViewer(props: PdfViewerProps) {
 
 	if (engineError) {
 		return (
-			<div id="agentero-pdf-host" className={hostClass}>
+			<div id="library-pdf-host" className={hostClass}>
 				<p className="p-6 text-destructive text-sm">
 					{engineError.message || t("pdf.loadError")}
 				</p>
@@ -250,7 +250,7 @@ export const PdfViewer = memo(function PdfViewer(props: PdfViewerProps) {
 
 	if (engineLoading || !engine || !plugins) {
 		return (
-			<div id="agentero-pdf-host" className={hostClass}>
+			<div id="library-pdf-host" className={hostClass}>
 				<p className="p-6 text-center text-muted-foreground text-sm">
 					{t("pdf.loading")}
 				</p>
@@ -259,7 +259,7 @@ export const PdfViewer = memo(function PdfViewer(props: PdfViewerProps) {
 	}
 
 	return (
-		<div id="agentero-pdf-host" className={hostClass}>
+		<div id="library-pdf-host" className={hostClass}>
 			<EmbedPDF
 				key={`${docId}::${source ?? "buffer"}`}
 				engine={engine}
@@ -1304,7 +1304,7 @@ function PdfViewerInner({
 				documentId={docId}
 				hostRef={hostRef}
 				rightGutter={COMMENT_RAIL_WIDTH_PX}
-				className="agentero-scroll-both min-h-0 min-w-0 flex-1"
+				className="library-scroll-both min-h-0 min-w-0 flex-1"
 			>
 				<WheelZoomHandler docId={docId} />
 				<PanDragHandler

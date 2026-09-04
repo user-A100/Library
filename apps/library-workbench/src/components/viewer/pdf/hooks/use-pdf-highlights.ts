@@ -282,7 +282,7 @@ export function usePdfHighlights({
 	]);
 
 	// The CLI/Agent appends highlights straight into `marks/annotations.json`
-	// (`agentero mark add --kind highlight`). The import above runs once per
+	// (`library mark add --kind highlight`). The import above runs once per
 	// mount, so without this an open viewer would neither show those highlights
 	// nor keep them: its next debounced export would overwrite the file.
 	useEffect(() => {
@@ -360,7 +360,7 @@ export function usePdfHighlights({
 					strokeColor: HIGHLIGHT_HEX[color],
 					opacity: HIGHLIGHT_OPACITY,
 					created: new Date(),
-					custom: { app: "agentero", paletteKey: color, quote },
+					custom: { app: "library", paletteKey: color, quote },
 				};
 				scope.createAnnotation(page.pageIndex, obj);
 				created.push({ pageIndex: page.pageIndex, id });

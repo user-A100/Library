@@ -38,7 +38,7 @@ DeepSeek 推理模型在 API 层将输出拆成：
 
 客户端若只读 `content`、或把 `reasoning_content` 误当成唯一输出，就会出现「有思考无正文 / 正文进错栏」一类问题。多轮对话时，部分服务还要求把历史 `reasoning_content` 正确回传，否则行为异常。
 
-这是行业内普遍的适配点，并非 Agentero 独有。
+这是行业内普遍的适配点，并非 Library 独有。
 
 ### 2.2 文本内嵌标签
 
@@ -56,9 +56,9 @@ DeepSeek 推理模型在 API 层将输出拆成：
 同类别名还有 `<thinking>…</thinking>`、`<reasoning>…</reasoning>`。  
 若前端把整段 `message` chunk 原样当正文渲染，标签会泄漏或思考与答案无法分栏；若整段被上层标成 thought，则答案会整段落进 Thinking。
 
-### 2.3 ACP 通道误标（Agentero 侧直接触发路径）
+### 2.3 ACP 通道误标（Library 侧直接触发路径）
 
-Agentero 经 ACP 接收流更新：
+Library 经 ACP 接收流更新：
 
 | ACP 更新 | Host `AgentStreamKind` | UI 用途 |
 |----------|------------------------|---------|
@@ -85,7 +85,7 @@ Agentero 经 ACP 接收流更新：
         └─ 或 content 内含 <think>…</think>answer
         │
         ▼
-  Agentero Host (acp.rs)  →  agent:stream 事件
+  Library Host (acp.rs)  →  agent:stream 事件
         │
         ▼
   use-agent-panel：classifyStreamChunk / promoteOrphanThoughtToText

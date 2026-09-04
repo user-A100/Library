@@ -74,7 +74,7 @@ export function buildVisualTraceContinuePrompt(input: {
 		.map((m) => `${m.role === "user" ? "User" : "Assistant"}: ${m.content}`)
 		.join("\n\n");
 	const parts = [
-		"You are helping the user discuss a visual region from a research paper PDF in Agentero.",
+		"You are helping the user discuss a visual region from a research paper PDF in Library.",
 		`Page: ${page}`,
 		"A crop of the selected region was attached on the first turn of this thread.",
 	];

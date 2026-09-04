@@ -1,10 +1,10 @@
-//! `agentero doctor`
+//! `library doctor`
 
 use crate::error::{CliError, ExitCode};
 use crate::output::{to_value, OutputFormat};
 use crate::prompt;
 use crate::resolve::{resolve_vault, GlobalOpts};
-use agentero_lib::features::doctor::{
+use library_lib::features::doctor::{
     apply_alias_repairs, apply_catalog_duplicate_repairs, apply_visual_mark_repairs, diagnose,
     AliasRepairCandidate, AliasRepairChange, DoctorReport, VisualMarkRepairChange,
 };

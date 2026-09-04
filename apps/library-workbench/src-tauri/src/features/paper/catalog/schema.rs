@@ -126,15 +126,15 @@ CREATE TABLE IF NOT EXISTS arxiv_rec_state (
 );
 "#;
 
-/// Absolute path to `{vault}/.agentero/catalog.sqlite`.
+/// Absolute path to `{vault}/.library/catalog.sqlite`.
 pub fn catalog_db_path(vault_root: &Path) -> std::path::PathBuf {
-    vault_root.join(".agentero").join("catalog.sqlite")
+    vault_root.join(".library").join("catalog.sqlite")
 }
 
-/// Ensure `.agentero/` exists, create/open catalog.sqlite, apply migrations.
+/// Ensure `.library/` exists, create/open catalog.sqlite, apply migrations.
 pub fn ensure_catalog(vault_root: &Path) -> Result<Connection, AppError> {
-    let agentero_dir = vault_root.join(".agentero");
-    fs::create_dir_all(&agentero_dir)?;
+    let library_dir = vault_root.join(".library");
+    fs::create_dir_all(&library_dir)?;
 
     let db_path = catalog_db_path(vault_root);
     let conn = crate::core::sqlite::open_standard(&db_path, crate::core::sqlite::DbMsgs::CATALOG)?;
@@ -235,7 +235,7 @@ fn migrate(conn: &Connection) -> Result<(), AppError> {
 
     if version > SCHEMA_VERSION {
         return Err(AppError::message(format!(
-            "catalog schema version {version} is newer than this app supports ({SCHEMA_VERSION}); upgrade Agentero"
+            "catalog schema version {version} is newer than this app supports ({SCHEMA_VERSION}); upgrade Library"
         )));
     }
 
@@ -375,11 +375,11 @@ pub fn schema_version(conn: &Connection) -> Result<i32, AppError> {
 fn set_schema_version(conn: &Connection, version: i32) -> Result<(), AppError> {
     crate::core::sqlite::write_schema_version(conn, version, crate::core::sqlite::DbMsgs::CATALOG)?;
     conn.execute(
-        "INSERT INTO schema_meta(key, value) VALUES('agentero_app', 'agentero')
+        "INSERT INTO schema_meta(key, value) VALUES('library_app', 'library')
          ON CONFLICT(key) DO UPDATE SET value = excluded.value",
         [],
     )
-    .map_err(|e| AppError::message(format!("write agentero_app: {e}")))?;
+    .map_err(|e| AppError::message(format!("write library_app: {e}")))?;
     Ok(())
 }
 
@@ -390,7 +390,7 @@ mod tests {
 
     #[test]
     fn ensure_catalog_creates_schema_current() {
-        let dir = env::temp_dir().join(format!("agentero-catalog-test-{}", std::process::id()));
+        let dir = env::temp_dir().join(format!("library-catalog-test-{}", std::process::id()));
         let _ = fs::remove_dir_all(&dir);
         fs::create_dir_all(&dir).unwrap();
 
@@ -453,7 +453,7 @@ mod tests {
     #[test]
     fn migrate_v7_normalizes_legacy_timestamps() {
         let dir = env::temp_dir().join(format!(
-            "agentero-catalog-v7-{}-{}",
+            "library-catalog-v7-{}-{}",
             std::process::id(),
             std::time::SystemTime::now()
                 .duration_since(std::time::UNIX_EPOCH)

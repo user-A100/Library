@@ -9,8 +9,8 @@ use rusqlite::Connection;
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
 
-const CATALOG_REL: &str = ".agentero/catalog.sqlite";
-const CATALOG_TMP_REL: &str = ".agentero/catalog.sqlite.tmp";
+const CATALOG_REL: &str = ".library/catalog.sqlite";
+const CATALOG_TMP_REL: &str = ".library/catalog.sqlite.tmp";
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct RemoteFileStamp {
@@ -44,9 +44,9 @@ impl CatalogMirror {
 
     /// Download remote catalog (or create empty + migrate if missing), store under `work_root`.
     pub async fn checkout(fs: Arc<dyn VaultFs>, work_root: &Path) -> Result<Self, AppError> {
-        let work_agentero = work_root.join(".agentero");
-        std::fs::create_dir_all(&work_agentero)?;
-        let work_db = work_agentero.join("catalog.sqlite");
+        let work_library = work_root.join(".library");
+        std::fs::create_dir_all(&work_library)?;
+        let work_db = work_library.join("catalog.sqlite");
 
         let stamp = if fs.exists(CATALOG_REL).await? {
             let bytes = fs.read(CATALOG_REL).await?;
@@ -61,8 +61,8 @@ impl CatalogMirror {
             // ensure_catalog expects vault root (= work_root here)
             let _conn = ensure_catalog(work_root)?;
             drop(_conn);
-            // Create remote .agentero and push
-            let _ = fs.mkdir(".agentero").await;
+            // Create remote .library and push
+            let _ = fs.mkdir(".library").await;
             let bytes = std::fs::read(&work_db)?;
             fs.write(
                 CATALOG_REL,
@@ -156,7 +156,7 @@ mod tests {
             .duration_since(UNIX_EPOCH)
             .unwrap()
             .as_nanos();
-        let p = std::env::temp_dir().join(format!("agentero-cmirror-{n}"));
+        let p = std::env::temp_dir().join(format!("library-cmirror-{n}"));
         std::fs::create_dir_all(&p).unwrap();
         p
     }
@@ -169,7 +169,7 @@ mod tests {
 
         let mut mirror = CatalogMirror::checkout(fs.clone(), &work).await.unwrap();
         assert!(mirror.work_db_path().is_file());
-        assert!(remote_root.join(".agentero/catalog.sqlite").is_file());
+        assert!(remote_root.join(".library/catalog.sqlite").is_file());
 
         // Mutate work catalog via ensure + insert is heavy; just rewrite bytes after bump
         {
@@ -180,13 +180,13 @@ mod tests {
             .unwrap();
         }
         mirror.push(fs.clone()).await.unwrap();
-        let remote_bytes = std::fs::read(remote_root.join(".agentero/catalog.sqlite")).unwrap();
+        let remote_bytes = std::fs::read(remote_root.join(".library/catalog.sqlite")).unwrap();
         let work_bytes = std::fs::read(mirror.work_db_path()).unwrap();
         assert_eq!(remote_bytes, work_bytes);
 
         // Conflict detection
         std::fs::write(
-            remote_root.join(".agentero/catalog.sqlite"),
+            remote_root.join(".library/catalog.sqlite"),
             b"not-a-real-db-but-different-size-xxxxxx",
         )
         .unwrap();

@@ -231,7 +231,7 @@ impl SemanticScholarApi {
             Ok(value) => venue_from_paper(&value),
             Err(e) => {
                 log::debug!(
-                    target: "agentero::lookup",
+                    target: "library::lookup",
                     "s2 venue lookup for {paper_id} failed: {e}"
                 );
                 None

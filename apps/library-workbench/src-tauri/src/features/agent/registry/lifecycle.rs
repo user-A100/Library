@@ -124,19 +124,19 @@ pub fn dsh_npm_install_command() -> String {
     #[cfg(target_os = "windows")]
     {
         format!(
-            "cd /d \"%USERPROFILE%\\.agentero\\dsh-acp\"\r\nnpm i --no-audit --no-fund {packages}"
+            "cd /d \"%USERPROFILE%\\.library\\dsh-acp\"\r\nnpm i --no-audit --no-fund {packages}"
         )
     }
     #[cfg(not(target_os = "windows"))]
     {
-        format!("cd \"$HOME/.agentero/dsh-acp\" && npm i --no-audit --no-fund {packages}")
+        format!("cd \"$HOME/.library/dsh-acp\" && npm i --no-audit --no-fund {packages}")
     }
 }
 
 /// Minimal project manifest for the launcher dir. Without it, npm walks up to
 /// a user's `~/package.json` and installs the dsh stack into `~/node_modules`.
 const DSH_ACP_PACKAGE_JSON: &str = r#"{
-  "name": "agentero-dsh-acp",
+  "name": "library-dsh-acp",
   "private": true,
   "version": "0.1.1-rc.2"
 }
@@ -172,7 +172,7 @@ fn run_dsh_lifecycle(
     prepare_dsh_launcher()?;
     let reachable = dsh_entrypoint_exists() || resolve_command("dsh-acp-demo").is_some();
     log::info!(
-        target: "agentero::agent",
+        target: "library::agent",
         "dsh_lifecycle action={:?} launcher={} reachable={reachable}",
         action,
         dsh_launcher_dir().display()
@@ -254,7 +254,7 @@ pub fn supports_lifecycle(template_id: &str) -> bool {
 /// What a silent uninstall would remove for a catalog template.
 ///
 /// `npm_commands` are complete `npm uninstall` invocations (including the
-/// `--prefix` mirroring install); `dirs` are Agentero-managed directories.
+/// `--prefix` mirroring install); `dirs` are Library-managed directories.
 /// `None` means the template has no managed uninstall (e.g. hermes installs
 /// via an official script we cannot reverse).
 #[derive(Debug, Clone, Serialize)]
@@ -446,7 +446,7 @@ pub fn run_template_lifecycle(
     }
 
     log::info!(
-        target: "agentero::agent",
+        target: "library::agent",
         "tool_lifecycle template={template_id} action={:?} cmd_len={}",
         action,
         command.len()
@@ -702,7 +702,7 @@ npm i -g openclaw@latest
 # Kimi Code
 {kimi}
 # (or) npm i -g @moonshot-ai/kimi-code@latest
-# Dsh (DeepSeek Harness ACP demo — Agentero writes cordis.yml + runs this)
+# Dsh (DeepSeek Harness ACP demo — Library writes cordis.yml + runs this)
 {dsh}"#,
             claude_acp = CLAUDE_ACP_INSTALL_COMMAND,
             pi_host = PI_HOST_INSTALL_COMMAND,
@@ -737,7 +737,7 @@ npm i -g openclaw@latest
 {grok} || npm i -g @xai-official/grok@latest
 # Kimi Code
 {kimi} || npm i -g @moonshot-ai/kimi-code@latest
-# Dsh (DeepSeek Harness ACP demo — Agentero writes cordis.yml + runs this)
+# Dsh (DeepSeek Harness ACP demo — Library writes cordis.yml + runs this)
 {dsh}"#,
             claude_host = CLAUDE_INSTALL_UNIX,
             claude_acp = CLAUDE_ACP_INSTALL_COMMAND,
@@ -929,7 +929,7 @@ fn write_windows_batch_file(command_line: &str) -> Result<std::path::PathBuf, St
 
     for _ in 0..32 {
         let seq = WINDOWS_BATCH_SEQUENCE.fetch_add(1, Ordering::Relaxed);
-        let path = temp_dir.join(format!("agentero_tool_{pid}_{stamp}_{seq}.bat"));
+        let path = temp_dir.join(format!("library_tool_{pid}_{stamp}_{seq}.bat"));
         match OpenOptions::new().write(true).create_new(true).open(&path) {
             Ok(mut file) => {
                 let bat = build_windows_batch(command_line);

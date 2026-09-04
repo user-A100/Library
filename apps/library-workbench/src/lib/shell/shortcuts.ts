@@ -323,7 +323,7 @@ const ALIASES: Partial<Record<ShortcutId, ShortcutDef[]>> = {
 		{
 			id: "quickOpen",
 			group: "Navigation",
-			// ⌘K — alias for quick open (Agentero habit)
+			// ⌘K — alias for quick open (Library habit)
 			key: "k",
 			meta: true,
 		},

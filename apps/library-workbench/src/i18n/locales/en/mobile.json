@@ -8,7 +8,7 @@
 	"connect": {
 		"title": "Connect a desktop",
 		"paste": "Paste pairing link",
-		"placeholder": "agentero://pair#offer=…",
+		"placeholder": "library://pair#offer=…",
 		"action": "Connect",
 		"connecting": "Connecting…",
 		"camera": "Scan QR code",
@@ -74,6 +74,6 @@
 	"errors": {
 		"load": "Could not load remote data",
 		"connect": "Could not connect",
-		"networkPermission": "iOS is blocking network access for Agentero. Open Settings > Agentero and allow Wireless Data (WLAN & Cellular), then try again."
+		"networkPermission": "iOS is blocking network access for Library. Open Settings > Library and allow Wireless Data (WLAN & Cellular), then try again."
 	}
 }

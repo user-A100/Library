@@ -7,7 +7,7 @@
  * even when `getData` is empty.
  */
 
-export const VAULT_FILE_DRAG_TYPE = "application/x-agentero-vault-paths";
+export const VAULT_FILE_DRAG_TYPE = "application/x-library-vault-paths";
 
 let active = false;
 let endBound = false;

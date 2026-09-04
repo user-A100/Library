@@ -58,20 +58,20 @@ pub fn run() {
     }
 
     builder = builder
-        .register_asynchronous_uri_scheme_protocol("agentero-arxiv", |_ctx, request, responder| {
+        .register_asynchronous_uri_scheme_protocol("library-arxiv", |_ctx, request, responder| {
             crate::features::arxiv_proxy::handle(request, responder);
         })
-        .register_asynchronous_uri_scheme_protocol("agentero-model", |_ctx, request, responder| {
+        .register_asynchronous_uri_scheme_protocol("library-model", |_ctx, request, responder| {
             crate::features::layout::model_assets::handle_model_uri(request, responder);
         })
         .register_asynchronous_uri_scheme_protocol(
-            "agentero-coolpapers",
+            "library-coolpapers",
             |_ctx, request, responder| {
                 crate::features::coolpapers::proxy::handle(request, responder);
             },
         )
         .register_asynchronous_uri_scheme_protocol(
-            "agentero-modelscope",
+            "library-modelscope",
             |_ctx, request, responder| {
                 crate::features::modelscope_proxy::handle(request, responder);
             },
@@ -307,7 +307,7 @@ pub fn run() {
             tunnel.set_app_handle(app.handle().clone());
         }
         log::info!(
-            target: "agentero::op",
+            target: "library::op",
             "op start app_ready debug={}",
             cfg!(debug_assertions)
         );
@@ -334,18 +334,18 @@ pub fn run() {
             #[cfg(any(target_os = "linux", all(debug_assertions, windows)))]
             {
                 if let Err(e) = app.deep_link().register_all() {
-                    log::warn!(target: "agentero::op", "deep_link register_all failed: {e}");
+                    log::warn!(target: "library::op", "deep_link register_all failed: {e}");
                 }
             }
             if let Ok(Some(urls)) = app.deep_link().get_current() {
                 let list: Vec<String> = urls.into_iter().map(|u| u.to_string()).collect();
                 crate::app::open_request::handle_deep_link_urls(app.handle(), &list);
             }
-            // Dev / direct spawn: CLI may pass agentero://… as argv when the
+            // Dev / direct spawn: CLI may pass library://… as argv when the
             // OS scheme is not registered (common with `tauri dev`).
             let argv: Vec<String> = std::env::args().collect();
             crate::app::open_request::handle_argv_urls(app.handle(), &argv);
-            // Consume a request file left by `agentero open` before we listened.
+            // Consume a request file left by `library open` before we listened.
             if let Some(path) = crate::app::open_request::take_cli_open_request_file() {
                 let _ = crate::app::open_request::handle_open_path(app.handle(), &path);
             }
@@ -357,7 +357,7 @@ pub fn run() {
             });
         }
 
-        // Finder "Open with Agentero" Quick Action: default-installed and kept
+        // Finder "Open with Library" Quick Action: default-installed and kept
         // current on macOS (opt-out remembered via a config marker).
         #[cfg(target_os = "macos")]
         {
@@ -396,7 +396,7 @@ pub fn run() {
                 let app = app.clone();
                 tauri::async_runtime::spawn(async move {
                     if let Err(e) = crate::app::window::commands::window_new(app).await {
-                        log::error!(target: "agentero::op", "op end window_new ok=false error={e}");
+                        log::error!(target: "library::op", "op end window_new ok=false error={e}");
                     }
                 });
                 return;

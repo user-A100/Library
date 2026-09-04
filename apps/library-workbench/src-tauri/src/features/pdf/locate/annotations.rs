@@ -185,7 +185,7 @@ pub fn highlight_item(
         "strokeColor": hex,
         "opacity": HIGHLIGHT_OPACITY,
         "created": created_iso,
-        "custom": { "app": "agentero", "paletteKey": color, "quote": quote },
+        "custom": { "app": "library", "paletteKey": color, "quote": quote },
     });
     if let Some(text) = comment.map(str::trim).filter(|s| !s.is_empty()) {
         anno["contents"] = json!(text);

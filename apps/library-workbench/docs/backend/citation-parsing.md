@@ -42,7 +42,7 @@
 
 ## 3. 持久化
 
-- **事实来源：`{paper}/source/agentero-cite.json` sidecar**，可重建、可删除、不碰用户文件——这同时回答「没有 bib 文件时的持久化」：L1 在线结果与 L3 的 raw + 尽力字段都写入 sidecar，重开应用不重解析、不重复请求 API（fingerprint 判断；`source` 字段记 `s2 | crossref | bib | bbl | tex | pdf-text`）。
+- **事实来源：`{paper}/source/library-cite.json` sidecar**，可重建、可删除、不碰用户文件——这同时回答「没有 bib 文件时的持久化」：L1 在线结果与 L3 的 raw + 尽力字段都写入 sidecar，重开应用不重解析、不重复请求 API（fingerprint 判断；`source` 字段记 `s2 | crossref | bib | bbl | tex | pdf-text`）。
 - 库内匹配（`localMatch`）：DOI → arXiv id → 归一化 title+author+year，只查本地 catalog。
 - **catalog 建 `paper_refs` 索引表**推迟到需要大规模跨论文查询 / 被引统计时再评估，避免双写；MVP 单论文 sidecar 足够。
 - 导出：右键论文提供 **导出 references.bib**（本地 BibTeX 序列化 sidecar 条目），非默认落盘。
@@ -55,7 +55,7 @@
   - `[12]` 编号徽标 + 标题（两行截断；无标题时显示 raw 前两行）；
   - 第二行：首作者 et al. · 年份 · venue；
   - 角标：DOI / arXiv 外链徽标、**已入库**标记（点击打开库内论文）；未入库 hover 出 **导入**（走 `paper_commit` 管线；注意不**自动**导入，此处为用户显式点击）。
-- **打开论文时自动解析**：论文标签页加载后，前台会在后台自动调用 `paper_refs_parse(force=false)`；若 sidecar 已存在且 fingerprint 未变则直接命中缓存，否则开始 L1/L2 解析。解析结果写入 `{paper}/source/agentero-cite.json`，PDF 查看器和 References 侧栏共享同一结果，无需用户先点开侧栏再点击「Parse references」。
+- **打开论文时自动解析**：论文标签页加载后，前台会在后台自动调用 `paper_refs_parse(force=false)`；若 sidecar 已存在且 fingerprint 未变则直接命中缓存，否则开始 L1/L2 解析。解析结果写入 `{paper}/source/library-cite.json`，PDF 查看器和 References 侧栏共享同一结果，无需用户先点开侧栏再点击「Parse references」。
 - **hover 预览与联动**：hover 文中 citation anchor → 显示编号、标题、作者、年份、venue 和已入库状态；同时发布 hover marker，侧栏对应卡片高亮并 `scrollIntoView`。预览内放大镜打开 References 侧栏。引用识别只接受数字引用或作者-年份形式，并排除 Figure、Section、Table、Equation 等内部交叉引用；未能识别的链接只保留点击导航。
 - **反向联动（待实现）**：hover 引用卡片 → PDF 高亮 anchors。
 - **点击**：文中 citation 点击跳 References 条目；卡片点击跳第一个 anchor。
@@ -80,7 +80,7 @@
   - [12] {title}. {authors}. {year}. {venue}. DOI: {doi}
   ```
 
-- 拖拽：卡片 `dataTransfer text/plain`——已入库拖出 vault 相对路径；未入库拖出 `agentero:ref:{paperPath}#{citationId}` 令牌，composer 识别后转为 ref chip。
+- 拖拽：卡片 `dataTransfer text/plain`——已入库拖出 vault 相对路径；未入库拖出 `library:ref:{paperPath}#{citationId}` 令牌，composer 识别后转为 ref chip。
 
 ## 6. 分期
 
@@ -140,7 +140,7 @@ L2 方案实测对比（阈值统一取自己论文 p10）：
 
 ### 7.4 缓存与增量
 
-`.agentero/citing-scan.json`（参照 `features/vault/doctor/mod.rs` 的 `DOCTOR_STATE_REL` 先例）存每个种子的 `s2Id` / `citationCount` / `fetchedAt` / 引用者元数据，外加上次结果供 UI 直接复用。下次扫描先用 1 个 batch 请求拿最新 `citationCount`，**只重抓被引数变化的种子**，稳态约 10 秒。SPECTER2 向量不落盘（每次 1–2 个请求重取），避免几 MB 的 JSON。
+`.library/citing-scan.json`（参照 `features/vault/doctor/mod.rs` 的 `DOCTOR_STATE_REL` 先例）存每个种子的 `s2Id` / `citationCount` / `fetchedAt` / 引用者元数据，外加上次结果供 UI 直接复用。下次扫描先用 1 个 batch 请求拿最新 `citationCount`，**只重抓被引数变化的种子**，稳态约 10 秒。SPECTER2 向量不落盘（每次 1–2 个请求重取），避免几 MB 的 JSON。
 
 写入是普通 `fs::write` 而非 tmp+rename，原因同 `write_sidecar`：rename 会被 vault watcher 报成「未验证重命名」。缓存可重建，不值得为原子性换这个噪音。
 

@@ -1,12 +1,12 @@
 # 接入 GenericAgent ACP
 
-[GenericAgent](https://github.com/lsdefine/GenericAgent) 是一个极简、可自我进化的本地 Agent 框架，核心约 3K 行代码，支持浏览器自动化、终端、文件系统、键鼠、视觉、ADB 等能力。通过它自带的 ACP bridge，可以把 GenericAgent 接到 Agentero，让它在你的 Vault 里读论文、写 NOTES、跑代码、整理文献。
+[GenericAgent](https://github.com/lsdefine/GenericAgent) 是一个极简、可自我进化的本地 Agent 框架，核心约 3K 行代码，支持浏览器自动化、终端、文件系统、键鼠、视觉、ADB 等能力。通过它自带的 ACP bridge，可以把 GenericAgent 接到 Library，让它在你的 Vault 里读论文、写 NOTES、跑代码、整理文献。
 
 ## 前置条件
 
 1. 本机已安装 GenericAgent，并配置好 `mykey.py`（填入至少一个 LLM API Key）。
 2. 推荐 Python 3.11 或 3.12（与 GenericAgent 官方要求一致）。
-3. Agentero 桌面端已打开目标 Vault。
+3. Library 桌面端已打开目标 Vault。
 
 如果你还没装 GenericAgent，参考其官方 README 的 **Method 1 — Clone & install**：
 
@@ -18,7 +18,7 @@ cp mykey_template_en.py mykey.py   # 编辑填入 API Key
 
 ## 启动 ACP bridge
 
-GenericAgent 仓库里的 `frontends/genericagent_acp_bridge.py` 就是 ACP 适配器。它通过 stdio 与 Agentero 通信。
+GenericAgent 仓库里的 `frontends/genericagent_acp_bridge.py` 就是 ACP 适配器。它通过 stdio 与 Library 通信。
 
 ### 基本启动
 
@@ -41,9 +41,9 @@ python frontends/genericagent_acp_bridge.py
 python frontends/genericagent_acp_bridge.py --llm-no 1 --root-dir /path/to/genericagent
 ```
 
-## 在 Agentero 中添加 GenericAgent
+## 在 Library 中添加 GenericAgent
 
-1. 打开 Agentero，进入 **Settings → Agent**（`⌘,`）。
+1. 打开 Library，进入 **Settings → Agent**（`⌘,`）。
 2. 选择「新增自定义 Agent」或类似入口。
 3. 填写以下信息：
 
@@ -54,7 +54,7 @@ python frontends/genericagent_acp_bridge.py --llm-no 1 --root-dir /path/to/gener
 | 参数（args） | **必须**用绝对路径指向 bridge 脚本，例如 `"/Users/philfan/f/GenericAgent/frontends/genericagent_acp_bridge.py"` |
 | 环境变量（env） | 建议加 `PYTHONUNBUFFERED=1`，避免输出缓冲问题 |
 
-> **注意**：Agentero 自定义 Agent 表单目前没有独立的「工作目录（cwd）」字段，进程以当前 Vault 根目录启动。因此 bridge 脚本路径**不要**用相对路径，否则会出现 `//frontends/genericagent_acp_bridge.py` 之类的找不到文件错误。
+> **注意**：Library 自定义 Agent 表单目前没有独立的「工作目录（cwd）」字段，进程以当前 Vault 根目录启动。因此 bridge 脚本路径**不要**用相对路径，否则会出现 `//frontends/genericagent_acp_bridge.py` 之类的找不到文件错误。
 
 示例配置（macOS / Linux）：
 
@@ -70,7 +70,7 @@ args:    ["/Users/philfan/f/GenericAgent/frontends/genericagent_acp_bridge.py", 
 请列出当前 Vault 根目录下的文件。
 ```
 
-如果 GenericAgent 配置正确，它会通过 ACP 返回结果，Agentero 会在面板中展示。
+如果 GenericAgent 配置正确，它会通过 ACP 返回结果，Library 会在面板中展示。
 
 ## 验证 bridge 是否正常工作
 
@@ -99,7 +99,7 @@ cd /Users/philfan/f/GenericAgent
 
 ### 让 GenericAgent 读写 Vault
 
-GenericAgent 的强项是文件系统和终端操作。你可以直接在 Agentero 的 Agent 面板里让它：
+GenericAgent 的强项是文件系统和终端操作。你可以直接在 Library 的 Agent 面板里让它：
 
 - 总结当前论文并写入 `NOTES.md`
 - 批量整理 `papers/` 目录
@@ -116,7 +116,7 @@ bridge 会自动把每个 ACP session 的元数据和对话历史保存到：
 {root-dir}/temp/acp_sessions/{session_id}.json
 ```
 
-因此 Agentero 重新打开 Vault 后，可以通过 `session/load` 或 `session/resume` 恢复之前的对话上下文。
+因此 Library 重新打开 Vault 后，可以通过 `session/load` 或 `session/resume` 恢复之前的对话上下文。
 
 ### 选择模型
 
@@ -129,14 +129,14 @@ python frontends/genericagent_acp_bridge.py --llm-no 1
 
 ## 当前限制
 
-- **图片**：ACP bridge 未启用图片输入能力。Agentero 中的 PDF 截图、选区图片不会直接传给 GenericAgent。
-- **MCP**：未启用 MCP server 接入。如需把 Vault 接到 ChatGPT / Codex MCP，请使用 Agentero 的 [MCP 模式](mcp.md)。
+- **图片**：ACP bridge 未启用图片输入能力。Library 中的 PDF 截图、选区图片不会直接传给 GenericAgent。
+- **MCP**：未启用 MCP server 接入。如需把 Vault 接到 ChatGPT / Codex MCP，请使用 Library 的 [MCP 模式](mcp.md)。
 - **Terminal**：使用 `subprocess.Popen` 实现，适合运行命令行工具，但不适合 `vim`、`nano` 等交互式 TUI 程序。
 - **音频**：未启用音频输入。
 
 ## 故障排查
 
-### Agentero 里探测不到 / 启动失败
+### Library 里探测不到 / 启动失败
 
 - 确认命令使用**绝对路径**，因为图形应用的 PATH 可能与终端不同。
 - 确认 `mykey.py` 已配置且 API Key 有效。

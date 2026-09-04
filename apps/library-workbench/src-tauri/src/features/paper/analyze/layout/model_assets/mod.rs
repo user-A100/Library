@@ -3,7 +3,7 @@
 pub mod commands;
 
 use crate::core::error::AppError;
-use crate::core::paths::agentero_models_dir;
+use crate::core::paths::library_models_dir;
 use serde::Serialize;
 use std::fs;
 use std::io::Write;
@@ -14,7 +14,7 @@ use tauri::http::{header, Response, StatusCode};
 use tauri::{AppHandle, Emitter};
 use tokio::sync::Mutex;
 
-const TARGET: &str = "agentero::layout::model_assets";
+const TARGET: &str = "library::layout::model_assets";
 /// Canonical on-disk name (either full or FP16 export).
 pub const LAYOUT_MODEL_FILE: &str = "pp-doclayoutv3.onnx";
 /// Fixed id so Host startup + frontend panel share one background-task row.
@@ -48,7 +48,7 @@ pub struct LayoutModelStatus {
     pub path: String,
     pub size_bytes: u64,
     pub source: Option<String>,
-    /// Relative path segment for the `agentero-model` URI scheme.
+    /// Relative path segment for the `library-model` URI scheme.
     pub file_name: String,
 }
 
@@ -167,7 +167,7 @@ async fn acquire_download_lock() -> tokio::sync::MutexGuard<'static, ()> {
 }
 
 pub fn layout_model_path() -> PathBuf {
-    agentero_models_dir().join(LAYOUT_MODEL_FILE)
+    library_models_dir().join(LAYOUT_MODEL_FILE)
 }
 
 fn source_marker_path(model: &Path) -> PathBuf {
@@ -242,7 +242,7 @@ pub async fn ensure(
         None,
     );
 
-    let dir = agentero_models_dir();
+    let dir = library_models_dir();
     fs::create_dir_all(&dir)?;
 
     let partial = dir.join(format!("{LAYOUT_MODEL_FILE}.partial"));
@@ -463,7 +463,7 @@ mod tests {
         );
         assert!(
             p.parent()
-                .map(|d| d.ends_with("models") || d.ends_with("agentero/models"))
+                .map(|d| d.ends_with("models") || d.ends_with("library/models"))
                 .unwrap_or(false)
                 || p.to_string_lossy().contains("models")
         );

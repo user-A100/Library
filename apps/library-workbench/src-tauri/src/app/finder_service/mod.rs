@@ -1,4 +1,4 @@
-//! Finder "Open with Agentero" Quick Action management (macOS).
+//! Finder "Open with Library" Quick Action management (macOS).
 //!
 //! Finder offers no "Open With" for folders, so the app can install a
 //! user-level Quick Action (a `.workflow` bundle in `~/Library/Services/`).
@@ -7,16 +7,16 @@
 //! handles them (running app → single-instance forward, otherwise cold start).
 
 use crate::core::error::AppError;
-use crate::core::paths::agentero_config_dir;
+use crate::core::paths::library_config_dir;
 use serde::Serialize;
 use std::path::{Path, PathBuf};
 
 #[cfg(feature = "desktop")]
 pub mod commands;
 
-pub const WORKFLOW_NAME: &str = "Open with Agentero";
+pub const WORKFLOW_NAME: &str = "Open with Library";
 /// Ownership marker — never overwrite a `.workflow` we did not create.
-pub const MARKER_BUNDLE_ID: &str = "com.poco-ai.agentero.open-vault-service";
+pub const MARKER_BUNDLE_ID: &str = "workbench.library.app.open-vault-service";
 
 #[derive(Debug, Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -47,7 +47,7 @@ pub fn workflow_root() -> PathBuf {
 /// Written when the user explicitly removes the Quick Action, so the startup
 /// auto-install does not silently resurrect it. Cleared on explicit install.
 fn opt_out_marker() -> PathBuf {
-    agentero_config_dir().join("finder-service.removed")
+    library_config_dir().join("finder-service.removed")
 }
 
 fn opted_out() -> bool {
@@ -119,7 +119,7 @@ pub fn install() -> Result<FinderServiceStatus, AppError> {
     let root = workflow_root();
     if root.exists() && !is_ours(&root) {
         return Err(AppError::message(format!(
-            "refusing to overwrite non-Agentero workflow at {}",
+            "refusing to overwrite non-Library workflow at {}",
             root.display()
         )));
     }
@@ -130,7 +130,7 @@ pub fn install() -> Result<FinderServiceStatus, AppError> {
     let _ = std::fs::remove_file(opt_out_marker());
     refresh_services_db();
     log::info!(
-        target: "agentero::op",
+        target: "library::op",
         "op end finder_service_install ok=true path={} bundle={}",
         root.display(),
         bundle.display()
@@ -148,7 +148,7 @@ pub fn uninstall() -> Result<FinderServiceStatus, AppError> {
     if root.exists() {
         if !is_ours(&root) {
             return Err(AppError::message(format!(
-                "refusing to remove non-Agentero workflow at {}",
+                "refusing to remove non-Library workflow at {}",
                 root.display()
             )));
         }
@@ -159,7 +159,7 @@ pub fn uninstall() -> Result<FinderServiceStatus, AppError> {
         let _ = std::fs::write(opt_out_marker(), "");
         refresh_services_db();
         log::info!(
-            target: "agentero::op",
+            target: "library::op",
             "op end finder_service_uninstall ok=true path={}",
             root.display()
         );
@@ -181,14 +181,14 @@ pub fn ensure_installed() {
     let root = workflow_root();
     if root.exists() && !is_ours(&root) {
         log::info!(
-            target: "agentero::op",
+            target: "library::op",
             "finder_service ensure skipped: foreign workflow at {}",
             root.display()
         );
         return;
     }
     if let Err(e) = install() {
-        log::warn!(target: "agentero::op", "finder_service ensure failed: {e}");
+        log::warn!(target: "library::op", "finder_service ensure failed: {e}");
     }
 }
 
@@ -225,9 +225,9 @@ const INFO_PLIST: &str = r#"<?xml version="1.0" encoding="UTF-8"?>
 <plist version="1.0">
 <dict>
 	<key>CFBundleIdentifier</key>
-	<string>com.poco-ai.agentero.open-vault-service</string>
+	<string>workbench.library.app.open-vault-service</string>
 	<key>CFBundleName</key>
-	<string>Open with Agentero</string>
+	<string>Open with Library</string>
 	<key>CFBundlePackageType</key>
 	<string>Wflow</string>
 	<key>CFBundleShortVersionString</key>
@@ -238,7 +238,7 @@ const INFO_PLIST: &str = r#"<?xml version="1.0" encoding="UTF-8"?>
 			<key>NSMenuItem</key>
 			<dict>
 				<key>default</key>
-				<string>Open with Agentero</string>
+				<string>Open with Library</string>
 			</dict>
 			<key>NSMessage</key>
 			<string>runWorkflowAsService</string>
@@ -414,10 +414,10 @@ mod tests {
 
     #[test]
     fn wflow_bakes_and_recovers_bundle_path() {
-        let dir = std::env::temp_dir().join(format!("agentero-finder-svc-{}", std::process::id()));
+        let dir = std::env::temp_dir().join(format!("library-finder-svc-{}", std::process::id()));
         let _ = std::fs::remove_dir_all(&dir);
         std::fs::create_dir_all(dir.join("Contents")).unwrap();
-        let bundle = dir.join("Agentero.app");
+        let bundle = dir.join("Library.app");
         std::fs::write(
             dir.join("Contents").join("document.wflow"),
             build_wflow(&bundle),
@@ -432,7 +432,7 @@ mod tests {
     #[test]
     fn rejects_foreign_workflow() {
         let dir = std::env::temp_dir().join(format!(
-            "agentero-finder-svc-foreign-{}",
+            "library-finder-svc-foreign-{}",
             std::process::id()
         ));
         let _ = std::fs::remove_dir_all(&dir);

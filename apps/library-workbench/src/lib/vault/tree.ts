@@ -15,7 +15,7 @@ import { isWikiTargetPath } from "@/lib/wiki/target-path";
 
 /**
  * Names never listed in the file tree (local or remote).
- * Includes VCS, build/cache, virtualenvs, and Host-only `.agentero`.
+ * Includes VCS, build/cache, virtualenvs, and Host-only `.library`.
  */
 export const TREE_IGNORE_NAMES = new Set([
 	".git",
@@ -23,7 +23,7 @@ export const TREE_IGNORE_NAMES = new Set([
 	"node_modules",
 	"target",
 	"dist",
-	".agentero",
+	".library",
 	".venv",
 	"venv",
 	"__pycache__",

@@ -193,7 +193,7 @@ mod tests {
             .expect("system clock before unix epoch")
             .as_nanos();
         let dir = std::env::temp_dir().join(format!(
-            "agentero-paper-caps-{}-{}-{stamp}",
+            "library-paper-caps-{}-{}-{stamp}",
             std::process::id(),
             name
         ));

@@ -26,7 +26,7 @@ mod tests {
 
     #[test]
     fn probe_command_errors_for_missing_bin() {
-        let err = super::probe_command("__agentero_missing_binary_xyz__").unwrap_err();
+        let err = super::probe_command("__library_missing_binary_xyz__").unwrap_err();
         assert!(err.contains("not found"));
     }
 }

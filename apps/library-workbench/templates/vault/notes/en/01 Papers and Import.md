@@ -4,12 +4,12 @@
 
 ## Import Methods
 
-Agentero supports several ways to import papers into your Vault.
+Library supports several ways to import papers into your Vault.
 
 ### Magic Wand
 
 1. Click the magic-wand button in the sidebar.
-2. Paste a link into the input field. Agentero downloads metadata and the PDF into a new paper folder.
+2. Paste a link into the input field. Library downloads metadata and the PDF into a new paper folder.
    - arXiv IDs
    - DOIs
    - Website URLs, including blog posts

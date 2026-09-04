@@ -11,7 +11,7 @@
 | # | 议题 | 结论 |
 |---|---|---|
 | Q1 | 树位置 | **Library + Recycle Bin 下方、真实 Vault 根目录上方**（已实现） |
-| Q2 | Cool Papers 呈现 | **内嵌 iframe + Host 代理协议** `agentero-coolpapers://`（已实现；见 §3.2） |
+| Q2 | Cool Papers 呈现 | **内嵌 iframe + Host 代理协议** `library-coolpapers://`（已实现；见 §3.2） |
 | Q3 | 入库 | **已实现**：每行注入 `[入库]`，复用现成魔棒（见 §3.2.1） |
 | Q4 | P0 范围 | **已交付：广场壳 + Cool Papers 浏览入库 + Skill 推荐 + 订阅 + arXiv Daily**；播客尚未实现 |
 | Q5 | ModelScope 论文 | **已实现**：同一代理模式，但站点是 SPA，另有取舍（见 §3.5） |
@@ -37,14 +37,14 @@
 
 ## 1. 产品动机
 
-Agentero 已是 **local-first 论文工作台**（Library + 文件树 + PDF\|NOTES）。用户还需要从 **外部发现流** 找新论文。
+Library 已是 **local-first 论文工作台**（Library + 文件树 + PDF\|NOTES）。用户还需要从 **外部发现流** 找新论文。
 
 **广场** = 「发现入口」集合，与 **Library（已收藏）** 正交：
 
 | | Library | 广场 |
 |---|---|---|
 | 数据权威 | catalog + Vault 文件 | 外部站点 / 本地启发式；**P0 不写 Vault** |
-| 侧栏 | `agentero:library` | `agentero:plaza` + 子来源 |
+| 侧栏 | `library:library` | `library:plaza` + 子来源 |
 | 中间栏 | 论文库表格 | 来源专属发现 UI |
 | 典型动作 | 打开 / 标签 / 导出 | 浏览发现 + 单条入库 |
 
@@ -61,15 +61,15 @@ Agentero 已是 **local-first 论文工作台**（Library + 文件树 + PDF\|NOT
 
 ```
 📁 VaultName
-├── 📚 Library                 agentero:library
-├── 🗑️ Recycle Bin             agentero:trash
-├── 🌐 广场                     agentero:plaza              ← 可折叠
-│   ├── ✨ Cool Papers         agentero:plaza/cool-papers
-│   ├── ✨ ModelScope 论文      agentero:plaza/modelscope
-│   ├── ✨ Skill 推荐           agentero:plaza/skills
-│   ├── 📡 订阅                 agentero:plaza/feeds
-│   ├── 🎙️ 播客                 agentero:plaza/podcasts      ← 占位
-│   └── 🔭 arXiv Daily            agentero:plaza/arxiv-rec
+├── 📚 Library                 library:library
+├── 🗑️ Recycle Bin             library:trash
+├── 🌐 广场                     library:plaza              ← 可折叠
+│   ├── ✨ Cool Papers         library:plaza/cool-papers
+│   ├── ✨ ModelScope 论文      library:plaza/modelscope
+│   ├── ✨ Skill 推荐           library:plaza/skills
+│   ├── 📡 订阅                 library:plaza/feeds
+│   ├── 🎙️ 播客                 library:plaza/podcasts      ← 占位
+│   └── 🔭 arXiv Daily            library:plaza/arxiv-rec
 ├── papers/
 ├── notes/
 └── …
@@ -77,7 +77,7 @@ Agentero 已是 **local-first 论文工作台**（Library + 文件树 + PDF\|NOT
 
 | 项 | 约定 |
 |---|---|
-| 路径 | `agentero:plaza`、`agentero:plaza/<sourceId>`；**永不落盘** |
+| 路径 | `library:plaza`、`library:plaza/<sourceId>`；**永不落盘** |
 | 位置 | Library 与 Recycle Bin **之下**，真实根目录 **之上** |
 | 父节点 | 单击 → 只切换展开/收起（纯虚拟文件夹，无广场首页） |
 | 子节点 | 单击 → 对应来源 panel（dockview 虚拟 tab） |
@@ -104,16 +104,16 @@ i18n：`sidebar:plaza.*`。
 
 - dockview：`kind: "plaza"`，`path` = 虚拟 URI；同一 path 单实例 `activatePanel`。  
 - **无**独立应用顶栏（与 Library 一致）；来源工具条做在内容区内。  
-- 父路径 `agentero:plaza` **没有页面**：广场根只是文件树里的虚拟文件夹，单击只切换展开/收起；每个来源面板由子节点各自打开。
+- 父路径 `library:plaza` **没有页面**：广场根只是文件树里的虚拟文件夹，单击只切换展开/收起；每个来源面板由子节点各自打开。
 
 ### 3.2 Cool Papers（P0，WebView）
 
-**主内容**：内嵌 iframe，经 Host 代理协议 `agentero-coolpapers://localhost`（Windows 为 `http://agentero-coolpapers.localhost`）加载 papers.cool。
+**主内容**：内嵌 iframe，经 Host 代理协议 `library-coolpapers://localhost`（Windows 为 `http://library-coolpapers.localhost`）加载 papers.cool。
 
 | 区域 | 行为 |
 |---|---|
 | 主体 | 全高 iframe；站点内导航、分区、搜索均由 papers.cool 负责 |
-| 顶条（Agentero chrome） | 后退 / 前进 / 重新载入 / 当前路径（只读）/「系统浏览器打开」 |
+| 顶条（Library chrome） | 后退 / 前进 / 重新载入 / 当前路径（只读）/「系统浏览器打开」 |
 | 站内链接 | 在 iframe 内直接跳转 |
 | 站外链接 | 交给系统浏览器（arxiv.org 等一律拒绝被嵌套） |
 | 加载失败 | 代理返回 502 文案 |
@@ -166,7 +166,7 @@ papers.cool 给几乎所有链接都加了 `target="_blank"`（单个分区页�
 - `papers.miccai.org` / `www.ndss-symposium.org` 退化成 `webpage` / `blogPost`；
 - **且 11/11 都不返回 PDF 附件。**
 
-也就是说 Translator 那条路「一半站点坏、还全都缺 PDF、又多一跳依赖用户自建服务」，唯一净胜的只有 DOI（当前不填）。详见 [#333](https://github.com/poco-ai/Agentero/issues/333)。
+也就是说 Translator 那条路「一半站点坏、还全都缺 PDF、又多一跳依赖用户自建服务」，唯一净胜的只有 DOI（当前不填）。详见 [#333](https://github.com/poco-ai/Library/issues/333)。
 
 **catalog id 用 papers.cool 原生 id**（如 `36962@AAAI`、`2026.acl-long.1@ACL`）。`allocate_paper_path` 不清洗 id、直接当目录名，`@` `.` 三平台合法。选它而非默认派生链是因为它全局唯一、去重精确；派生链的 `citekey_fallback`（`{姓}{年}{标题首词}`）会撞，而 `DedupePolicy::ByCatalogId` 撞了会**静默当重复吞掉**。代价是同一篇论文日后从 BibTeX / Zotero 进来 id 不同、会重复——已知取舍，原生 id 另存进 `source_url` 保留可追溯性。
 
@@ -233,7 +233,7 @@ papers.cool 给几乎所有链接都加了 `target="_blank"`（单个分区页�
 
 ### 3.5 ModelScope 论文（已实现）
 
-**主内容**：内嵌 iframe，经 `agentero-modelscope://localhost` 加载 [modelscope.cn/papers](https://modelscope.cn/papers)。顶条 chrome、拖拽护盾、Back / Forward 全部复用 `PlazaWebFrame`，前端只多了 `PLAZA_SOURCES` 一条。
+**主内容**：内嵌 iframe，经 `library-modelscope://localhost` 加载 [modelscope.cn/papers](https://modelscope.cn/papers)。顶条 chrome、拖拽护盾、Back / Forward 全部复用 `PlazaWebFrame`，前端只多了 `PLAZA_SOURCES` 一条。
 
 **必须代理**：站点回 `X-Frame-Options: SAMEORIGIN`，直接 iframe 会被拒。代理重建响应时只保留 `Content-Type`，XFO 顺带被丢掉。
 
@@ -242,7 +242,7 @@ papers.cool 给几乎所有链接都加了 `target="_blank"`（单个分区页�
 | 差异 | 后果 |
 |---|---|
 | 列表走 `PUT /api/v1/dolphin/papers`（JSON body，匿名可用） | 代理原本只发 GET 且丢 body，页面会渲染成空壳。请求管道抽到 `site_proxy.rs` 并**转发 method + body**（顺带修好 papers.cool 的 `POST /star`）。只转发 `Content-Type` / `Accept` / `Accept-Language`——`Cookie`、`Origin`、`Referer` 一律不带 |
-| 外壳资源全是协议相对 `//g.alicdn.com/…`，含 `window.publicPath` | 在自有 scheme 下会解析成 `agentero-modelscope://g.alicdn.com/…`，应用根本不启动。`rewrite_html` 把 `="//` / `='//` / `= "//` 一律改成 `https://`。CDN 资源**不经代理**，否则等于给代理开一批额外上游主机（SSRF 面） |
+| 外壳资源全是协议相对 `//g.alicdn.com/…`，含 `window.publicPath` | 在自有 scheme 下会解析成 `library-modelscope://g.alicdn.com/…`，应用根本不启动。`rewrite_html` 把 `="//` / `='//` / `= "//` 一律改成 `https://`。CDN 资源**不经代理**，否则等于给代理开一批额外上游主机（SSRF 面） |
 | 路由是 `history.pushState`，点卡片不产生真实导航 | 桥接必须包装 `pushState` / `replaceState` 并监听 `popstate` 才能上报路径，否则顶条路径和 Back / Forward 永远不动 |
 | 页面是 React，被拒绝的点击不能只 `preventDefault` | umi 的 `Link` 自己就会 `preventDefault` 然后照样路由，必须在捕获阶段 `stopImmediatePropagation`，让事件根本到不了 React 根容器 |
 
@@ -252,14 +252,14 @@ papers.cool 给几乎所有链接都加了 `target="_blank"`（单个分区页�
 
 **入库**：`/papers/<arxivId>` 本身就是全部所需身份，所以列表卡片和详情页注入的「入库」都只发 `{ id, branch: "arxiv", url: "https://arxiv.org/abs/<id>" }`，直接落到 §3.2.1 的 arXiv 路线（能多拿 `arxiv_id` 与 LaTeX 源码）。**没有新增任何 Rust 入库命令，前端 `import.ts` 零改动。**
 
-两处都是带 Agentero 标的按钮，一眼能认出是我们的动作而不是站点自己的：
+两处都是带 Library 标的按钮，一眼能认出是我们的动作而不是站点自己的：
 
 - **列表**：绝对定位在卡片右下角，与统计行同高；自带边框/圆角/中性灰底，浅色深色主题都成立。
 - **列表**：只装饰真正排布出盒子的卡片（`offsetWidth`/`offsetHeight` 阈值）。零宽的 `/papers/` 锚点会让绝对定位的按钮甩到容器边缘，露在卡片外面。
 - **详情页**：插在站点那排 `arXiv 原文 / PDF / Git` 的最左侧，并**在运行时借用 `arXiv 原文` 的 className**，所以尺寸与外观完全一致。定位靠那颗 arXiv favicon（`img[src*="arxiv.org"]`）——那排的类名是哈希的、文案是本地化的，图标 src 两者都不是。
 - **图标**：品牌标缩到只剩那副铜色眼镜。完整的插画式 logo 在 14px（站点图标尺寸）下糊成一团。
 - **必须在链接拦截器之前注册点击处理并整体吞掉事件**——卡片按钮就长在卡片自己的 `<a>` 里面，否则入库的同时会被路由带走。
-- 文案挂在子 `span.agentero-import-label` 上，落态只改它，图标与借来的结构不会被 `textContent` 抹掉。
+- 文案挂在子 `span.library-import-label` 上，落态只改它，图标与借来的结构不会被 `textContent` 抹掉。
 - 站点的 Emotion 类名（`acss-*`）每次发版重新哈希，**只能**用 `header.antd5-layout-header`、`a[href^="/papers/"]`、arXiv favicon 这类结构化钩子。
 - React 重渲染会抹掉注入节点，`MutationObserver` 挂 `document.body` 补回来（debounce 100ms，避免自触发抖动）。
 - 回执按 `data-paper-id` 遍历匹配：arXiv id 带 `.`，不能用 id 选择器。
@@ -278,16 +278,16 @@ papers.cool 给几乎所有链接都加了 `target="_blank"`（单个分区页�
 ## 5. 虚拟路径与类型草图
 
 ```ts
-export const PLAZA_VIRTUAL_PATH = "agentero:plaza";
+export const PLAZA_VIRTUAL_PATH = "library:plaza";
 
 export const PLAZA_SOURCE_PATHS = {
-  coolPapers: "agentero:plaza/cool-papers",
-  podcasts: "agentero:plaza/podcasts",
-  recommend: "agentero:plaza/recommend",
+  coolPapers: "library:plaza/cool-papers",
+  podcasts: "library:plaza/podcasts",
+  recommend: "library:plaza/recommend",
 } as const;
 
 export function isPlazaVirtualPath(path: string | null | undefined): boolean {
-  return Boolean(path?.startsWith("agentero:plaza"));
+  return Boolean(path?.startsWith("library:plaza"));
 }
 ```
 
@@ -310,7 +310,7 @@ DocTab：`kind: "plaza"`（或 `file` + mode `plaza` + path 虚拟 URI——实�
 - 广场 → Vault **批量入库**（单条已实现，见 §3.2.1）。  
 - 把 feed 写入 catalog（订阅条目缓存走 XDG，见 [`plaza-feeds.md`](plaza-feeds.md)）。  
 - 播客播放器。订阅管理见 [`plaza-feeds.md`](plaza-feeds.md)，不进本篇原 P0。  
-- 云端协同过滤，或把本地库上传到 Agentero 自有服务。arXiv Daily 只把摘要发给**用户自己配置的** BYOK embedding 端点；未配置则整个功能不跑。  
+- 云端协同过滤，或把本地库上传到 Library 自有服务。arXiv Daily 只把摘要发给**用户自己配置的** BYOK embedding 端点；未配置则整个功能不跑。  
 - 注入脚本只做导航上报与 `[入库]`；**不注入任何凭据 / API Key / 登录态**。
 
 ## 8. 实现落点（编码时）

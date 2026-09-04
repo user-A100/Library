@@ -11,7 +11,7 @@ use crate::features::scholar_api::{
 
 const SOURCE: &str = "openalex";
 const API_BASE: &str = "https://api.openalex.org/works";
-const MAILTO: &str = "agentero@users.noreply.github.com";
+const MAILTO: &str = "library@users.noreply.github.com";
 
 /// OpenAlex metadata source.
 #[derive(Debug, Clone, Default)]

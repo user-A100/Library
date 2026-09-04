@@ -246,7 +246,7 @@ async fn parse_remote_body(
     Ok(result)
 }
 
-/// Stage a path-less OS drop (File bytes as base64) into `~/.agentero/import-tmp/`.
+/// Stage a path-less OS drop (File bytes as base64) into `~/.library/import-tmp/`.
 #[tauri::command]
 pub async fn paper_stage_import_file(
     args: StageImportFileArgs,
@@ -337,7 +337,7 @@ pub struct NotesTemplateSeedResult {
     pub created: bool,
 }
 
-/// Seed `{vault}/.agentero/templates/NOTES.md` with a starting template for
+/// Seed `{vault}/.library/templates/NOTES.md` with a starting template for
 /// the `custom` paper-note mode. Never overwrites an existing template.
 #[tauri::command]
 pub fn notes_template_seed(vault_path: String) -> ApiResult<NotesTemplateSeedResult> {

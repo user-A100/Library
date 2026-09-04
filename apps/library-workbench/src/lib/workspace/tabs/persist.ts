@@ -13,7 +13,7 @@ import type {
 } from "@/lib/workspace/tabs/types";
 import type { CenterViewMode } from "@/lib/workspace/viewer";
 
-const TABS_STORAGE_KEY = "agentero-open-tabs";
+const TABS_STORAGE_KEY = "library-open-tabs";
 
 const VALID_MODES = new Set<CenterViewMode>([
 	"markdown",

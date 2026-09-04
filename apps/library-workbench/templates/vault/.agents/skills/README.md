@@ -6,7 +6,7 @@ Create Vault seeds these when missing. Pick with `$` in Composer.
 | --- | --- |
 | `paper-reader` | 精读 → `{paper}/NOTES.md`，只创建可解析双链 |
 | `author-lookup` | 一作 / 通讯 email·主页·GitHub·ORCID·OpenReview → `NOTES.md`，作者信息报告 → `attachments/` |
-| `agentero-cli` | headless `agentero` CLI，含只读双链检查；按平台播种（POSIX `agentero` / Windows `agentero-cli`） |
+| `library-cli` | headless `library` CLI，含只读双链检查；按平台播种（POSIX `library` / Windows `library-cli`） |
 | `vault-normalizer` | 整理现有研究目录并对比迁移前后的双链诊断 |
 | `idea-evaluator` | 研究 idea 评审 |
 | `deep-research` | 综述级文献调研 |
@@ -19,7 +19,7 @@ First-party (and vendored) bundled skills carry an integer frontmatter field:
 version: 1
 ```
 
-On vault open, Agentero compares this to the app template:
+On vault open, Library compares this to the app template:
 
 - **lower version** → auto-upgrade to the template, then toast the skill id
 - **same / higher version** → leave the on-disk file alone (including same-version edits)
@@ -37,4 +37,4 @@ remove `version` or set it higher than the template after editing.
 **License: [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/)**  
 Full text: [`LICENSE-Supervisor-Skills.txt`](LICENSE-Supervisor-Skills.txt)
 
-`paper-reader` / `author-lookup` / `agentero-cli` / `vault-normalizer` are first-party (Agentero license).
+`paper-reader` / `author-lookup` / `library-cli` / `vault-normalizer` are first-party (Library license).

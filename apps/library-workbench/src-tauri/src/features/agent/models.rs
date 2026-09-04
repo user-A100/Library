@@ -373,7 +373,7 @@ pub struct AgentResultPayload {
     pub stop_reason: Option<String>,
     /// Durable ACP provider session id for the next continue
     /// (`session/resume` or `session/load` depending on agent capabilities).
-    /// Distinct from Agentero's per-run event correlation id.
+    /// Distinct from Library's per-run event correlation id.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub provider_session_id: Option<String>,
 }

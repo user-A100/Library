@@ -1,4 +1,4 @@
-# Agentero / notemd 后端 API 规范
+# Library / notemd 后端 API 规范
 
 
 ## 1. 分层定位
@@ -40,7 +40,7 @@ Host 通过 Tauri event 向前端推送事件。文件系统、任务和菜单�
 
 | 事件名 | 触发时机 | payload 关键字段 |
 |---|---|---|
-| `vault:file-changed`（已实现） | Vault 内文件被外部/Agent 改动（Host `notify` 监听，按窗口 `emit_to` 定向） | `{ paths: string[], kind: 'create' \| 'modify' \| 'remove' \| 'rename' \| 'other', rename?: { from: string; to: string } }`（绝对路径；`.agentero/`、`.git/`、`node_modules/` 已过滤；`rename` 仅表示单个可信 old/new 配对） |
+| `vault:file-changed`（已实现） | Vault 内文件被外部/Agent 改动（Host `notify` 监听，按窗口 `emit_to` 定向） | `{ paths: string[], kind: 'create' \| 'modify' \| 'remove' \| 'rename' \| 'other', rename?: { from: string; to: string } }`（绝对路径；`.library/`、`.git/`、`node_modules/` 已过滤；`rename` 仅表示单个可信 old/new 配对） |
 | `arxiv:progress` | arXiv 入库进度更新 | `{ job_id: string, stage: string, progress?: number, message?: string }` |
 | `arxiv:completed` | 入库完成 | `{ job_id: string, paper: Paper, created_paths: string[] }` |
 | `arxiv:failed` | 入库失败 | `{ job_id: string, error: AppError }` |
@@ -129,13 +129,13 @@ Host 通过 Tauri event 向前端推送事件。文件系统、任务和菜单�
 ```
 
 - **行为**
-  - 确保目录存在；脚手架 `papers/`、`notes/`、`.agentero/`、**`.agents/`**、**`.agents/skills/`**。
-  - 初始化 `.agentero/catalog.sqlite`（schema 当前版本，含 Translator 元数据列）。详见 [`catalog.md`](catalog.md)。
+  - 确保目录存在；脚手架 `papers/`、`notes/`、`.library/`、**`.agents/`**、**`.agents/skills/`**。
+  - 初始化 `.library/catalog.sqlite`（schema 当前版本，含 Translator 元数据列）。详见 [`catalog.md`](catalog.md)。
   - 写入默认 `AGENTS.md`（若不存在）。
   - 写入 **`.agents/README.md`**（若不存在；内容来自仓库 `templates/vault/.agents/`）。
-  - 种子 **bundled skills**：`paper-reader`、`author-lookup`、`agentero-cli`、`vault-normalizer`、`idea-evaluator`、`deep-research`（后两者含 `references/`，来自 [Supervisor-Skills](https://github.com/HKUSTDial/Supervisor-Skills)，**CC BY-NC-SA 4.0**；另写 `skills/README.md` 与 `LICENSE-Supervisor-Skills.txt`）。
+  - 种子 **bundled skills**：`paper-reader`、`author-lookup`、`library-cli`、`vault-normalizer`、`idea-evaluator`、`deep-research`（后两者含 `references/`，来自 [Supervisor-Skills](https://github.com/HKUSTDial/Supervisor-Skills)，**CC BY-NC-SA 4.0**；另写 `skills/README.md` 与 `LICENSE-Supervisor-Skills.txt`）。
   - **不**创建根级 `PAPERS.md` / `library.bib`；已有第一方 `SKILL.md` 按 frontmatter 整数 `version` 升级（见 `vault_ensure`）；用户去掉/抬高 `version` 的修改与其它 `.agents/**` 文件保持原样。
-  - 最近列表由前端在成功打开后写入 `localStorage`（`agentero-recent-vaults`）。
+  - 最近列表由前端在成功打开后写入 `localStorage`（`library-recent-vaults`）。
 
 #### `vault_ensure`（已实现）
 
@@ -230,8 +230,8 @@ Host 还支持 `__local_sim__` host（本机目录当远端，单测/开发用�
 | Bib/RIS 库导入 | `paper_import` | ✅ Translator → 上传远端 |
 | Zotero 桌面迁移 | `zotero_migrate` | ❌ 仅本地路径 |
 | Zotero Connector | HTTP `saveItems` / `saveAttachment` | ✅ 绑定 `remote:<sessionId>`；stage → SFTP → catalog PUT |
-| CLI import | `agentero import` | ❌ 仅本地 vault 路径 |
-| 回收站 | `path_trash` / `path_list_trash` / restore / purge | ✅ 经 `trash_bridge` 写远端 `.agentero/.trash/` |
+| CLI import | `library import` | ❌ 仅本地 vault 路径 |
+| 回收站 | `path_trash` / `path_list_trash` / restore / purge | ✅ 经 `trash_bridge` 写远端 `.library/.trash/` |
 
 返回的 `paperDir`（远程）为 `remote:<sessionId>/papers/…`。
 
@@ -262,7 +262,7 @@ Agent：`agent_run_once` / `agent_warm` 在 vault 为 `remote:…` 时经 SSH `b
 
 #### `path_trash`
 
-可恢复删除：把项移入 Vault 回收站 `.agentero/.trash/<batchId>/`（带 `manifest.json` 记录原路径与被删 catalog 行快照），而非物理删除。**前端不弹 Undo toast**——用户从文件树虚拟节点 `agentero:trash` 打开的**中间栏回收站视图**（`RecycleBinView`）浏览 / 恢复 / 永久删除；**清空**在侧栏回收站节点右键菜单；恢复走 `path_restore_item`（按项）。
+可恢复删除：把项移入 Vault 回收站 `.library/.trash/<batchId>/`（带 `manifest.json` 记录原路径与被删 catalog 行快照），而非物理删除。**前端不弹 Undo toast**——用户从文件树虚拟节点 `library:trash` 打开的**中间栏回收站视图**（`RecycleBinView`）浏览 / 恢复 / 永久删除；**清空**在侧栏回收站节点右键菜单；恢复走 `path_restore_item`（按项）。
 
 - **`path_trash` 参数**
 
@@ -276,12 +276,12 @@ Agent：`agent_run_once` / `agent_warm` 在 vault 为 `remote:…` 时经 SSH `b
 - **`path_trash` 返回**（`ApiResult<{ batchId: string; count: number; rels: string[] }>`）
   - `batchId` 标识批次（浏览/恢复用）；`count` 为实际移入回收站的项数；`rels` 为实际移入的相对路径（请求 `rels` 的子集）。
   - `papers/` 下的项：**先移文件**，再快照并删除 catalog 行（含嵌套 paper），避免幽灵 catalog。
-  - 跳过空 / 含 `..` / `.agentero` / `papers` 根 / 不存在的路径。
+  - 跳过空 / 含 `..` / `.library` / `papers` 根 / 不存在的路径。
   - 本地 Vault：删除成功后立即取消被删路径（含嵌套论文）的所有排队/运行中 JobCenter 任务（`JobCenter::cancel_for_paper`），逐个发 `job:changed(cancelled)` 并 `drain_and_spawn` 释放槽位——已删论文不会继续下载 / 解析 / 版面分析，任务面板对应行随之置为已取消。
 
 #### `path_list_trash` / `path_restore_item` / `path_purge_item` / `path_purge_trash`
 
-回收站浏览：中间栏 `RecycleBinView`（虚拟 tab `agentero:trash`）用这些命令列出 / 恢复 / 永久删除已删项。
+回收站浏览：中间栏 `RecycleBinView`（虚拟 tab `library:trash`）用这些命令列出 / 恢复 / 永久删除已删项。
 
 - **`path_list_trash`**（`{ vaultPath }` → `ApiResult<TrashEntry[]>`）：展平所有批次为逐项条目 `{ id, batchId, stored, rel, name, deletedAt, isDir }`，按删除时间倒序。
 - **`path_restore_item`**（`{ vaultPath, batchId, stored }` → `ApiResult<{ rel: string }>`）：把单项移回原位并 `upsert` 恢复其 catalog 行；原路径已占用则报错；批次清空后删除批次目录。
@@ -290,15 +290,15 @@ Agent：`agent_run_once` / `agent_warm` 在 vault 为 `remote:…` 时经 SSH `b
 
 #### `window_new`（已实现）
 
-打开一个新的 Agentero 窗口（菜单 **File → New Window** / `⌘N`）。
+打开一个新的 Library 窗口（菜单 **File → New Window** / `⌘N`）。
 
 - **参数**：无
 - **返回**：`Result<(), String>`
 - **行为**
-  - 创建 label 为 `agentero-<uuid>` 的 Webview 窗口，URL 带 `?fresh=1`（不自动恢复上次 Vault）。
+  - 创建 label 为 `library-<uuid>` 的 Webview 窗口，URL 带 `?fresh=1`（不自动恢复上次 Vault）。
   - 窗口尺寸 / macOS overlay 标题栏与主窗口一致；主应用窗口最小宽度为 `960px`。
   - 窗口初始隐藏，由全局 page-load hook 在页面加载完成后显示；首个 React commit 前显示静态启动壳。
-  - Capability 覆盖 `main` 与 `agentero-*`（见 `src-tauri/capabilities/default.json`）。
+  - Capability 覆盖 `main` 与 `library-*`（见 `src-tauri/capabilities/default.json`）。
   - 菜单点击由 Host 直接调用，不经过前端 event 往返（Host 内用 `tauri::async_runtime::spawn` 调用）。
   - **必须是 `async` command**：同步 command 在主线程、且处于调用方 webview 的 IPC 回调内执行，Windows 上从那里 build webview 会卡死（wry 进入嵌套消息循环等 WebView2 controller 回调，而该回调要等当前处理器返回），新窗口表现为空白且无法关闭。
 
@@ -355,7 +355,7 @@ Agent：`agent_run_once` / `agent_warm` 在 vault 为 `remote:…` 时经 SSH `b
 
 #### `settings_window_open`（已实现）
 
-打开 Settings 原生单例窗口（菜单 **Agentero → Settings…** / `⌘,` / 标题栏齿轮）。
+打开 Settings 原生单例窗口（菜单 **Library → Settings…** / `⌘,` / 标题栏齿轮）。
 
 - **参数**
 
@@ -382,7 +382,7 @@ Agent：`agent_run_once` / `agent_warm` 在 vault 为 `remote:…` 时经 SSH `b
 - **`fs_watch_start`**
   - **参数**：`{ vaultPath: string }`
   - **返回**：`Result<(), String>`
-  - **行为**：为当前窗口（label）启动递归监听；若该窗口已有监听则先停止再重建。命中变更时按窗口 `emit_to` 发送 `vault:file-changed`（去抖 ~300ms，过滤 `.agentero/` 内部文件、`.git/`、`node_modules/`；但放行 `.agentero/catalog.sqlite` 及 SQLite sidecar，供前端刷新 Library 元数据）。只有 `notify` 的单事件 `RenameMode::Both`、恰有两条不同路径且均未被过滤时，payload 才带按顺序排列的 `rename.from` / `rename.to`；其它 rename 事件只用于刷新，绝不能授权改写 Vault 内容。前端只将 Markdown、PDF、受支持图片或疑似目录的 rename 交给双链修复/警告；带明确非目标扩展名的 sidecar / 临时文件仅执行常规工作区刷新。
+  - **行为**：为当前窗口（label）启动递归监听；若该窗口已有监听则先停止再重建。命中变更时按窗口 `emit_to` 发送 `vault:file-changed`（去抖 ~300ms，过滤 `.library/` 内部文件、`.git/`、`node_modules/`；但放行 `.library/catalog.sqlite` 及 SQLite sidecar，供前端刷新 Library 元数据）。只有 `notify` 的单事件 `RenameMode::Both`、恰有两条不同路径且均未被过滤时，payload 才带按顺序排列的 `rename.from` / `rename.to`；其它 rename 事件只用于刷新，绝不能授权改写 Vault 内容。前端只将 Markdown、PDF、受支持图片或疑似目录的 rename 交给双链修复/警告；带明确非目标扩展名的 sidecar / 临时文件仅执行常规工作区刷新。
 - **`fs_watch_stop`**
   - **参数**：无
   - **返回**：`Result<(), String>`
@@ -414,7 +414,7 @@ Agent：`agent_run_once` / `agent_warm` 在 vault 为 `remote:…` 时经 SSH `b
 ```
 
 - **行为**
-  - 校验 Vault 结构（至少存在 `papers/`、`notes/`；确保 `.agentero/catalog.sqlite` 可打开或可初始化）。
+  - 校验 Vault 结构（至少存在 `papers/`、`notes/`；确保 `.library/catalog.sqlite` 可打开或可初始化）。
   - 打开 catalog、执行 schema migration；若存在历史 `papers/*/metadata.json` 且 catalog 为空则导入（见 catalog 迁移）。
   - 文件监听由前端打开 Vault 后调用 `fs_watch_start`（已落地；见上），非本命令内隐式启动。
   - 返回完整文件树。
@@ -444,7 +444,7 @@ Agent：`agent_run_once` / `agent_warm` 在 vault 为 `remote:…` 时经 SSH `b
 }
 ```
 
-- **当前实现**：渲染层 `getRecentVaults()` / `rememberRecentVault()` 读写 `localStorage` 键 `agentero-recent-vaults`（MRU，最多 8 条）。后续迁 Host / Tauri Store 时保持该语义。
+- **当前实现**：渲染层 `getRecentVaults()` / `rememberRecentVault()` 读写 `localStorage` 键 `library-recent-vaults`（MRU，最多 8 条）。后续迁 Host / Tauri Store 时保持该语义。
 
 #### `vault:info`（规划）
 
@@ -947,7 +947,7 @@ Agent：`agent_run_once` / `agent_warm` 在 vault 为 `remote:…` 时经 SSH `b
   ```
 
 - **返回**：`{ ok: true; data: SkillImportResult[] }`，每项含 `name`、`description`、`path`、 `source`、`skipped`（已存在时跳过）。
-- **行为**：从临时 discovery 解压 GitHub tarball，将选中 Skill 目录复制到 `.agents/skills/<name>/`，并写入 `agentero-skill.json` 来源记录。已存在目录**不覆盖**。安装完成后由前端 `refreshTree`。
+- **行为**：从临时 discovery 解压 GitHub tarball，将选中 Skill 目录复制到 `.agents/skills/<name>/`，并写入 `library-skill.json` 来源记录。已存在目录**不覆盖**。安装完成后由前端 `refreshTree`。
 - **限制**：仅本地 Vault；远程 Vault 应在 `lookup_import_batch` 阶段直接拒绝。
 
 #### `skill_discard`
@@ -981,7 +981,7 @@ Agent：`agent_run_once` / `agent_warm` 在 vault 为 `remote:…` 时经 SSH `b
 
 #### `paper_stage_import_file`
 
-将「无绝对路径」的 OS 拖放 PDF（macOS WKWebView 常无 `File.path`）以 base64 写入 `~/.agentero/import-tmp/`，返回绝对路径供 `paper_import_local_pdf` 使用。
+将「无绝对路径」的 OS 拖放 PDF（macOS WKWebView 常无 `File.path`）以 base64 写入 `~/.library/import-tmp/`，返回绝对路径供 `paper_import_local_pdf` 使用。
 
 - **参数**（`args`）：`{ fileName: string; contentBase64: string }`
 - **返回**：`{ ok: true; data: { path: string } }`
@@ -1082,7 +1082,7 @@ Agent：`agent_run_once` / `agent_warm` 在 vault 为 `remote:…` 时经 SSH `b
   }
   ```
 
-- **落盘**：`{paper}/source/agentero-cite.json`、`{paper}/source/agentero-figures.json`、`{paper}/source/agentero-figures/*.png`。
+- **落盘**：`{paper}/source/library-cite.json`、`{paper}/source/library-figures.json`、`{paper}/source/library-figures/*.png`。
 - **行为**：有 TeX 时解析 TeX/Bib 并用 PDF bbox 做定位；无 TeX 时使用 liteparse。不得覆盖原始 PDF、TeX/Bib、`NOTES.md` 或 `PAPER.md`。Sidecar schema 待补充独立文档。
 
 #### `paper_export`
@@ -1100,7 +1100,7 @@ Agent：`agent_run_once` / `agent_warm` 在 vault 为 `remote:…` 时经 SSH `b
   ```
 
 - **返回**：`{ ok: true; data: { format, content, count, filename } }`
-- **注意**：`/export` **要求 body 为 Zotero items 数组**，不是 Agentero `PaperMetadata` 蛇形字段；转换在 Host `zotero::io::paper_record_to_zotero_item`。
+- **注意**：`/export` **要求 body 为 Zotero items 数组**，不是 Library `PaperMetadata` 蛇形字段；转换在 Host `zotero::io::paper_record_to_zotero_item`。
 
 #### `paper_import`
 
@@ -1122,7 +1122,7 @@ Agent：`agent_run_once` / `agent_warm` 在 vault 为 `remote:…` 时经 SSH `b
 
 #### `paper_refs_parse`
 
-解析一篇论文的参考文献并写入可重建 sidecar `{paper}/source/agentero-cite.json`。优先级：在线结构化（Semantic Scholar `paper/{id}/references` → Crossref `works/{doi}.reference`）→ 本地 `source/*.bbl` / `*.bib` / 内联 `thebibliography`。本地条目提供编号顺序与 raw 文本，在线条目按 DOI / arXiv / 标题对齐后覆盖元数据；解析后按 DOI → arXiv → 归一化标题匹配库内论文写入 `localMatch`。输入指纹（DOI/arXiv + bib/bbl/tex 文件清单）未变时直接返回缓存，不重复请求 API。
+解析一篇论文的参考文献并写入可重建 sidecar `{paper}/source/library-cite.json`。优先级：在线结构化（Semantic Scholar `paper/{id}/references` → Crossref `works/{doi}.reference`）→ 本地 `source/*.bbl` / `*.bib` / 内联 `thebibliography`。本地条目提供编号顺序与 raw 文本，在线条目按 DOI / arXiv / 标题对齐后覆盖元数据；解析后按 DOI → arXiv → 归一化标题匹配库内论文写入 `localMatch`。输入指纹（DOI/arXiv + bib/bbl/tex 文件清单）未变时直接返回缓存，不重复请求 API。
 
 - **参数**（`args`）：
 
@@ -1221,12 +1221,12 @@ Agent：`agent_run_once` / `agent_warm` 在 vault 为 `remote:…` 时经 SSH `b
   - 一个 `paper/batch` 请求拿全库 `citationCount` + SPECTER2 向量，再对合格种子 8 路并发拉 `citations`。
   - 三层过滤：L0 硬过滤（跳过高被引经典种子；候选按时间窗 / 已入库 / 无可导入标识剔除）→ L1 IDF 加权重叠 → L2 中心化 SPECTER2 max-sim 门槛（阈值由库自身 leave-one-out p10 自校准）。
   - 排序后经 MMR 多样化截到 `budget`，避免结果被单一方向占满。
-  - 结果与每个种子的引用页写入 `.agentero/citing-scan.json`；下次扫描只重抓 `citationCount` 变化的种子。
+  - 结果与每个种子的引用页写入 `.library/citing-scan.json`；下次扫描只重抓 `citationCount` 变化的种子。
   - `taskId` 非空时：抓取阶段 emit `background-task:progress`（带 `currentCount`/`totalCount`），并在每个种子请求前检查取消。取消返回 `cancelled: true` 且不写缓存。
 
 ### 3.6 论文
 
-论文**集合与元数据**存于 `.agentero/catalog.sqlite`；本组命令读写 catalog，并附带 Vault 相对路径字段。详见 [`catalog.md`](catalog.md)、[`data-model.md`](data-model.md)。
+论文**集合与元数据**存于 `.library/catalog.sqlite`；本组命令读写 catalog，并附带 Vault 相对路径字段。详见 [`catalog.md`](catalog.md)、[`data-model.md`](data-model.md)。
 
 #### `paper_get`
 
@@ -1298,7 +1298,7 @@ Agent：`agent_run_once` / `agent_warm` 在 vault 为 `remote:…` 时经 SSH `b
 - **行为**：递归遍历 `papers/`，遇含 `NOTES.md` 的文件夹即为 paper 叶子；创建最小化 paper 记录并 `upsert` 进 catalog。不删行、不改磁盘文件。
 - **前端**：`src/lib/paper/api.ts` → `rescanPapers`；论文库空态「重新扫描 papers/」按钮。
 
-> **Catalog 行删除**：不再有独立的 `paper_delete` command；删除走 `path_trash`（`trashPaths`），catalog 行随回收站快照清理（底层 `papers::delete_under_path`，CLI `agentero paper rm` 亦复用）。
+> **Catalog 行删除**：不再有独立的 `paper_delete` command；删除走 `path_trash`（`trashPaths`），catalog 行随回收站快照清理（底层 `papers::delete_under_path`，CLI `library paper rm` 亦复用）。
 
 #### `paper_move`
 
@@ -1368,7 +1368,7 @@ Agent：`agent_run_once` / `agent_warm` 在 vault 为 `remote:…` 时经 SSH `b
 - **返回**：`{ ok: true; data: PaperMetadata }`（更新后的整行；`tags` 序列化：无色为字符串，有色为 `{name,color}`）。
 - **规范化**：trim 空白；丢弃空串；大小写不敏感去重（保留首次出现的写法与颜色；同名后续项仅在先无色时补色）；`color` 白名单校验。
 - **前端**：`src/lib/paper/api.ts` → `setPaperTags`；Paper Info 增删 + 色盘；Library 染色 chip + 筛选；`src/lib/ui/tag-colors.ts`。
-- **CLI**：`agentero paper tag set|add|rm <ref> …`（`set` 整表替换，`--clear` 清空；支持 `name:color`，颜色为 Apple 8 色 id）；`paper list --tag` 默认隐藏 `@zotero:` / `@arxiv:` 内部标签，`--all` 包含全部标签；`paper tag list` 同样支持 `--all`。另有 `paper move` 与 `trash list|restore|purge`。见 [`cli.md`](cli.md)。
+- **CLI**：`library paper tag set|add|rm <ref> …`（`set` 整表替换，`--clear` 清空；支持 `name:color`，颜色为 Apple 8 色 id）；`paper list --tag` 默认隐藏 `@zotero:` / `@arxiv:` 内部标签，`--all` 包含全部标签；`paper tag list` 同样支持 `--all`。另有 `paper move` 与 `trash list|restore|purge`。见 [`cli.md`](cli.md)。
 
 #### `paper:list`（扩展规划）
 
@@ -1491,7 +1491,7 @@ Host 作为 ACP Client：按注册表 spawn 用户本机 Agent（`cwd` = 当前 
 - **技能提及按 provider 分流**（`SkillMentionStyle`，见 Host `prompt/skills.rs`）：
   - **Claude ACP** → `/skill-id` 前缀 + 注入正文；
   - **其它（含 Codex）** → 仅注入正文（`skill:id` 标签），prompt 明确写明不要依赖 `$`/`/` 运行时命令。
-  - Composer 的 `$` 仅是 Agentero UI 选 skill 的方式，不等于每个 Agent 的运行时语法。
+  - Composer 的 `$` 仅是 Library UI 选 skill 的方式，不等于每个 Agent 的运行时语法。
 
 - **权限策略**：设置 → Agent 提供全局「权限模式」，对所有 Agent 生效，并在每次运行中通过 `permissionMode` 传入：
   - `restricted`（默认）：取消所有 ACP 权限请求；
@@ -1605,7 +1605,7 @@ Host 作为 ACP Client：按注册表 spawn 用户本机 Agent（`cwd` = 当前 
 }
 ```
 
-#### `agent_run_tool_lifecycle`（已实现，[#225](https://github.com/poco-ai/Agentero/issues/225)）
+#### `agent_run_tool_lifecycle`（已实现，[#225](https://github.com/poco-ai/Library/issues/225)）
 
 **静默**安装、升级或卸载 catalog Agent CLI（需要时一并装/卸 ACP 适配器）。不弹终端、不写临时确认脚本；命令由 Host 按平台拼装，UI 不得传入任意 shell。
 
@@ -1616,9 +1616,9 @@ Host 作为 ACP Client：按注册表 spawn 用户本机 Agent（`cwd` = 当前 
   - `taskId` 来自设置页 Agent 行内安装进度条；用于匹配 Host progress tick 与接收协作取消信号。
 - **返回**：`{ ok: true; data: null }` 或错误（stderr/stdout 末尾若干行）
 - **行为**
-  - `install`：未装 host 时走官方 installer（POSIX curl→临时文件再 bash，非 `curl|bash`）或 npm；Claude/Codex/Pi 在 host 已存在但 ACP 缺失时只装适配器；两者都缺则 host && adapter；Hermes 走官方 installer；OpenClaw 走 npm。Pi 无原生 ACP，ACP 入口是社区适配器 `pi-acp`（detect 用 host `pi`）；host 与 adapter 两层都走 npm，因为 `pi.dev/install.sh` 是交互式 TUI installer，不能静默执行。Dsh 是目录级 npm 项目安装：Host 先在 `~/.agentero/dsh-acp` 写入默认 `cordis.yml` 与最小 `package.json`（已存在则不覆盖），再 `npm i` 固定版本的 `dsh-acp-demo` + 插件栈；launcher、home npm 根或 PATH 已有入口时 `install` 跳过下载，`update` 仍刷新 launcher 副本。Kimi Code 优先官方 installer（`code.kimi.com`，单二进制装入 `~/.kimi-code`），失败回退 `npm i -g @moonshot-ai/kimi-code`。
+  - `install`：未装 host 时走官方 installer（POSIX curl→临时文件再 bash，非 `curl|bash`）或 npm；Claude/Codex/Pi 在 host 已存在但 ACP 缺失时只装适配器；两者都缺则 host && adapter；Hermes 走官方 installer；OpenClaw 走 npm。Pi 无原生 ACP，ACP 入口是社区适配器 `pi-acp`（detect 用 host `pi`）；host 与 adapter 两层都走 npm，因为 `pi.dev/install.sh` 是交互式 TUI installer，不能静默执行。Dsh 是目录级 npm 项目安装：Host 先在 `~/.library/dsh-acp` 写入默认 `cordis.yml` 与最小 `package.json`（已存在则不覆盖），再 `npm i` 固定版本的 `dsh-acp-demo` + 插件栈；launcher、home npm 根或 PATH 已有入口时 `install` 跳过下载，`update` 仍刷新 launcher 副本。Kimi Code 优先官方 installer（`code.kimi.com`，单二进制装入 `~/.kimi-code`），失败回退 `npm i -g @moonshot-ai/kimi-code`。
   - `update`：优先 `tool update` / 官方链，失败再 npm；Codex 固定 npm（避免假成功）；OpenClaw 使用 `openclaw update --yes` 后 fallback npm；Pi 使用 `pi update --self` 后 fallback npm；Windows 上 OpenCode 不用交互式 `upgrade`。Kimi 的 `kimi upgrade` 是交互式，静默 update 直接重跑官方 installer（幂等）。
-  - `uninstall`：镜像安装矩阵做 best-effort 清理（先 `resolve_command("npm")` 预检，缺失即报错而非假成功）——npm 全局包逐个 `npm uninstall -g`（unix 上适配器带 `--prefix "$HOME/.local"`，与安装一致）；dsh 删除受管目录 `~/.agentero/dsh-acp`，kimi-code 在 npm 卸载后删除 `~/.kimi-code`（Windows 为 `%USERPROFILE%\.kimi-code`）；**不改 shell rc**（官方 installer 写入的 PATH 行保留）、不处理官方脚本/brew 安装的 CLI（无法可靠定位）。Hermes 无 npm 包/受管目录 → 仅移除注册项（不跑命令）。成功后同命令联动删除该模板的 catalog 注册项（`catalog-{templateId}`，或 command+args 匹配），避免二进制已删而注册项残留；phase 用 `agent-lifecycle-uninstall` 推送进度。
+  - `uninstall`：镜像安装矩阵做 best-effort 清理（先 `resolve_command("npm")` 预检，缺失即报错而非假成功）——npm 全局包逐个 `npm uninstall -g`（unix 上适配器带 `--prefix "$HOME/.local"`，与安装一致）；dsh 删除受管目录 `~/.library/dsh-acp`，kimi-code 在 npm 卸载后删除 `~/.kimi-code`（Windows 为 `%USERPROFILE%\.kimi-code`）；**不改 shell rc**（官方 installer 写入的 PATH 行保留）、不处理官方脚本/brew 安装的 CLI（无法可靠定位）。Hermes 无 npm 包/受管目录 → 仅移除注册项（不跑命令）。成功后同命令联动删除该模板的 catalog 注册项（`catalog-{templateId}`，或 command+args 匹配），避免二进制已删而注册项残留；phase 用 `agent-lifecycle-uninstall` 推送进度。
   - 本机 lifecycle 全局串行执行，避免多个 npm 全局安装/升级任务并发抢锁或互相覆盖临时脚本；设置页在对应 Agent 卡片内展示安装 / 扫描 / 探测阶段进度（#250）。
   - 安装子进程运行期间，Host 以 `agent-lifecycle:progress` 推送 `agent-lifecycle-*` phase tick，供设置页行内进度条消费，避免快捷下载脚本长时间停在无进度状态。
   - 若传入 `taskId`，等待 lifecycle 锁和执行安装子进程时会检查 `background_task_cancel`；取消是尽力而为，不回滚已完成的包管理器写入。设置页 Agent 目录行与引导页 Agent 卡片在行内进度条上提供取消（X）按钮，点击即以本次 lifecycle 的 `taskId` 调 `background_task_cancel`；取消为静默处理（不弹错误 toast、不显示错误条）。
@@ -2017,7 +2017,7 @@ Host 以 `expectedContent + headingPath + headingLine` 复核保存态标题身�
 
 #### `graph_rebuild`
 
-校验当前 Vault 的版本化 Wiki snapshot；完全命中时恢复内存索引，否则全量扫描 Vault target 文件、重建索引并 best-effort 覆盖 snapshot。缓存位于应用 cache 目录，不写入 Vault 或 `.agentero/catalog.sqlite`。
+校验当前 Vault 的版本化 Wiki snapshot；完全命中时恢复内存索引，否则全量扫描 Vault target 文件、重建索引并 best-effort 覆盖 snapshot。缓存位于应用 cache 目录，不写入 Vault 或 `.library/catalog.sqlite`。
 
 - **参数**
 
@@ -2071,7 +2071,7 @@ snapshot 保存所有 Wiki target 的 size+mtime stat 指纹（不读文件内�
 #### `doctor_ignore_aliases`
 
 - 参数：`{ vaultPath, paths, ignore }`。`paths` 为 Vault 相对 `papers/**/NOTES.md`；`ignore: true` 写入忽略列表，`false` 从列表移除。
-- 落盘：`.agentero/doctor.json` 的 `ignoredAliasPaths`。
+- 落盘：`.library/doctor.json` 的 `ignoredAliasPaths`。
 - 返回：更新后的 `DoctorVaultState`（`{ ignoredAliasPaths }`）。
 - 随后 `doctor_check` 不再把这些路径算作别名错误；报告中的 `aliases.ignoredPaths` 列出仍不完整且仍被忽略的路径。
 
@@ -2151,20 +2151,20 @@ snapshot 保存所有 Wiki target 的 size+mtime stat 指纹（不读文件内�
 
 | 文件 | 路径 |
 |---|---|
-| 应用设置 | `$XDG_CONFIG_HOME/agentero/settings.json`（未设 env 时 Unix：`~/.config/agentero/settings.json`） |
-| Agent 注册表 | `$XDG_CONFIG_HOME/agentero/agents.json` |
-| 使用记录 | `$XDG_DATA_HOME/agentero/usage.sqlite`（见 [usage.md](usage.md)） |
-| 版面 ONNX | `$XDG_CACHE_HOME/agentero/models/pp-doclayoutv3.onnx`（见下节） |
+| 应用设置 | `$XDG_CONFIG_HOME/library/settings.json`（未设 env 时 Unix：`~/.config/library/settings.json`） |
+| Agent 注册表 | `$XDG_CONFIG_HOME/library/agents.json` |
+| 使用记录 | `$XDG_DATA_HOME/library/usage.sqlite`（见 [usage.md](usage.md)） |
+| 版面 ONNX | `$XDG_CACHE_HOME/library/models/pp-doclayoutv3.onnx`（见下节） |
 
-Windows：未设 `XDG_CONFIG_HOME` 时回退 `%APPDATA%/agentero/`。旧版 macOS 路径 `~/Library/Application Support/agentero/` 在首次启动时 **best-effort 复制** 到 XDG 路径。
+Windows：未设 `XDG_CONFIG_HOME` 时回退 `%APPDATA%/library/`。旧版 macOS 路径 `~/Library/Application Support/library/` 在首次启动时 **best-effort 复制** 到 XDG 路径。
 
 ### 3.10.1 版面模型（PP-DocLayoutV3）
 
-- **路径**：`$XDG_CACHE_HOME/agentero/models/pp-doclayoutv3.onnx`
+- **路径**：`$XDG_CACHE_HOME/library/models/pp-doclayoutv3.onnx`
 - **启动**：`setup` 在代理配置后 `spawn_background_download`（固定 task id `layout-model`）
 - **下载源**：ModelScope（`greatv/oar-ocr`）优先，失败则 HuggingFace EmbedPDF `model_fp16.onnx`
 - **代理**：走 Host 全局 `core::http::client_builder`（与设置 Network proxy 一致）
-- **协议**：`agentero-model` URI scheme 把本地文件喂给 `onnxruntime-web`
+- **协议**：`library-model` URI scheme 把本地文件喂给 `onnxruntime-web`
 - **后台任务**：
   - `emit("layout-model:task", { taskId, status, progress, detail, error, source })`
   - `emit("background-task:progress", { taskId: "layout-model", phase: "layout-model", … })`
@@ -2230,7 +2230,7 @@ Windows：未设 `XDG_CONFIG_HOME` 时回退 `%APPDATA%/agentero/`。旧版 macO
 #### `settings_get`（已实现）
 
 - **返回**（`ApiResult`）：`{ settings: AppSettings, path: string, existed: boolean }`
-- `existed === false` 时前端可将遗留 `localStorage` 的 `agentero-settings` 一次性写入并清除。
+- `existed === false` 时前端可将遗留 `localStorage` 的 `library-settings` 一次性写入并清除。
 
 #### `settings_set`（已实现）
 
@@ -2239,7 +2239,7 @@ Windows：未设 `XDG_CONFIG_HOME` 时回退 `%APPDATA%/agentero/`。旧版 macO
 - **事件**：保存成功后向**所有窗口** `emit("settings:changed", AppSettings)`（规范化后的快照）。前端 `initSettingsSync()`（`src/lib/settings`）监听该事件更新各窗口内存缓存并通知订阅者（`subscribeSettings`），保证各窗口的设置实时一致。
 - `networkProxyEnabled` / `networkProxyUrl` 是 Host 级网络代理配置；启用后所有 Host
   创建的 reqwest HTTP(S)/SOCKS 请求和本地/远端 Agent 进程的代理环境使用该配置。
-- **链接改名策略**：`autoUpdateInternalLinks` 为 `"ask"`（默认）或 `"always"`；未知值规范化为 `"ask"`。它只控制可信**本地外部** rename 的 repair，Agentero 发起的显式 rename/move 始终走单次事务预检，remote Vault 不自动修复。
+- **链接改名策略**：`autoUpdateInternalLinks` 为 `"ask"`（默认）或 `"always"`；未知值规范化为 `"ask"`。它只控制可信**本地外部** rename 的 repair，Library 发起的显式 rename/move 始终走单次事务预检，remote Vault 不自动修复。
 
 > 设置文件绝对路径已包含在 `settings_get` 返回的 `path` 字段中（About / 诊断用），无独立 command。
 
@@ -2281,7 +2281,7 @@ UI 入口见 `settings_window_open`：Settings 现为独立原生单例窗口，
 - **参数**（`args`）：`{ vault? }`
 - **返回**：删除的事件条数。
 
-CLI 对照：`agentero usage which|timeline|summary|clear`（见 [cli.md](cli.md)）。前端入口：`src/lib/activity/`。
+CLI 对照：`library usage which|timeline|summary|clear`（见 [cli.md](cli.md)）。前端入口：`src/lib/activity/`。
 
 ### 3.10.4 广场订阅（XDG `feeds.sqlite`）
 
@@ -2351,11 +2351,11 @@ CLI 对照：`agentero usage which|timeline|summary|clear`（见 [cli.md](cli.md
 
 ## 3.x Headless CLI（对照）
 
-> 完整语义见 [`cli.md`](cli.md)。CLI **不**走 Tauri invoke，直接 path 依赖 `agentero_lib::services`（无 BYOA）。
+> 完整语义见 [`cli.md`](cli.md)。CLI **不**走 Tauri invoke，直接 path 依赖 `library_lib::services`（无 BYOA）。
 
 | CLI | Host service / command 锚点 |
 |---|---|
-| `open` / `<PATH>` | 深链唤起桌面 App（`agentero://open?path=…`） |
+| `open` / `<PATH>` | 深链唤起桌面 App（`library://open?path=…`） |
 | `vault create` | `services::vault::create_vault` / `vault_create`（幂等脚手架；缺失根目录仅 `create` 会新建，`vault_ensure` 对缺失路径报错） |
 | `vault which\|info\|check\|use` | CLI 自管解析 + catalog `ensure_catalog` / `schema_version` |
 | `tree` | 磁盘扫描（非 Library 虚拟节点） |
@@ -2371,9 +2371,9 @@ CLI 对照：`agentero usage which|timeline|summary|clear`（见 [cli.md](cli.md
 | `layout list\|get` | `{paper}/source/layout-index.json` |
 | `mark list\|get\|add\|delete` | `{paper}/marks/`（区域锚点优先） |
 | `usage which\|timeline\|summary\|clear` | XDG `usage.sqlite`（`activity_record_events` / `usage_*`） |
-| `config show\|set` | `~/.config/agentero/config.toml`（与 GUI 隔离） |
+| `config show\|set` | `~/.config/library/config.toml`（与 GUI 隔离） |
 
-构建：`cargo build -p agentero-cli` → bin `agentero`。
+构建：`cargo build -p library-cli` → bin `library`。
 
 ## 4. 数据模型
 

@@ -22,13 +22,13 @@ use std::sync::Arc;
 use tauri::Manager;
 
 #[derive(Clone)]
-pub struct AgenteroMcp {
+pub struct LibraryMcp {
     pub ctrl: Arc<McpController>,
     #[allow(dead_code)]
     tool_router: ToolRouter<Self>,
 }
 
-impl AgenteroMcp {
+impl LibraryMcp {
     pub fn new(ctrl: Arc<McpController>) -> Self {
         Self {
             ctrl,
@@ -148,7 +148,7 @@ fn clamp_limit(raw: Option<u32>) -> usize {
 }
 
 #[tool_router]
-impl AgenteroMcp {
+impl LibraryMcp {
     #[tool(
         description = "List papers in the open vault with catalog metadata (id, path, title, authors, year, tags, doi, arxivId, publication, status, isRead). Abstract is omitted; use paper_get for the full record."
     )]
@@ -347,7 +347,7 @@ impl AgenteroMcp {
 }
 
 #[tool_handler]
-impl ServerHandler for AgenteroMcp {
+impl ServerHandler for LibraryMcp {
     fn get_info(&self) -> ServerInfo {
         ServerInfo::new(
             ServerCapabilities::builder()
@@ -356,12 +356,12 @@ impl ServerHandler for AgenteroMcp {
                 .build(),
         )
         .with_instructions(
-            "Agentero research vault MCP. Read resource agentero://vault first, then paper_list / paper_get. ref is a paper id or vault-relative path. Notes writes only touch NOTES.md.",
+            "Library research vault MCP. Read resource library://vault first, then paper_list / paper_get. ref is a paper id or vault-relative path. Notes writes only touch NOTES.md.",
         )
         .with_server_info(
-            Implementation::new("agentero", env!("CARGO_PKG_VERSION"))
-                .with_title("Agentero")
-                .with_website_url("https://agentero.poco-ai.com")
+            Implementation::new("library", env!("CARGO_PKG_VERSION"))
+                .with_title("Library")
+                .with_website_url("https://library.poco-ai.com")
                 .with_icons(icons::server_icons()),
         )
     }
@@ -397,13 +397,13 @@ impl ServerHandler for AgenteroMcp {
 
 #[cfg(test)]
 mod schema_tests {
-    use super::AgenteroMcp;
+    use super::LibraryMcp;
     use crate::integration::mcp::McpController;
     use rmcp::ServerHandler;
 
     #[test]
     fn import_id_advertises_output_schema() {
-        let tool = AgenteroMcp::import_id_tool_attr();
+        let tool = LibraryMcp::import_id_tool_attr();
         let schema = tool
             .output_schema
             .expect("import_id should advertise outputSchema");
@@ -418,11 +418,11 @@ mod schema_tests {
 
     #[test]
     fn server_info_includes_embedded_icons() {
-        let mcp = AgenteroMcp::new(std::sync::Arc::new(McpController::new()));
+        let mcp = LibraryMcp::new(std::sync::Arc::new(McpController::new()));
         let info = mcp.get_info();
         let icons = info.server_info.icons.as_ref().expect("serverInfo.icons");
         assert!(!icons.is_empty());
         assert!(icons[0].src.starts_with("data:image/png;base64,"));
-        assert_eq!(info.server_info.title.as_deref(), Some("Agentero"));
+        assert_eq!(info.server_info.title.as_deref(), Some("Library"));
     }
 }

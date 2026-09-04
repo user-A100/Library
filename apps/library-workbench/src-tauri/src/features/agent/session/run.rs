@@ -126,7 +126,7 @@ async fn prepare_run_turn(params: &RunOnceParams) -> Result<RunTurnPrep, AppErro
         let skill_vault = if let Some(ref r) = params.remote {
             if let Err(e) = crate::integration::remote::materialize_skills_to_work(&r.session).await
             {
-                log::warn!(target: "agentero::agent", "materialize remote skills: {e}");
+                log::warn!(target: "library::agent", "materialize remote skills: {e}");
             }
             Some(r.work_root.to_string_lossy().into_owned())
         } else {
@@ -353,7 +353,7 @@ impl RunOnceContext {
 
         agent_client_protocol::Client
             .builder()
-            .name("agentero")
+            .name("library")
             .with_handler(AcpTerminalHandler::new(self.terminals.clone()))
             .on_receive_notification(
                 {
@@ -559,7 +559,7 @@ impl RunOnceContext {
                 resume_session_id
             } else if self.dsh_fresh_sessions {
                 log::debug!(
-                    target: "agentero::agent",
+                    target: "library::agent",
                     "dsh cannot resume {rid}: starting a fresh session"
                 );
                 None
@@ -693,7 +693,7 @@ impl RunOnceContext {
                         }
                         Err(e) => {
                             log::debug!(
-                                target: "agentero::agent",
+                                target: "library::agent",
                                 "agent={} set model failed (listed={}): pref={} err={}",
                                 self.agent_id,
                                 listed,

@@ -1,6 +1,6 @@
 # Zotero Word 插件兼容与引用工作流（草案）
 
-关联 Issue：[\#167](https://github.com/poco-ai/Agentero/issues/167)（“支持一下 Zotero Word 插件”）。
+关联 Issue：[\#167](https://github.com/poco-ai/Library/issues/167)（“支持一下 Zotero Word 插件”）。
 
 > 状态：未实现。本文先固定产品边界和技术路线；落地后应将已实现部分移至前端/后端功能文档，并从本目录移除。
 
@@ -10,13 +10,13 @@ Issue 所说的“Zotero Word 插件”有两层含义，必须分开处理：
 
 | 目标 | 结论 |
 | --- | --- |
-| 在 Microsoft Word 中搜索 Agentero Library、插入可刷新引文和参考文献 | **做**：在官方插件兼容模式中直接由 Agentero 提供；Agentero 自有 Office Add-in 是后备方案，不是首个交付。 |
-| 让已安装的官方 `Zotero.dotm` 直接把 Agentero 当成 Zotero Desktop | **做，按平台分期**：macOS 先做（插件已有 HTTP 入口）；Windows 后做（`WM_COPYDATA` + OLE Automation）。两者均不能与 Zotero Desktop 同时接管插件。 |
+| 在 Microsoft Word 中搜索 Library Library、插入可刷新引文和参考文献 | **做**：在官方插件兼容模式中直接由 Library 提供；Library 自有 Office Add-in 是后备方案，不是首个交付。 |
+| 让已安装的官方 `Zotero.dotm` 直接把 Library 当成 Zotero Desktop | **做，按平台分期**：macOS 先做（插件已有 HTTP 入口）；Windows 后做（`WM_COPYDATA` + OLE Automation）。两者均不能与 Zotero Desktop 同时接管插件。 |
 | 保留已有 Zotero Word 文档的可读性 | **做迁移工具，不改原文档**：识别现有 Zotero field code，尽力读出嵌入的 CSL 引文数据；用户确认后生成副本并以当前 provider 验证的兼容字段重写。 |
 
-当用户已安装官方 `Zotero.dotm` 时，首版优先保持其现有 Ribbon 和按钮不变，由 Agentero 接收同一协议并显示自己的引用选择界面。该模式应显式显示为“使用官方 Zotero Word 插件（Agentero provider）”，不得暗示 Agentero 是 Zotero 或修改 Zotero Desktop；Zotero 商标使用需在发布前走法律审核。
+当用户已安装官方 `Zotero.dotm` 时，首版优先保持其现有 Ribbon 和按钮不变，由 Library 接收同一协议并显示自己的引用选择界面。该模式应显式显示为“使用官方 Zotero Word 插件（Library provider）”，不得暗示 Library 是 Zotero 或修改 Zotero Desktop；Zotero 商标使用需在发布前走法律审核。
 
-**互斥规则**：同一用户会话中只能有一个 provider。启用 Agentero provider 前必须退出 Zotero Desktop；停用后才可恢复 Zotero Desktop。Windows 的插件通过窗口查找第一个匹配目标，macOS 使用固定本机端口/pipe，双进程并行会造成请求随机路由或端口冲突，不能靠提示“同时使用”解决。
+**互斥规则**：同一用户会话中只能有一个 provider。启用 Library provider 前必须退出 Zotero Desktop；停用后才可恢复 Zotero Desktop。Windows 的插件通过窗口查找第一个匹配目标，macOS 使用固定本机端口/pipe，双进程并行会造成请求随机路由或端口冲突，不能靠提示“同时使用”解决。
 
 实际工作量是中高风险的桌面集成功能，而非 Connector 加一个普通端点。推荐的 go/no-go 顺序是：**M0 macOS 官方插件握手与空文档操作 → M1 macOS 可用闭环 → M2 Windows → 评估是否仍需要自有 Office Add-in**。
 
@@ -35,27 +35,27 @@ Issue 所说的“Zotero Word 插件”有两层含义，必须分开处理：
 ### M1 要做（macOS 官方插件 provider）
 
 - 支持 Microsoft 365 Word Desktop for macOS 的当前受支持版本；用户继续使用官方 `Zotero` Ribbon 的 Add/Edit Citation、Add/Edit Bibliography、Document Preferences、Refresh、Unlink Citations。
-- Agentero 收到 `addEditCitation` 等命令后打开自己的原生引用选择窗口，搜索当前已选择的本地 Vault Catalog；支持多条引用、页码/locator、prefix/suffix、suppress author、引文重排。
-- 至少内置 APA、Chicago author-date、IEEE 三种 CSL 样式及相应 locale；样式随 Agentero release 更新，不在运行时静默联网下载。
-- 插入/刷新后，文档自身含有恢复和排版所需的 CSL-JSON 快照。关闭 Agentero、移动 Vault、把 `.docx` 发给他人后，现有引文仍是普通 Word 字段显示的文本；重新编辑需要连接一个可用的 Agentero Vault。
-- Agentero 只读使用当前 Vault 的论文元数据；Word 文件的写入只能由 Word automation 完成，不经 Vault 覆盖用户文件。
+- Library 收到 `addEditCitation` 等命令后打开自己的原生引用选择窗口，搜索当前已选择的本地 Vault Catalog；支持多条引用、页码/locator、prefix/suffix、suppress author、引文重排。
+- 至少内置 APA、Chicago author-date、IEEE 三种 CSL 样式及相应 locale；样式随 Library release 更新，不在运行时静默联网下载。
+- 插入/刷新后，文档自身含有恢复和排版所需的 CSL-JSON 快照。关闭 Library、移动 Vault、把 `.docx` 发给他人后，现有引文仍是普通 Word 字段显示的文本；重新编辑需要连接一个可用的 Library Vault。
+- Library 只读使用当前 Vault 的论文元数据；Word 文件的写入只能由 Word automation 完成，不经 Vault 覆盖用户文件。
 
 ### M1 不做
 
 - 不同步或写入 Zotero Desktop 数据库、Zotero Sync 或用户的 Zotero 账号。
-- 不分发、修改或覆盖官方 `Zotero.dotm`；用户需自行通过 Zotero 安装它。Agentero 只对其公开可观察的本机调用协议作兼容，具体许可结论见“许可证”。
-- 不保证 Agentero provider 写出的字段在 Zotero Desktop 中可继续编辑，或反向保证 Zotero 字段能被 Agentero 无损编辑；迁移必须创建副本。
+- 不分发、修改或覆盖官方 `Zotero.dotm`；用户需自行通过 Zotero 安装它。Library 只对其公开可观察的本机调用协议作兼容，具体许可结论见“许可证”。
+- 不保证 Library provider 写出的字段在 Zotero Desktop 中可继续编辑，或反向保证 Zotero 字段能被 Library 无损编辑；迁移必须创建副本。
 - M1 不支持 Windows Word、Google Docs、Word Online、iOS/Android Word；它们分别需要 Windows native bridge、HTTP citing adapter 或 Office Add-in。
 - 不做在线下载任意 CSL style，也不覆盖已有 `.docx`。迁移始终显式确认并输出副本。
 
 ## 领域模型与持久化
 
-Catalog 是“可搜索的当前来源”，不是稿件可重复排版的唯一事实来源。为了让未修改的官方插件能够识别文档，provider 不能另造 `agentero.citation/1` field schema；必须生成并读取 Zotero 已使用的 document data 与 `ADDIN ZOTERO_ITEM` / CSL citation payload。每个 citation 仍须嵌入完整可用的 CSL item data，避免文档只引用一个会失效的 Vault 路径。
+Catalog 是“可搜索的当前来源”，不是稿件可重复排版的唯一事实来源。为了让未修改的官方插件能够识别文档，provider 不能另造 `library.citation/1` field schema；必须生成并读取 Zotero 已使用的 document data 与 `ADDIN ZOTERO_ITEM` / CSL citation payload。每个 citation 仍须嵌入完整可用的 CSL item data，避免文档只引用一个会失效的 Vault 路径。
 
 ```text
-Agentero Catalog (当前 Vault，只读)
+Library Catalog (当前 Vault，只读)
   -> PaperRecord -> Zotero-compatible CSL item snapshot
-  -> official Zotero.dotm -> Agentero provider
+  -> official Zotero.dotm -> Library provider
   -> Word ADDIN ZOTERO_ITEM field (payload + rendered text)
   -> Word document
 
@@ -68,7 +68,7 @@ Refresh
   -> citeproc recomputes all rendered citations and bibliography
 ```
 
-Zotero field/document data 的序列化、版本迁移、citation ID、note index、style/locale 与 bibliography 语义以官方集成测试为兼容基线。不要从零猜一个“看起来像 CSL-JSON”的格式。Agentero 的内部类型可以有显式 schema，但写到 Word 前必须通过一个专用 `zotero_field_codec` 转成经 fixture 验证的官方格式。
+Zotero field/document data 的序列化、版本迁移、citation ID、note index、style/locale 与 bibliography 语义以官方集成测试为兼容基线。不要从零猜一个“看起来像 CSL-JSON”的格式。Library 的内部类型可以有显式 schema，但写到 Word 前必须通过一个专用 `zotero_field_codec` 转成经 fixture 验证的官方格式。
 
 内部 citation draft 的概念形态如下；它不是文档中最终存储的 JSON：
 
@@ -90,7 +90,7 @@ Zotero field/document data 的序列化、版本迁移、citation ID、note inde
 }
 ```
 
-`itemData` 是必要字段，`id` 只帮助重新连接 Catalog。匹配优先级为 DOI → arXiv → 归一化 title + author + year；不能匹配时仍以嵌入快照重新排版，并在 Agentero 的引用选择窗口标记为“未连接到当前 Vault”。不得把绝对 Vault 路径、远程会话 ID、用户路径或凭据写进 `.docx`。
+`itemData` 是必要字段，`id` 只帮助重新连接 Catalog。匹配优先级为 DOI → arXiv → 归一化 title + author + year；不能匹配时仍以嵌入快照重新排版，并在 Library 的引用选择窗口标记为“未连接到当前 Vault”。不得把绝对 Vault 路径、远程会话 ID、用户路径或凭据写进 `.docx`。
 
 Document Preferences 保持 Zotero-compatible data，保存 `styleId`、locale、note/author-date 模式、field mode 和 bibliography ID。Bibliography 也以 Zotero 兼容字段定位，刷新时只替换该字段的结果。`Unlink Citations` 必须二次确认，因为它会把字段转为不可刷新的普通文本。
 
@@ -108,14 +108,14 @@ Tauri Host 新增 `features/word/`。它不是一个仅返回元数据的 HTTP b
 | `win_word_driver` | 通过 Windows OLE Automation 实现相同 trait；仅 M2 引入。 |
 | `citation_domain` | Catalog 映射、Zotero field codec、样式偏好、citation order、refresh plan、bibliography plan。 |
 | `citeproc` adapter | 输入 CSL item + style + locale + 当前文档 citation order，输出 citation/bibliography 富文本；先评估可嵌入 Rust/Tauri 的实现及许可证。 |
-| `citation_dialog` | Agentero 原生窗口；接收官方 Ribbon 命令后给用户搜索、多引文、locator/prefix/suffix 等交互。 |
+| `citation_dialog` | Library 原生窗口；接收官方 Ribbon 命令后给用户搜索、多引文、locator/prefix/suffix 等交互。 |
 
 ```text
 official Zotero.dotm command
   -> platform ingress
-  -> Agentero provider transaction
+  -> Library provider transaction
   -> Word document driver reads fields/data
-  -> Agentero citation dialog + current local Vault Catalog
+  -> Library citation dialog + current local Vault Catalog
   -> citeproc + Zotero field codec
   -> Word document driver writes fields/bibliography
 ```
@@ -126,10 +126,10 @@ official Zotero.dotm command
 
 - 只接受已知 Word agent 与固定命令 allowlist；拒绝未知 template version、缺失字段、过长值和非本机 `Host`。
 - HTTP 返回只确认“命令已受理”；异步 provider 再验证前台 Word 进程和活动文档，绝不把 query 中的路径当成可读写文件路径。
-- 未修改的官方宏不能携带 bearer token，因而此端点不能达到 Office Add-in 的 token 安全等级。默认关闭、loopback-only、在 Settings 明确显示风险、只接受固定动作；`removeCodes`、迁移或影响多字段的操作在 Agentero 中二次确认。
+- 未修改的官方宏不能携带 bearer token，因而此端点不能达到 Office Add-in 的 token 安全等级。默认关闭、loopback-only、在 Settings 明确显示风险、只接受固定动作；`removeCodes`、迁移或影响多字段的操作在 Library 中二次确认。
 - 停用 provider 即移除 integration route；`/connector/*` 浏览器导入路由可与它同 listener 共存，但任一模式都不得与 Zotero Desktop 共用 `23119`。
 
-M0 先验证 Word 的 HTTP 请求确实到达、`addEditCitation` 能打开 Agentero 空对话框，并能通过 macOS automation 在临时文档读取/插入一个无害 field。任何一步依赖修改 `Zotero.dotm` 或降低 Host 校验，立即停止 M1。
+M0 先验证 Word 的 HTTP 请求确实到达、`addEditCitation` 能打开 Library 空对话框，并能通过 macOS automation 在临时文档读取/插入一个无害 field。任何一步依赖修改 `Zotero.dotm` 或降低 Host 校验，立即停止 M1。
 
 ### 3. Windows ingress（M2）
 
@@ -151,18 +151,18 @@ CSL style/locale 作为应用内版本化资源交付，记录 `styleId` 与 bun
 
 ### Zotero 兼容字段
 
-provider 使用 Zotero 兼容字段和 document data。普通读者无需 Agentero 也能看到渲染文字；有兼容 provider 的安装才可编辑或刷新。导出 PDF、另存 `.docx`、复制粘贴和协作编辑是 M0/M1 的必测行为。
+provider 使用 Zotero 兼容字段和 document data。普通读者无需 Library 也能看到渲染文字；有兼容 provider 的安装才可编辑或刷新。导出 PDF、另存 `.docx`、复制粘贴和协作编辑是 M0/M1 的必测行为。
 
 ### 导入 Zotero 字段
 
-Zotero Word 文档会保留 citation field code，且 Zotero UI 允许已不连接其库的 orphaned item 继续存在。Agentero 的导入器可以利用其中的序列化 CSL citation data 做**尽力**迁移：
+Zotero Word 文档会保留 citation field code，且 Zotero UI 允许已不连接其库的 orphaned item 继续存在。Library 的导入器可以利用其中的序列化 CSL citation data 做**尽力**迁移：
 
 1. 只读扫描 `ADDIN ZOTERO_ITEM` / Zotero document data，报告可解析、不可解析和缺失 item snapshot 的数量。
 2. 用 DOI → arXiv → title+author+year 匹配当前 Vault；不匹配时保留可得的嵌入元数据，绝不自动入库或猜测论文。
 3. 在用户选择目标文件名并确认后，对副本写入经当前 provider 验证的兼容字段、重新生成 bibliography；原文件不触碰。
 4. 校验副本的 citation 数、字段数和 bibliography 条目数；无法解析的 field 保留原始文本并列出报告，不静默删除。
 
-迁移不等于双向兼容。若用户需要继续让 Zotero 管理该稿件，应保留原文件并继续使用 Zotero；Agentero 只在用户显式迁移后成为该副本的 provider。
+迁移不等于双向兼容。若用户需要继续让 Zotero 管理该稿件，应保留原文件并继续使用 Zotero；Library 只在用户显式迁移后成为该副本的 provider。
 
 ## 实现难度与前置需求
 
@@ -180,16 +180,16 @@ Zotero Word 文档会保留 citation field code，且 Zotero UI 允许已不连�
 ### 功能与发布前置条件
 
 1. **协议 fixtures**：收集由官方插件生成的空文档、单引文、多引文、author-date、numeric、footnote、bibliography、refresh、unlink 样本；对 field code 与 document data 建字节级或语义级回归测试。
-2. **Word 自动化 spike**：macOS 用用户授权的 Automation 从 Agentero 读取活动 Word 文档、插入 field、写 field code、遍历 fields、更新 bibliography，并验证保存/重开/Undo/Track Changes。没有此证明，不开始 citation UI。
+2. **Word 自动化 spike**：macOS 用用户授权的 Automation 从 Library 读取活动 Word 文档、插入 field、写 field code、遍历 fields、更新 bibliography，并验证保存/重开/Undo/Track Changes。没有此证明，不开始 citation UI。
 3. **citeproc 与样式**：选择可再分发的 citeproc 实现和 CSL style/locale bundle，确认许可证、富文本、脚注、locale 与 disambiguation 行为；不能依赖在线 Translator。
 4. **协议安全**：macOS unmodified macro 不带认证 token，需单独威胁建模；路由默认关闭、loopback-only、allowlist、活动 Word 文档复核、破坏性命令二次确认、可见 provider 状态与一键停用都是发布门槛。
 5. **Zotero 共存**：启用前检测 Zotero Desktop/端口/Windows 目标窗口；强制单 provider，明确切换流程。不得修改 Zotero 安装、`Zotero.dotm` 或用户 Word Startup 文件。
-6. **许可证与商标**：官方 Windows/macOS 集成仓库为 [AGPLv3](https://github.com/zotero/zotero-word-for-windows-integration/blob/main/COPYING)，模板内宏标注 GPL；复用、改编、分发模板或将其实现移植进 Agentero 前必须完成法律评审。技术 spike 只允许最小观察与隔离验证，不把官方源码复制进仓库。Zotero 名称/图标不能作为 Agentero 功能品牌使用。
+6. **许可证与商标**：官方 Windows/macOS 集成仓库为 [AGPLv3](https://github.com/zotero/zotero-word-for-windows-integration/blob/main/COPYING)，模板内宏标注 GPL；复用、改编、分发模板或将其实现移植进 Library 前必须完成法律评审。技术 spike 只允许最小观察与隔离验证，不把官方源码复制进仓库。Zotero 名称/图标不能作为 Library 功能品牌使用。
 7. **测试设备**：至少一台受支持 macOS + Microsoft 365 Word；Windows 阶段需 x64 与 ARM64/不同 Office bitness 覆盖。Office 授权、Automation consent 和 Word 更新通道应纳入 release checklist。
 
 ### Go / No-Go
 
-M0 的成功标准是：用户不修改官方插件，在 Zotero Desktop 退出时点击现有 Add/Edit Citation，Agentero 能安全接收命令、显示空选择界面，并在用户取消时不改变 Word 文档；再通过 macOS driver 向临时文档写入并读回一个兼容 field。只有这两项和许可证评审均通过，才进入 M1。
+M0 的成功标准是：用户不修改官方插件，在 Zotero Desktop 退出时点击现有 Add/Edit Citation，Library 能安全接收命令、显示空选择界面，并在用户取消时不改变 Word 文档；再通过 macOS driver 向临时文档写入并读回一个兼容 field。只有这两项和许可证评审均通过，才进入 M1。
 
 以下任一情况为 **No-Go**：需分发或修改 `Zotero.dotm` 才能完成基本交互；无法在不放宽 loopback 安全边界的前提下确认命令来源/活动文档；Word Automation 无法稳定保存兼容 fields；或法律结论不允许期望的分发方式。No-Go 后转向自有 Office Add-in，不继续在不稳定的兼容层上投入。
 
@@ -218,10 +218,10 @@ M0 的成功标准是：用户不修改官方插件，在 Zotero Desktop 退出�
 | 场景 | 验收 |
 | --- | --- |
 | macOS Word Desktop（M1）/ Windows Word Desktop（M2） | 插入、编辑、Refresh、Undo、脚注、bibliography、Unlink 均正常；异常显示 i18n Toast/原生错误而不破坏字段。 |
-| 保存、重开、复制粘贴、Track Changes、协作者无 Agentero | 已有文本不丢失；可重新定位的字段不重复生成 bibliography。 |
+| 保存、重开、复制粘贴、Track Changes、协作者无 Library | 已有文本不丢失；可重新定位的字段不重复生成 bibliography。 |
 | Catalog 元数据变更 | 只有显式 Refresh 改变排版；未匹配项保持 document snapshot 并明确标记。 |
-| Agentero 停止、provider 停用、端口被占 | Word 不写半个字段；官方 Ribbon 显示其原有“无法通信”错误，Agentero 不留半完成事务。 |
-| Zotero Desktop 正在运行 | Agentero provider 拒绝启用；不抢 `23119`、不修改 Zotero 配置、不接管 Windows 消息窗口。 |
+| Library 停止、provider 停用、端口被占 | Word 不写半个字段；官方 Ribbon 显示其原有“无法通信”错误，Library 不留半完成事务。 |
+| Zotero Desktop 正在运行 | Library provider 拒绝启用；不抢 `23119`、不修改 Zotero 配置、不接管 Windows 消息窗口。 |
 | Zotero 迁移 | 原 `.docx` 不变；副本有完整可刷新的兼容字段，失败项在报告中可见。 |
 
 ## 风险与待决项

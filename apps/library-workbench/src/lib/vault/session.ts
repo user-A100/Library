@@ -5,11 +5,11 @@ import { isTauri } from "@/lib/core/tauri";
 import { isRemoteVaultHandle } from "@/lib/vault/remote/remote-vault";
 
 /** Per-window vault (sessionStorage — isolated across ⌘N windows). */
-const SESSION_VAULT_KEY = "agentero-vault-path";
+const SESSION_VAULT_KEY = "library-vault-path";
 /** Last opened vault for “restore last vault” on the primary window. */
-const LAST_VAULT_KEY = "agentero-vault-path";
+const LAST_VAULT_KEY = "library-vault-path";
 /** MRU list for welcome screen (localStorage, shared). */
-const RECENT_VAULTS_KEY = "agentero-recent-vaults";
+const RECENT_VAULTS_KEY = "library-recent-vaults";
 const MAX_RECENT_VAULTS = 8;
 
 /** True when this window was opened via ⌘N / New Window (`?fresh=1`). */
@@ -114,7 +114,7 @@ export function saveVaultPath(path: string | null): void {
 	}
 }
 
-/** Open a new Agentero window without restoring a vault (desktop only). */
+/** Open a new Library window without restoring a vault (desktop only). */
 export async function openNewWindow(): Promise<void> {
 	if (!isTauri()) {
 		throw new Error(i18n.t("app:vault.openDesktopOnly"));

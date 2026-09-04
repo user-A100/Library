@@ -9,7 +9,7 @@
 - `src/components/editor/paragraph-node.tsx` — 段落 `py-1`（首行对齐依赖）
 - `src/hooks/use-app-bootstrap.ts` — `uiScale` → `documentElement.fontSize`
 
-**Issue**：[#143](https://github.com/agentero-ai/motif/issues/143)
+**Issue**：[#143](https://github.com/library-ai/motif/issues/143)
 
 ---
 

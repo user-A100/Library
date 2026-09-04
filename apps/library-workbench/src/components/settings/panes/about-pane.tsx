@@ -12,7 +12,7 @@ import {
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import agenteroAppIcon from "@/assets/agentero-app-icon.svg";
+import libraryAppIcon from "@/assets/library-app-icon.svg";
 import { CompactCodeBlock } from "@/components/ai-elements/code-block";
 import {
 	PageTitle,
@@ -41,11 +41,11 @@ import {
 	type UpdateSnapshot,
 } from "@/lib/update";
 
-/** Same as README / homebrew-agentero Formula (headless CLI, not the desktop cask). */
+/** Same as README / homebrew-library Formula (headless CLI, not the desktop cask). */
 const CLI_BREW_INSTALL_COMMAND =
-	"brew tap poco-ai/agentero\nbrew install agentero";
+	"brew tap poco-ai/library\nbrew install library";
 
-const GITHUB_REPO_URL = "https://github.com/poco-ai/Agentero";
+const GITHUB_REPO_URL = "https://github.com/poco-ai/Library";
 
 export function AboutPane() {
 	const { t } = useTranslation("settings");
@@ -247,13 +247,13 @@ export function AboutPane() {
 				<div className="flex items-center justify-between gap-4 px-3.5 py-4">
 					<div className="flex min-w-0 items-center gap-3">
 						<img
-							src={agenteroAppIcon}
+							src={libraryAppIcon}
 							alt=""
 							aria-hidden
 							className="size-10 shrink-0 rounded-lg"
 						/>
 						<div className="min-w-0 space-y-0.5">
-							<p className="font-semibold text-base tracking-tight">Agentero</p>
+							<p className="font-semibold text-base tracking-tight">Library</p>
 							{version && (
 								<p className="text-muted-foreground text-sm">
 									{t("about.version", { version })}

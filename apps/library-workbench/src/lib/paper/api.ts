@@ -17,14 +17,14 @@ import type { WikiRenameResult } from "@/lib/wiki";
  * Virtual file-tree path for the papers library table.
  * Not a real filesystem path — never passed to Host fs APIs.
  */
-export const LIBRARY_VIRTUAL_PATH = "agentero:library";
+export const LIBRARY_VIRTUAL_PATH = "library:library";
 
 export function isLibraryVirtualPath(path: string | null | undefined): boolean {
 	return path === LIBRARY_VIRTUAL_PATH;
 }
 
 /** Virtual file-tree / tab path for the Recycle Bin center view. */
-export const TRASH_VIRTUAL_PATH = "agentero:trash";
+export const TRASH_VIRTUAL_PATH = "library:trash";
 
 export function isTrashVirtualPath(path: string | null | undefined): boolean {
 	return path === TRASH_VIRTUAL_PATH;
@@ -210,7 +210,7 @@ export type TrashResult = {
 };
 
 /**
- * Move vault-relative paths into the recycle bin (`.agentero/.trash/`).
+ * Move vault-relative paths into the recycle bin (`.library/.trash/`).
  * Snapshots + removes catalog rows so the delete can be undone.
  */
 export async function trashPaths(
@@ -241,7 +241,7 @@ export type TrashEntry = {
 	isDir: boolean;
 };
 
-/** List all items currently in the recycle bin (`.agentero/.trash/`). */
+/** List all items currently in the recycle bin (`.library/.trash/`). */
 export async function listTrash(vaultPath: string): Promise<TrashEntry[]> {
 	if (!isTauri()) return [];
 	return invokeApi<TrashEntry[]>(

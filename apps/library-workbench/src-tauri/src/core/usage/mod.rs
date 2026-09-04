@@ -1,10 +1,10 @@
-//! Device-local activity log: `$XDG_DATA_HOME/agentero/usage.sqlite`.
+//! Device-local activity log: `$XDG_DATA_HOME/library/usage.sqlite`.
 //!
 //! Not stored in the Vault. Remote catalog mirroring and file watchers never
 //! see this file. Events are scoped by vault path so one install can hold
 //! several libraries.
 //!
-//! Shared by the desktop Host and the headless CLI (`agentero usage *`), so the
+//! Shared by the desktop Host and the headless CLI (`library usage *`), so the
 //! storage layer stays outside the `desktop` feature gate; only the Tauri
 //! commands and the default-path convenience layer are gated.
 
@@ -32,7 +32,7 @@ pub use record::{record_events, UsageRecord};
 #[cfg(feature = "desktop")]
 pub fn rename_path_best_effort(vault: &str, from: &str, to: &str) {
     if let Err(e) = rename_path(&usage_db_path(), vault, from, to) {
-        log::warn!(target: "agentero::usage", "rename usage paths {from} → {to}: {e}");
+        log::warn!(target: "library::usage", "rename usage paths {from} → {to}: {e}");
     }
 }
 
@@ -73,7 +73,7 @@ pub(super) fn temp_db() -> std::path::PathBuf {
     // unique per call; pid + timestamp still separate concurrent processes.
     static SEQ: AtomicU64 = AtomicU64::new(0);
     let dir = std::env::temp_dir().join(format!(
-        "agentero-usage-{}-{}-{}",
+        "library-usage-{}-{}-{}",
         std::process::id(),
         SEQ.fetch_add(1, Ordering::Relaxed),
         std::time::SystemTime::now()

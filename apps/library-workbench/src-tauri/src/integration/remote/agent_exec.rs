@@ -34,7 +34,7 @@ fn remote_path_bootstrap() -> String {
     ));
     format!(
         r#"
-# Agentero: non-interactive SSH PATH bootstrap (brew / npm user prefixes / nvm / cargo).
+# Library: non-interactive SSH PATH bootstrap (brew / npm user prefixes / nvm / cargo).
 for _d in \
   {dirs}
 do
@@ -101,7 +101,7 @@ pub const REMOTE_PROXY_ENV_KEYS: &[&str] = &[
     "https_proxy",
     "all_proxy",
     // Custom User-Agent for Codex/Claude / mid-station affinity (#207).
-    "AGENTERO_USER_AGENT",
+    "LIBRARY_USER_AGENT",
     "CODEX_CONFIG",
     "MODEL_PROVIDER",
     "ANTHROPIC_CUSTOM_HEADERS",

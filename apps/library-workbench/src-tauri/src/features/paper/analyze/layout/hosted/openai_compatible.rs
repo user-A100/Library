@@ -79,14 +79,14 @@ mod tests {
     /// Live settings-probe check against a real OpenAI-compatible endpoint.
     ///
     /// ```sh
-    /// AGENTERO_VLM_API_KEY=sk-… \
-    ///   cargo test -p agentero --lib -- live_openai_compatible_probe --ignored --nocapture
+    /// LIBRARY_VLM_API_KEY=sk-… \
+    ///   cargo test -p library --lib -- live_openai_compatible_probe --ignored --nocapture
     /// ```
     #[tokio::test]
     #[ignore = "live network + API key"]
     async fn live_openai_compatible_probe() {
-        let api_key = std::env::var("AGENTERO_VLM_API_KEY").expect("set AGENTERO_VLM_API_KEY");
-        let base_url = std::env::var("AGENTERO_VLM_BASE_URL").unwrap_or_default();
+        let api_key = std::env::var("LIBRARY_VLM_API_KEY").expect("set LIBRARY_VLM_API_KEY");
+        let base_url = std::env::var("LIBRARY_VLM_BASE_URL").unwrap_or_default();
         let credentials = HostedProviderCredentials {
             api_key: Some(api_key),
             base_url: (!base_url.is_empty()).then_some(base_url),

@@ -84,14 +84,14 @@ impl SyncService {
             });
             match result {
                 Ok(Ok(outcome)) => log::info!(
-                    target: "agentero::sync",
+                    target: "library::sync",
                     "exit flush {key}: version={} up={} down={}",
                     outcome.version,
                     outcome.uploaded,
                     outcome.downloaded
                 ),
-                Ok(Err(e)) => log::warn!(target: "agentero::sync", "exit flush {key}: {e}"),
-                Err(_) => log::warn!(target: "agentero::sync", "exit flush {key}: timed out"),
+                Ok(Err(e)) => log::warn!(target: "library::sync", "exit flush {key}: {e}"),
+                Err(_) => log::warn!(target: "library::sync", "exit flush {key}: timed out"),
             }
         }
     }
@@ -119,13 +119,13 @@ async fn run_loop(app: AppHandle, vault_key: String, dir: PathBuf, interval_minu
     ) {
         Ok(d) => Some(d),
         Err(e) => {
-            log::warn!(target: "agentero::sync", "auto-sync watcher init failed: {e}");
+            log::warn!(target: "library::sync", "auto-sync watcher init failed: {e}");
             None
         }
     };
     if let Some(d) = &mut debouncer {
         if let Err(e) = d.watcher().watch(&dir, RecursiveMode::Recursive) {
-            log::warn!(target: "agentero::sync", "auto-sync watch failed: {e}");
+            log::warn!(target: "library::sync", "auto-sync watch failed: {e}");
         }
     }
 
@@ -147,7 +147,7 @@ async fn run_loop(app: AppHandle, vault_key: String, dir: PathBuf, interval_minu
         } {
             // "already running" and transient errors are fine — the next
             // trigger retries.
-            log::warn!(target: "agentero::sync", "auto sync {vault_key}: {e}");
+            log::warn!(target: "library::sync", "auto sync {vault_key}: {e}");
         }
     }
 }

@@ -122,7 +122,7 @@ pub fn handle(
             }
             Err(error) => {
                 log::warn!(
-                    target: "agentero::site_proxy",
+                    target: "library::site_proxy",
                     "{} proxy request failed: {error}", site.label
                 );
                 responder.respond(response(

@@ -1,6 +1,6 @@
 # 打开远程 Vault
 
-远程 Vault 适合把论文和笔记放在服务器上，同时在本地使用 Agentero 的界面。文件权威保留在服务器，Agent 也在服务器上运行。
+远程 Vault 适合把论文和笔记放在服务器上，同时在本地使用 Library 的界面。文件权威保留在服务器，Agent 也在服务器上运行。
 
 ## 使用前提
 
@@ -30,7 +30,7 @@ Windows 客户端当前不能打开远程 Vault。
 
 ## 远程 Agent
 
-远程 Agent 必须安装在服务器上，而不是只安装在本机。Agentero 会在远程 Vault 根目录启动它，使 Agent 看到的工作目录与 SFTP 文件树一致。
+远程 Agent 必须安装在服务器上，而不是只安装在本机。Library 会在远程 Vault 根目录启动它，使 Agent 看到的工作目录与 SFTP 文件树一致。
 
 在服务器上先确认：
 
@@ -40,7 +40,7 @@ command -v codex-acp
 command -v opencode
 ```
 
-至少准备一个实际使用的命令，并完成对应的官方登录流程。然后在 Agentero 的 Agent 设置中选择远程可用的 Agent。
+至少准备一个实际使用的命令，并完成对应的官方登录流程。然后在 Library 的 Agent 设置中选择远程可用的 Agent。
 
 ## 在远程 Vault 中工作
 
@@ -59,11 +59,11 @@ PDF 和部分大文件可能会暂存在本机缓存中，仅用于预览。断�
 
 ### 不要并发写同一个 Vault
 
-MVP 按单写者设计。不要同时让多个 Agentero 客户端、远程 Agent 和外部同步程序修改同一个远程 Vault。
+MVP 按单写者设计。不要同时让多个 Library 客户端、远程 Agent 和外部同步程序修改同一个远程 Vault。
 
 ### 远程文件变化不会立即推送到界面
 
-远程文件系统没有本地 inotify 等价物。Agent 结束、用户保存或重新展开目录时，Agentero 会按需检查文件；必要时手动刷新文件树。
+远程文件系统没有本地 inotify 等价物。Agent 结束、用户保存或重新展开目录时，Library 会按需检查文件；必要时手动刷新文件树。
 
 ### 连接失败
 
@@ -75,4 +75,4 @@ MVP 按单写者设计。不要同时让多个 Agentero 客户端、远程 Agent
 4. 服务器上的 Agent 命令在非交互 SSH 的 PATH 中可见。
 5. Agent 需要的登录凭据已经配置在服务器上。
 
-如果终端登录成功但 Agentero 仍然找不到命令，优先在 Agent 设置中使用绝对路径，或把命令所在目录加入非交互 shell 的 PATH。
+如果终端登录成功但 Library 仍然找不到命令，优先在 Agent 设置中使用绝对路径，或把命令所在目录加入非交互 shell 的 PATH。

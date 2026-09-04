@@ -416,7 +416,7 @@ export const FileTree = memo(
 					/>
 					<div
 						ref={treeScrollRef}
-						className="agentero-scroll min-h-0 flex-1 overflow-y-auto py-1 [scrollbar-gutter:stable]"
+						className="library-scroll min-h-0 flex-1 overflow-y-auto py-1 [scrollbar-gutter:stable]"
 					>
 						{nodes.length === 0 && !createDraft ? (
 							<>

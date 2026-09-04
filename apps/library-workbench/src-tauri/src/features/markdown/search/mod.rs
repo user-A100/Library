@@ -92,7 +92,7 @@ fn collect_md_files(dir: &Path, depth: usize, out: &mut Vec<PathBuf>) {
         let name = entry.file_name();
         let name = name.to_string_lossy();
         if path.is_dir() {
-            // Skip hidden (.agentero/.git/.trash), deps, and LaTeX/e-print source.
+            // Skip hidden (.library/.git/.trash), deps, and LaTeX/e-print source.
             if name.starts_with('.') || name == "node_modules" || name == "source" {
                 continue;
             }
@@ -233,7 +233,7 @@ mod tests {
 
     #[test]
     fn finds_terms_and_maps_paper_folder() {
-        let root = std::env::temp_dir().join(format!("agentero-search-{}", std::process::id()));
+        let root = std::env::temp_dir().join(format!("library-search-{}", std::process::id()));
         let _ = fs::remove_dir_all(&root);
         fs::create_dir_all(&root).unwrap();
         write(
@@ -242,7 +242,7 @@ mod tests {
             "# Attention Is All You Need\n\nThe transformer uses self-attention.\n",
         );
         write(&root, "notes/idea.md", "Random note about cats.\n");
-        write(&root, ".agentero/skip.md", "attention transformer hidden\n");
+        write(&root, ".library/skip.md", "attention transformer hidden\n");
 
         let out = vault_search(VaultSearchArgs {
             vault_path: root.to_string_lossy().to_string(),
@@ -263,7 +263,7 @@ mod tests {
 
     #[test]
     fn empty_query_returns_nothing() {
-        let root = std::env::temp_dir().join(format!("agentero-search-e-{}", std::process::id()));
+        let root = std::env::temp_dir().join(format!("library-search-e-{}", std::process::id()));
         let _ = fs::remove_dir_all(&root);
         fs::create_dir_all(&root).unwrap();
         let out = vault_search(VaultSearchArgs {
@@ -284,7 +284,7 @@ mod tests {
     #[test]
     fn vault_search_runs_off_the_calling_thread_with_timing_baseline() {
         let root =
-            std::env::temp_dir().join(format!("agentero-search-bench-{}", std::process::id()));
+            std::env::temp_dir().join(format!("library-search-bench-{}", std::process::id()));
         let _ = fs::remove_dir_all(&root);
         fs::create_dir_all(&root).unwrap();
         const FILES: usize = 300;

@@ -171,7 +171,7 @@ export function shouldIgnoreInternalRenameEvent(
 			if (
 				normalized === tracked ||
 				normalized.startsWith(`${tracked}/`) ||
-				(normalized.includes(".agentero-rename-") &&
+				(normalized.includes(".library-rename-") &&
 					normalized.slice(0, normalized.lastIndexOf("/")) ===
 						tracked.slice(0, tracked.lastIndexOf("/")))
 			) {

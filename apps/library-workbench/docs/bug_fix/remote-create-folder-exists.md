@@ -1,6 +1,6 @@
 # 远程 Vault：无法新建文件夹 / 文件
 
-**Issue**：[#152](https://github.com/poco-ai/Agentero/issues/152)  
+**Issue**：[#152](https://github.com/poco-ai/Library/issues/152)  
 **影响面**：远程 Vault 文件树右键 → 新建文件 / 新建文件夹  
 **状态**：已修复
 

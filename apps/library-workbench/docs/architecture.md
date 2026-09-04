@@ -1,6 +1,6 @@
 # 架构总览
 
-Agentero 基于 Tauri 2 + React 19，本地优先，Vault 文件与 Catalog SQLite 为事实来源。
+Library 基于 Tauri 2 + React 19，本地优先，Vault 文件与 Catalog SQLite 为事实来源。
 
 ## 整体架构
 
@@ -20,7 +20,7 @@ Agentero 基于 Tauri 2 + React 19，本地优先，Vault 文件与 Catalog SQLi
 
 - **前端**：[`docs/frontend/index.md`](frontend/index.md) — React 19、TypeScript、Tailwind CSS 4、shadcn/ui、AI Elements。按域 zustand vanilla store（`src/lib/<域>/store.ts` + `actions.ts`）；React 经 `hooks/use-app-stores.ts` selector 订阅。
 - **Host**：[`docs/backend/index.md`](backend/index.md) — Rust、Tauri commands、文件系统、Wiki 索引、ACP Client。`app/` 装配、`core/` 基础、`features/<域>/`（`mod` + `commands` + 按需 `models`）。
-- **CLI**：[`docs/backend/cli.md`](backend/cli.md) — `agentero` headless Vault/Catalog，path 依赖 `agentero_lib`。
+- **CLI**：[`docs/backend/cli.md`](backend/cli.md) — `library` headless Vault/Catalog，path 依赖 `library_lib`。
 
 ## 工作台布局
 
@@ -81,19 +81,19 @@ Plate + `@platejs/markdown`。普通文本粘贴默认按 Markdown 解析。右�
 
 ### 双链与图谱
 
-嵌套标题双链：`[[文件#外层标题#内层标题]]`。Wiki 索引 `.md` 变更防抖重建（~900ms）。反链见编辑器状态栏；文献引用解析入库后自动生成 `{paper}/source/agentero-cite.json`，与 Markdown 双链索引分层、不共用边语义。详见 [frontend/wiki.md](frontend/wiki.md) / [backend/wiki.md](backend/wiki.md) / [backend/citation-parsing.md](backend/citation-parsing.md)。
+嵌套标题双链：`[[文件#外层标题#内层标题]]`。Wiki 索引 `.md` 变更防抖重建（~900ms）。反链见编辑器状态栏；文献引用解析入库后自动生成 `{paper}/source/library-cite.json`，与 Markdown 双链索引分层、不共用边语义。详见 [frontend/wiki.md](frontend/wiki.md) / [backend/wiki.md](backend/wiki.md) / [backend/citation-parsing.md](backend/citation-parsing.md)。
 
 ## 数据流
 
 | 层 | 内容 | 位置 |
 |---|---|---|
 | 文件 | NOTES、PDF、TeX、Markdown、assets、attachments | Vault 内 |
-| Catalog | 论文集合 + metadata | `.agentero/catalog.sqlite` |
+| Catalog | 论文集合 + metadata | `.library/catalog.sqlite` |
 | 阅读标注 | 高亮、划词问答、翻译、视觉批注 | `{paper}/marks/` |
 | 版面分析 | 原始 layout regions / 侧栏索引 | `{paper}/source/layout.json` / `layout-index.json` |
-| 引用解析 | 参考文献元数据 | `{paper}/source/agentero-cite.json` |
-| 设置 | UI/Agent 偏好 | XDG `~/.config/agentero/settings.json` |
-| 使用记录 | 打开 / 下载 / Agent 等 | XDG `~/.local/share/agentero/usage.sqlite` |
+| 引用解析 | 参考文献元数据 | `{paper}/source/library-cite.json` |
+| 设置 | UI/Agent 偏好 | XDG `~/.config/library/settings.json` |
+| 使用记录 | 打开 / 下载 / Agent 等 | XDG `~/.local/share/library/usage.sqlite` |
 | 索引 | 双链图（编辑器/反链） | 内存，可重建 |
 | 引用图 | 文献 cites（sidecar + localMatch） | 按需扫描 sidecar，可重建 |
 

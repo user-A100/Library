@@ -298,7 +298,7 @@
 		"pullAnnotations": "拉取 PDF 批注",
 		"pushNotes": "将 NOTES.md 推送回 Zotero",
 		"forcePush": "强制重推所有论文（忽略变更时间戳）",
-		"pushWarning": "推送会直接写入 zotero.sqlite：请先关闭 Zotero；写前自动在 agentero-backups/ 创建带时间戳的备份。推送的笔记在本地 Zotero 可见，但需在 Zotero 内编辑过才会被其云同步上传。",
+		"pushWarning": "推送会直接写入 zotero.sqlite：请先关闭 Zotero；写前自动在 library-backups/ 创建带时间戳的备份。推送的笔记在本地 Zotero 可见，但需在 Zotero 内编辑过才会被其云同步上传。",
 		"phase": {
 			"read": "正在读取 Zotero 库…",
 			"pull": "正在拉取变更到知识库…",

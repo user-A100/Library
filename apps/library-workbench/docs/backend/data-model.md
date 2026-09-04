@@ -5,8 +5,8 @@
 | 数据 | 权威 |
 |---|---|
 | 笔记、PDF、TeX、marks | Vault 普通文件 |
-| 论文集合与结构化 metadata | `.agentero/catalog.sqlite`（权威字段同步投影到 `papers/<id>/metadata.json` sidecar，rescan 可据此重建，见 [sync.md](sync.md)） |
-| 本机使用记录 | XDG `$XDG_DATA_HOME/agentero/usage.sqlite`（非 Vault） |
+| 论文集合与结构化 metadata | `.library/catalog.sqlite`（权威字段同步投影到 `papers/<id>/metadata.json` sidecar，rescan 可据此重建，见 [sync.md](sync.md)） |
+| 本机使用记录 | XDG `$XDG_DATA_HOME/library/usage.sqlite`（非 Vault） |
 | 双链索引 | 由 Markdown 重建（不落业务库） |
 
 `PAPERS.md` / `library.bib` **不**默认生成；需要时导出。
@@ -19,7 +19,7 @@ Vault/
 ├── papers/
 ├── notes/
 ├── .agents/skills/
-└── .agentero/
+└── .library/
     ├── catalog.sqlite
     ├── doctor.json     # 可选：Doctor 忽略列表等 Vault 本地偏好
     └── .trash/
@@ -33,7 +33,7 @@ papers/<id>/
 ├── <id>.pdf          # 可选
 ├── marks/            # 高亮/批注/提问/翻译 JSON 与 mark 自有资产
 ├── source/           # TeX 等（可懒加载）
-│   ├── agentero-cite.json  # 参考文献 sidecar（可重建，见 api.md paper_refs_parse）
+│   ├── library-cite.json  # 参考文献 sidecar（可重建，见 api.md paper_refs_parse）
 │   ├── layout.json         # PDF 版面 raw sidecar（可重建；merge/filter 可重复）
 │   └── layout-index.json   # 侧栏同构索引（CLI/Agent；post-merge figure/table/…）
 ├── PAPER.md          # 无 TeX 时的派生正文（本地 liteparse 或云端引擎，见 paper-import.md § 正文解析引擎）
@@ -43,7 +43,7 @@ papers/<id>/
 
 `attachments/` **不**在入库时预建空目录。仅当其中有文件时，文件树论文行才显示 chevron，并把该目录的子项直接挂在论文下（桶本身不占一行）。`source/`、`marks/`、`assets/`、主 PDF、`NOTES.md`、`PAPER.md` 仍不进入树。
 
-`layout-index.json` 与侧栏 Figures 同源（merge + score/NMS 后），供 `agentero layout list` / `mark add --region` 使用；**可从** `layout.json` 重算，分析完成或缓存命中时由桌面写入。详见 [../frontend/pdf-layout-analysis.md](../frontend/pdf-layout-analysis.md)。
+`layout-index.json` 与侧栏 Figures 同源（merge + score/NMS 后），供 `library layout list` / `mark add --region` 使用；**可从** `layout.json` 重算，分析完成或缓存命中时由桌面写入。详见 [../frontend/pdf-layout-analysis.md](../frontend/pdf-layout-analysis.md)。
 
 ## marks/
 

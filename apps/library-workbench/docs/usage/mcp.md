@@ -6,7 +6,7 @@
 
 把本机 MCP 接到 ChatGPT / Codex，用官方 **tunnel-client** 出站隧道，不要用 ngrok 或其他临时公网隧道。装好后先跑 `tunnel-client help quickstart`。协议与工具表：[backend/mcp.md](../backend/mcp.md)。
 
-## 1. 打开 Agentero MCP 与隧道
+## 1. 打开 Library MCP 与隧道
 
 1. 打开一个**本地** Vault。
 2. **Settings → General → MCP server** 打开开关。默认地址 `http://127.0.0.1:8765/mcp`；端口旁绿点表示正在监听。
@@ -15,7 +15,7 @@
 
 本机 Inspector、能打 loopback 的客户端可以直接用 `http://127.0.0.1:8765/mcp`。ChatGPT 在云端，需要 tunnel-client。
 
-Agentero 是 **无 OAuth 的 loopback HTTP MCP**，对应 quickstart 的 sample 2（`sample_mcp_remote_no_auth`），不是 stdio、也不是 `--embedded-mcp-stub`。
+Library 是 **无 OAuth 的 loopback HTTP MCP**，对应 quickstart 的 sample 2（`sample_mcp_remote_no_auth`），不是 stdio、也不是 `--embedded-mcp-stub`。
 
 ## 2. 安装 tunnel-client
 
@@ -80,14 +80,14 @@ tunnel-client admin tunnels get tunnel_...
 tunnel-client admin --json tunnels get tunnel_...   # 看 organization_ids / workspace_ids
 ```
 
-## 4. 接到 Agentero
+## 4. 接到 Library
 
 在 **Settings → General → MCP server** 里：
 
 1. 确认 MCP 开关已打开（端口行绿点）。
 2. 填入 §3 获取的 **Runtime API key** 和 **Tunnel ID**。
 3. 点 **Start**。按钮旁状态从 **Stopped** → **Starting…** → **Connected**（≤30 秒）。
-4. 点 **Stop** 或退出 Agentero 都会停掉隧道；改 MCP 端口时也会自动停隧道，需要再点一次 Start。
+4. 点 **Stop** 或退出 Library 都会停掉隧道；改 MCP 端口时也会自动停隧道，需要再点一次 Start。
 
 如果按钮禁用并提示 "tunnel-client not found"，先安装（§2），然后重新打开 Settings 页即可。
 
@@ -103,17 +103,17 @@ export CONTROL_PLANE_TUNNEL_ID="tunnel_0123456789abcdef0123456789abcdef"
 
 tunnel-client init \
   --sample sample_mcp_remote_no_auth \
-  --profile agentero \
+  --profile library \
   --tunnel-id "$CONTROL_PLANE_TUNNEL_ID" \
   --mcp-server-url http://127.0.0.1:8765/mcp
 
-tunnel-client doctor --profile agentero --explain
-tunnel-client run --profile agentero
+tunnel-client doctor --profile library --explain
+tunnel-client run --profile library
 ```
 
-`run` 要一直开着。关掉 Agentero、关掉 MCP 开关、或停掉 tunnel-client，ChatGPT 的发现和每次 MCP 调用都会失败。
+`run` 要一直开着。关掉 Library、关掉 MCP 开关、或停掉 tunnel-client，ChatGPT 的发现和每次 MCP 调用都会失败。
 
-其它官方 sample（stdio、企业代理、OAuth/DCR）见 `tunnel-client help samples`，Agentero 用不到。
+其它官方 sample（stdio、企业代理、OAuth/DCR）见 `tunnel-client help samples`，Library 用不到。
 
 ## 5. 接到 ChatGPT
 
@@ -122,7 +122,7 @@ tunnel-client run --profile agentero
 1. ChatGPT **Settings → Security and login** 打开 Developer mode。
 2. [Connectors](https://chatgpt.com/#settings/Connectors)（或 [Plugins](https://chatgpt.com/plugins)）点 `+`。
 3. **Connection** 选 **Tunnel**，选列表里的隧道或粘贴 `tunnel_id`。
-4. 发现 tools 后，先读资源 `agentero://vault`，再 `paper_list`。
+4. 发现 tools 后，先读资源 `library://vault`，再 `paper_list`。
 
 官方：[Secure MCP Tunnel](https://developers.openai.com/api/docs/guides/secure-mcp-tunnels)。
 
@@ -139,11 +139,11 @@ tunnel-client run --profile agentero
 
 | 现象 | 处理 |
 |---|---|
-| Agentero 没有绿点 | 先打开本地 Vault，再开 MCP 开关；端口占用则换 `mcpPort` |
+| Library 没有绿点 | 先打开本地 Vault，再开 MCP 开关；端口占用则换 `mcpPort` |
 | Start 按钮禁用 / 显示 "tunnel-client not found" | 按提示安装 `brew install openai/tools/tunnel-client`，重新打开 Settings |
 | 绿点一直 **Starting…** / **Not connected** | 检查 Runtime API key 是否有 Tunnels **Use**、Tunnel ID 是否正确、隧道是否关联目标 workspace；注意 `/readyz` 不能作为连通依据 |
 | ChatGPT 看不到隧道 | workspace 关联 + **Use**；connector 必须在 `Connected` 时创建 |
-| 工具调用失败 | Agentero 开关、隧道 **Connected** 都要在 |
+| 工具调用失败 | Library 开关、隧道 **Connected** 都要在 |
 | Homebrew 装错包 | `openai/tools/tunnel-client`，不是 `tunnel` |
 
 官方帮助：`tunnel-client help oauth`、`help plugin`、`help troubleshooting`。

@@ -158,7 +158,7 @@ function WelcomeCenter() {
 	const recentVaults = useVaultStore((s) => s.recentVaults);
 	if (!isTauri()) {
 		return (
-			<div className="agentero-scroll flex min-h-0 flex-1 select-none flex-col items-center justify-center gap-4 bg-muted/30 p-6 text-center">
+			<div className="library-scroll flex min-h-0 flex-1 select-none flex-col items-center justify-center gap-4 bg-muted/30 p-6 text-center">
 				<FolderOpen className="size-10 text-muted-foreground" />
 				<div className="max-w-xs space-y-2">
 					<p className="font-medium text-sm">{t("vault.noVaultOpenTitle")}</p>

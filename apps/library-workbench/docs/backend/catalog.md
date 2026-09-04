@@ -1,4 +1,4 @@
-# Catalog（`.agentero/catalog.sqlite`）
+# Catalog（`.library/catalog.sqlite`）
 
 论文集合 + 结构化 metadata 的权威存储。笔记正文仍在文件。
 
@@ -40,7 +40,7 @@
 | `paper_page_counts` / `paper_set_page_counts` | 页数缓存读写 |
 | `paper_reading_activity_batch` | 批量读 marks 活动点（热力图） |
 
-CLI：`agentero paper …` / `paper tag *`。
+CLI：`library paper …` / `paper tag *`。
 
 入库如何写 catalog：[paper-import.md](paper-import.md)。  
 代码：`src-tauri/src/features/paper/catalog/`；派生能力探测在 `src-tauri/src/features/paper/capabilities.rs`。

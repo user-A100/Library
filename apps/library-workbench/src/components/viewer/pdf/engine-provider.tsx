@@ -129,7 +129,7 @@ async function initPdfEngine(): Promise<ProbedPdfEngine> {
 	return createDirectPdfEngine(fontFallback);
 }
 
-function useAgenteroPdfEngine(): PdfEngineContextValue {
+function useLibraryPdfEngine(): PdfEngineContextValue {
 	const [state, setState] = useState<PdfEngineContextValue>({
 		engine: null,
 		isLoading: true,
@@ -174,7 +174,7 @@ function useAgenteroPdfEngine(): PdfEngineContextValue {
  * concurrently, so a single engine backs all `<EmbedPDF>` providers.
  */
 export function PdfEngineHost({ children }: { children: ReactNode }) {
-	const { engine, isLoading, error } = useAgenteroPdfEngine();
+	const { engine, isLoading, error } = useLibraryPdfEngine();
 	return (
 		<PdfEngineContext.Provider value={{ engine, isLoading, error }}>
 			{children}

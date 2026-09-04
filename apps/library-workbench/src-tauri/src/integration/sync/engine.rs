@@ -464,10 +464,10 @@ async fn refresh_catalog_if_needed(vault: &Path, outcome: &SyncOutcome) {
     let vault = vault.to_path_buf();
     let _ = tokio::task::spawn_blocking(move || {
         if let Err(e) = crate::features::catalog::papers::rebuild_from_disk(&vault) {
-            log::warn!(target: "agentero::sync", "catalog rebuild after sync: {e}");
+            log::warn!(target: "library::sync", "catalog rebuild after sync: {e}");
         }
         if let Err(e) = crate::features::catalog::papers::prune_missing(&vault) {
-            log::warn!(target: "agentero::sync", "catalog prune after sync: {e}");
+            log::warn!(target: "library::sync", "catalog prune after sync: {e}");
         }
     })
     .await;
@@ -740,7 +740,7 @@ mod tests {
     ///   minio/minio server /data
     /// docker exec minio mc alias set local http://127.0.0.1:9000 testkey testsecret
     /// docker exec minio mc mb local/vault-test
-    /// cargo test -p agentero --lib features::sync::engine -- --ignored
+    /// cargo test -p library --lib features::sync::engine -- --ignored
     /// ```
     #[tokio::test]
     #[ignore = "requires a local MinIO (see doc comment)"]
@@ -749,7 +749,7 @@ mod tests {
         use uuid::Uuid;
 
         let cfg = SyncBackendConfig {
-            endpoint: std::env::var("AGENTERO_SYNC_TEST_ENDPOINT")
+            endpoint: std::env::var("LIBRARY_SYNC_TEST_ENDPOINT")
                 .unwrap_or_else(|_| "http://127.0.0.1:19000".into()),
             region: "us-east-1".into(),
             bucket: "vault-test".into(),
@@ -764,7 +764,7 @@ mod tests {
         };
         let noop: &(dyn Fn(&str, usize, usize) + Send + Sync) = &|_, _, _| {};
 
-        let tmp = std::env::temp_dir().join(format!("agentero-sync-it-{}", Uuid::new_v4()));
+        let tmp = std::env::temp_dir().join(format!("library-sync-it-{}", Uuid::new_v4()));
         let (a, b) = (tmp.join("a"), tmp.join("b"));
         fs::create_dir_all(a.join("papers/x")).unwrap();
         fs::create_dir_all(&b).unwrap();

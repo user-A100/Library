@@ -14,7 +14,7 @@ fn vault_path_arg(path: &str) -> Result<std::path::PathBuf, AppError> {
     Ok(p)
 }
 
-/// Create / scaffold a Agentero vault at the given absolute path.
+/// Create / scaffold a Library vault at the given absolute path.
 #[tauri::command]
 pub async fn vault_create(path: String, locale: Option<String>) -> ApiResult<CreateVaultResult> {
     run_blocking(move || {

@@ -1,6 +1,6 @@
 //! Plaza RSS / Atom / JSON Feed subscriptions.
 //!
-//! Stored in `$XDG_DATA_HOME/agentero/feeds.sqlite`. Does not write catalog or Vault.
+//! Stored in `$XDG_DATA_HOME/library/feeds.sqlite`. Does not write catalog or Vault.
 //!
 //! @see docs/development/plaza-feeds.md
 
@@ -755,7 +755,7 @@ pub async fn resolve_body(id: &str) -> Result<FeedItem, AppError> {
             )
         }
         Err(e) => {
-            log::warn!(target: "agentero::feeds", "article body fetch failed for {url}: {e}");
+            log::warn!(target: "library::feeds", "article body fetch failed for {url}: {e}");
             let fallback = ensure_heading(&strip_trailing_ellipsis(&rss), &existing.title);
             Ok(item_with_body(existing, fallback))
         }
@@ -886,7 +886,7 @@ mod tests {
     #[test]
     fn insert_and_list_roundtrip() {
         let dir = std::env::temp_dir().join(format!(
-            "agentero-feeds-mod-{}-{}",
+            "library-feeds-mod-{}-{}",
             std::process::id(),
             std::time::SystemTime::now()
                 .duration_since(std::time::UNIX_EPOCH)
@@ -935,7 +935,7 @@ mod tests {
     #[test]
     fn upsert_keeps_backfilled_paper_url() {
         let dir = std::env::temp_dir().join(format!(
-            "agentero-feeds-upsert-{}-{}",
+            "library-feeds-upsert-{}-{}",
             std::process::id(),
             std::time::SystemTime::now()
                 .duration_since(std::time::UNIX_EPOCH)
@@ -1008,7 +1008,7 @@ mod tests {
     #[test]
     fn persist_resolved_keeps_existing_paper_url() {
         let dir = std::env::temp_dir().join(format!(
-            "agentero-feeds-persist-{}-{}",
+            "library-feeds-persist-{}-{}",
             std::process::id(),
             std::time::SystemTime::now()
                 .duration_since(std::time::UNIX_EPOCH)

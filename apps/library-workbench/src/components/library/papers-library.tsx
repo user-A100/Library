@@ -315,7 +315,7 @@ export function PapersLibrary({
 				<div
 					ref={scrollRef}
 					className={cn(
-						"agentero-scroll-both min-w-0",
+						"library-scroll-both min-w-0",
 						empty ? "h-auto" : "min-h-0 flex-1",
 					)}
 				>

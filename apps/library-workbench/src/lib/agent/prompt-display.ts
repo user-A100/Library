@@ -8,16 +8,16 @@
 const USER_REQUEST_MARKER = "User request:\n";
 
 const ENVELOPE_PREFIXES = [
-	"You are an assistant working inside a Agentero research Vault",
+	"You are an assistant working inside a Library research Vault",
 	"You are an assistant working inside a Motif research Vault",
-	"You are running the Agentero paper-reader workflow",
+	"You are running the Library paper-reader workflow",
 	"You are helping with a research vault",
 	"You are answering questions about a local research vault",
 	"Draft a Related Work section from local papers",
 	// PDF visual-annotation / pin-chat system wrappers (hide in transcript UI).
 	"You are reviewing",
 	"You are helping the user discuss a visual region from a research paper PDF",
-	"You are helping the user read a research paper PDF in Agentero",
+	"You are helping the user read a research paper PDF in Library",
 ] as const;
 
 /** True when title/body looks like a visual-annotation system prompt (history filter). */
@@ -42,7 +42,7 @@ const SKILL_TAIL_MARKERS = [
 	"\n\n<skill",
 	"\n\nActive skills use the $ trigger",
 	"\n\nActive skills use the / trigger",
-	"\n\nAgentero injects skill instructions",
+	"\n\nLibrary injects skill instructions",
 ] as const;
 
 function stripEnvironmentContextBlocks(text: string): string {
@@ -131,7 +131,7 @@ function stripVisualAnnotationEnvelope(raw: string): string | null {
 	return null;
 }
 
-/** Recover the human-visible user text from a stored Agentero / Codex turn. */
+/** Recover the human-visible user text from a stored Library / Codex turn. */
 export function stripPromptEnvelopeForDisplay(text: string): string {
 	const raw = stripEnvironmentContextBlocks(text.trim()).trim();
 	if (!raw || looksLikeMachineOnlyUserTurn(raw)) return "";

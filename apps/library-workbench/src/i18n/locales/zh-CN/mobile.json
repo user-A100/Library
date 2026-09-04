@@ -8,7 +8,7 @@
 	"connect": {
 		"title": "连接电脑",
 		"paste": "粘贴配对链接",
-		"placeholder": "agentero://pair#offer=…",
+		"placeholder": "library://pair#offer=…",
 		"action": "连接",
 		"connecting": "连接中…",
 		"camera": "扫码连接",
@@ -74,6 +74,6 @@
 	"errors": {
 		"load": "无法加载远程数据",
 		"connect": "无法连接",
-		"networkPermission": "iOS 阻止了 Agentero 的网络访问。请在「设置 > Agentero > 无线数据」中选择「WLAN 与蜂窝数据」，然后重试。"
+		"networkPermission": "iOS 阻止了 Library 的网络访问。请在「设置 > Library > 无线数据」中选择「WLAN 与蜂窝数据」，然后重试。"
 	}
 }

@@ -1,21 +1,21 @@
 ---
-name: agentero-cli
+name: library-cli
 version: 8
 description: >-
-  Use the Agentero CLI (bin `agentero`) to create, discover, and inspect a local
+  Use the Library CLI (bin `library`) to create, discover, and inspect a local
   research vault and catalog—list/get papers, import by id/URL, check wikilinks,
   layout regions (figures/tables/formulas), write reading marks (highlight /
   批注 / translate / ask), download assets, parse PAPER.md, export bib—without
   BYOA. Prefer --json. Use when managing a vault headless, scripting
-  Motif/Agentero, or exploring papers via machine APIs ($agentero-cli /
-  /agentero-cli).
+  Motif/Library, or exploring papers via machine APIs ($library-cli /
+  /library-cli).
 ---
 
-# Agentero CLI
+# Library CLI
 
 ## Role
 
-You use the **`agentero` CLI** as a stable machine interface to an Agentero vault.
+You use the **`library` CLI** as a stable machine interface to an Library vault.
 The CLI is **not** a chat runtime: no BYOA, no ACP, no paper-reader. Reading and
 writing lecture-style `NOTES.md` is **your** job (or use the separate
 `paper-reader` skill / desktop Zap workflow).
@@ -24,14 +24,14 @@ Design reference (repo): `docs/backend/cli.md`.
 
 ## Prerequisites
 
-- Binary name: **`agentero`** (POSIX). Desktop: 设置 → 关于 → 安装 CLI writes the
-  `~/.local/bin/agentero` symlink. If missing from PATH, say so and fall back to
+- Binary name: **`library`** (POSIX). Desktop: 设置 → 关于 → 安装 CLI writes the
+  `~/.local/bin/library` symlink. If missing from PATH, say so and fall back to
   reading Vault files directly; do not invent catalog rows.
 - Prefer always passing **`--json`** (disables interactive prompts). JSON is a
   compact single line; `--pretty` pretty-prints for humans.
 - Destructive deletes: pass **`-y` / `--yes`** under `--json` / non-TTY.
-- Vault resolution (first wins): `--vault <path>` → env `AGENTERO_VAULT` → cwd
-  walk-up (`.agentero/catalog.sqlite`) → CLI config `default_vault`.
+- Vault resolution (first wins): `--vault <path>` → env `LIBRARY_VAULT` → cwd
+  walk-up (`.library/catalog.sqlite`) → CLI config `default_vault`.
 
 ## Hard boundaries
 
@@ -45,11 +45,11 @@ Design reference (repo): `docs/backend/cli.md`.
 ## Progressive disclosure (same as Vault model)
 
 1. **L0** — `AGENTS.md` (if present)
-2. **L1** — `agentero paper list --json` — returns only `id/path/title` per row;
+2. **L1** — `library paper list --json` — returns only `id/path/title` per row;
    add `--fields year,tags,abstract,…` as needed, or `--full` for whole records
 3. **L2** — `{paper}/NOTES.md`
 4. **L2.5** — layout index + marks
-   - `agentero layout list <paper> --json` (sidebar figures/tables/algorithms/formulas)
+   - `library layout list <paper> --json` (sidebar figures/tables/algorithms/formulas)
    - `{paper}/marks/annotations.json` (highlights / 批注) + `{paper}/marks/<id>.json`
      (asks / translates) — write these through the CLI, never by hand
 5. **L3** — `{paper}/PAPER.md` (if no TeX)
@@ -63,17 +63,17 @@ paste whole sources unless needed.
 
 ```bash
 # highlight; add --comment to make it a 批注 (same as a desktop selection note)
-agentero mark add <paper> --kind highlight --quote "…verbatim sentence…" \
+library mark add <paper> --kind highlight --quote "…verbatim sentence…" \
   [--page 3] [--comment "…"] [--mark-color yellow|green|blue|pink|purple] --json
 
 # pin a translation next to the sentence (free MT, no API key)
-agentero mark add <paper> --kind translate --quote "…" [--to zh-CN] --json
+library mark add <paper> --kind translate --quote "…" [--to zh-CN] --json
 
 # plain text translation, no mark
-agentero translate "…" [--to zh-CN] --json
+library translate "…" [--to zh-CN] --json
 
 # note a question to raise later
-agentero mark add <paper> --kind ask --quote "…" --question "…" --json
+library mark add <paper> --kind ask --quote "…" --question "…" --json
 ```
 
 The quote is located with the PDF text engine, so **copy it verbatim** from
@@ -87,12 +87,12 @@ match, add `--page N`, pick one with `--match-index N`, or mark them all with
 **Figures / formulas (preferred over inventing coordinates):**
 
 ```bash
-agentero layout list <paper> --kind figure --json
-agentero mark add <paper> --region figure-3 --comment "…" --json
+library layout list <paper> --kind figure --json
+library mark add <paper> --region figure-3 --comment "…" --json
 ```
 
 Requires `{paper}/source/layout-index.json` (written when the desktop runs layout
-analysis). If `layout_index_missing`, tell the user to open the paper in Agentero
+analysis). If `layout_index_missing`, tell the user to open the paper in Library
 and run Figures analysis — do not invent bboxes.
 
 Highlights/批注 land in `{paper}/marks/annotations.json` (the EmbedPDF transfer
@@ -102,7 +102,7 @@ a second or two.
 
 Reader marks under `{paper}/marks/` can be referenced from Markdown as annotation
 wikilinks: `[[papers/…/NOTES@<id>|label]]` / `![[…@<id>]]`. Prefer real ids from
-`marks/` or the desktop copy action; do not invent ids. `agentero wiki check`
+`marks/` or the desktop copy action; do not invent ids. `library wiki check`
 validates path + fragment **shape** for `@id` / `#@id`, but does **not** verify
 the id still exists.
 
@@ -110,19 +110,19 @@ the id still exists.
 
 ```bash
 # 1) Confirm vault root
-agentero vault which --json
+library vault which --json
 
 # 2) L1 index — slim rows (optional filters: --unread, --query, --tag)
-agentero paper list --json
-agentero paper tag list --json
+library paper list --json
+library paper tag list --json
 
 # 3) One paper: meta + asset flags + suggested paths
-agentero paper get <path|id> --json
+library paper get <path|id> --json
 
 # 4) Read files yourself in order: NOTES → marks/ → PAPER.md / TeX
 
 # 5) Import (exact id / DOI / URL) — creates shell NOTES, not lecture body
-agentero import id <arxiv|doi|url> --json
+library import id <arxiv|doi|url> --json
 # then write {path}/NOTES.md yourself: preserve user prose, never wipe marks/;
 # `paper set-read <path>` only after notes are done
 
@@ -135,8 +135,8 @@ Cite Vault-relative paths in your answer; end with `## Sources` when substantial
 
 Command groups: `vault`, `tree`, `paper`, `import`, `export`, `trash`, `wiki`,
 `layout`, `mark`, `translate`, `doctor`, `config`, `usage`, `feed`, `open`.
-Run **`agentero <group> --help`** for exact flags — it is the source of truth.
-There is **no** `agentero graph` command; never invent subcommands.
+Run **`library <group> --help`** for exact flags — it is the source of truth.
+There is **no** `library graph` command; never invent subcommands.
 
 ## JSON contract
 
@@ -153,7 +153,7 @@ There is **no** `agentero graph` command; never invent subcommands.
 
 ## Activation notes
 
-Depending on the agent: **Codex** `$agentero-cli`, **Claude** `/agentero-cli`,
+Depending on the agent: **Codex** `$library-cli`, **Claude** `/library-cli`,
 others follow this body directly.
 
 ## Rules

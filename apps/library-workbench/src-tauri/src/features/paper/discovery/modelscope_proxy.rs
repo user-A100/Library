@@ -15,7 +15,7 @@
 use crate::features::site_proxy::SiteProxy;
 
 const ORIGIN: &str = "https://modelscope.cn";
-const USER_AGENT: &str = "agentero/0.6 (+https://github.com/poco-ai/agentero)";
+const USER_AGENT: &str = "library/0.6 (+https://github.com/poco-ai/library)";
 
 /// Hides the site chrome, reports navigations, hands off everything that leaves
 /// the paper feed, and adds an `[入库]` action to every paper.
@@ -33,18 +33,18 @@ header.antd5-layout-header { display: none !important; }
 .antd5-tour-target-placeholder { display: none !important; }
 /* The tour injects `html body { overflow-y: hidden }` via a runtime style tag. */
 html body { overflow-y: visible !important; }
-.agentero-import {
+.library-import {
   cursor: pointer;
   user-select: none;
 }
-.agentero-import[data-state] { cursor: default; opacity: 0.55; }
-.agentero-import-logo {
+.library-import[data-state] { cursor: default; opacity: 0.55; }
+.library-import-logo {
   width: 14px;
   height: 14px;
   flex: none;
   margin-right: 3px;
 }
-.agentero-import-titlerow {
+.library-import-titlerow {
   display: flex;
   /* The title is a fixed two-line-tall box holding one line at the top, so
      centring against it would sit the button well below the text. */
@@ -53,8 +53,8 @@ html body { overflow-y: visible !important; }
   min-width: 0;
 }
 /* The title keeps its own width clamp and ellipsis; the button never shrinks. */
-.agentero-import-titlerow > :first-child { flex: 0 1 auto; min-width: 0; }
-.agentero-import-card {
+.library-import-titlerow > :first-child { flex: 0 1 auto; min-width: 0; }
+.library-import-card {
   flex: none;
   display: inline-flex;
   align-items: center;
@@ -70,7 +70,7 @@ html body { overflow-y: visible !important; }
   line-height: 1;
   white-space: nowrap;
 }
-.agentero-import-card:hover { background: rgba(128, 128, 128, 0.22); }
+.library-import-card:hover { background: rgba(128, 128, 128, 0.22); }
 </style>
 <script>
 (function () {
@@ -81,7 +81,7 @@ html body { overflow-y: visible !important; }
       if (parent !== window && parent.location.href) return;
     } catch (e) {}
     var post = function (message) {
-      message.source = "agentero-plaza";
+      message.source = "library-plaza";
       parent.postMessage(message, "*");
     };
     // Only the paper feed browses in place. Everything else — the site's other
@@ -140,30 +140,30 @@ html body { overflow-y: visible !important; }
       return ID.test(id) ? id : null;
     };
     var LABELS = { idle: "入库", pending: "入库中", done: "已入库" };
-    // The Agentero mark reduced to its copper spectacles: the full illustrated
+    // The Library mark reduced to its copper spectacles: the full illustrated
     // face is unreadable mush at the 14px the site's button icons use.
     var LOGO =
-      '<svg class="agentero-import-logo" viewBox="0 0 16 16" aria-hidden="true">' +
+      '<svg class="library-import-logo" viewBox="0 0 16 16" aria-hidden="true">' +
       '<g fill="none" stroke="#B96442" stroke-width="1.35" stroke-linecap="round">' +
       '<circle cx="4.3" cy="8.4" r="4.1"/>' +
       '<circle cx="11.7" cy="8.4" r="4.1"/>' +
       '<path d="M7.6 7.2c.3-.35.8-.35 1.1 0"/>' +
       "</g></svg>";
     var setLabel = function (el, text) {
-      var label = el.querySelector(".agentero-import-label");
+      var label = el.querySelector(".library-import-label");
       if (label) label.textContent = text;
     };
     var button = function (id, variant, borrowedClass) {
       var el = document.createElement(variant === "action" ? "div" : "span");
       el.className =
-        "agentero-import agentero-import-" +
+        "library-import library-import-" +
         variant +
         (borrowedClass ? " " + borrowedClass : "");
       el.title = "导入到我的论文库";
       el.setAttribute("role", "button");
       el.dataset.paperId = id;
       el.innerHTML =
-        LOGO + '<span class="agentero-import-label">' + LABELS.idle + "</span>";
+        LOGO + '<span class="library-import-label">' + LABELS.idle + "</span>";
       return el;
     };
     // The card title is the first text-bearing leaf block inside it — the site's
@@ -181,7 +181,7 @@ html body { overflow-y: visible !important; }
       var cards = document.querySelectorAll('a[href^="/papers/"]');
       for (var i = 0; i < cards.length; i++) {
         var card = cards[i];
-        if (card.querySelector(".agentero-import")) continue;
+        if (card.querySelector(".library-import")) continue;
         var path = null;
         try {
           path = new URL(card.href, location.href).pathname;
@@ -196,7 +196,7 @@ html body { overflow-y: visible !important; }
         // The title is width-clamped with an ellipsis, so the button cannot live
         // inside it; give the pair a flex row. Re-created if React undoes it.
         var titleRow = document.createElement("div");
-        titleRow.className = "agentero-import-titlerow";
+        titleRow.className = "library-import-titlerow";
         title.parentNode.insertBefore(titleRow, title);
         titleRow.appendChild(title);
         var cardButton = button(id, "card");
@@ -214,7 +214,7 @@ html body { overflow-y: visible !important; }
       var icon = document.querySelector('img[src*="arxiv.org"]');
       var arxivAction = icon && icon.parentElement;
       var row = arxivAction && arxivAction.parentNode;
-      if (!row || row.querySelector(".agentero-import-action")) return;
+      if (!row || row.querySelector(".library-import-action")) return;
       row.insertBefore(
         button(current, "action", arxivAction.className),
         arxivAction
@@ -252,7 +252,7 @@ html body { overflow-y: visible !important; }
       "click",
       function (event) {
         var target = event.target && event.target.closest
-          ? event.target.closest(".agentero-import")
+          ? event.target.closest(".library-import")
           : null;
         if (!target) return;
         event.preventDefault();
@@ -318,10 +318,10 @@ html body { overflow-y: visible !important; }
 
     window.addEventListener("message", function (event) {
       var data = event.data;
-      if (!data || data.source !== "agentero-plaza-host") return;
+      if (!data || data.source !== "library-plaza-host") return;
       if (typeof data.importedId !== "string") return;
       // arXiv ids contain dots, so id-based DOM lookups are out.
-      var buttons = document.querySelectorAll(".agentero-import");
+      var buttons = document.querySelectorAll(".library-import");
       for (var i = 0; i < buttons.length; i++) {
         var el = buttons[i];
         if (el.dataset.paperId !== data.importedId) continue;
@@ -342,7 +342,7 @@ html body { overflow-y: visible !important; }
 ///
 /// Every asset in the shell is protocol-relative (`//g.alicdn.com/…`), including
 /// the `publicPath` umi resolves its async chunks against. Left alone they
-/// resolve to `agentero-modelscope://g.alicdn.com/…` under our scheme and the
+/// resolve to `library-modelscope://g.alicdn.com/…` under our scheme and the
 /// application never boots.
 fn rewrite_html(html: &str) -> String {
     let absolute = html
@@ -404,7 +404,7 @@ mod tests {
     #[test]
     fn injects_the_bridge_before_head_close() {
         let out = rewrite_html("<html><head><title>t</title></head><body></body></html>");
-        let script = out.find("agentero-plaza").expect("bridge present");
+        let script = out.find("library-plaza").expect("bridge present");
         let head_end = out.find("</head>").expect("head close present");
         assert!(script < head_end);
     }
@@ -412,7 +412,7 @@ mod tests {
     #[test]
     fn injects_the_bridge_even_without_a_head() {
         let out = rewrite_html("<p>fragment</p>");
-        assert!(out.contains("agentero-plaza"));
+        assert!(out.contains("library-plaza"));
         assert!(out.contains("<p>fragment</p>"));
     }
 
@@ -460,11 +460,11 @@ mod tests {
 
     #[test]
     fn ships_the_import_affordance() {
-        assert!(NAV_BRIDGE.contains("agentero-import"));
+        assert!(NAV_BRIDGE.contains("library-import"));
         assert!(NAV_BRIDGE.contains("importPaper"));
         assert!(NAV_BRIDGE.contains("https://arxiv.org/abs/"));
         // Settled from the app so a row can show 已入库 / stay retryable.
-        assert!(NAV_BRIDGE.contains("agentero-plaza-host"));
+        assert!(NAV_BRIDGE.contains("library-plaza-host"));
     }
 
     /// Absolute positioning against the card's own anchor is ill-defined: the
@@ -473,7 +473,7 @@ mod tests {
     /// box in WKWebView, which flings the button to the container's edge.
     #[test]
     fn keeps_the_card_button_in_normal_flow_beside_the_title() {
-        assert!(NAV_BRIDGE.contains("agentero-import-titlerow"));
+        assert!(NAV_BRIDGE.contains("library-import-titlerow"));
         assert!(NAV_BRIDGE.contains("titleRow.appendChild(title);"));
         assert!(!NAV_BRIDGE.contains("position: absolute"));
     }
@@ -494,11 +494,11 @@ mod tests {
         assert!(NAV_BRIDGE.contains("if (!title || !title.parentNode) continue;"));
     }
 
-    /// Both affordances are buttons carrying the Agentero mark, so they read as
+    /// Both affordances are buttons carrying the Library mark, so they read as
     /// ours rather than as one of the site's own actions.
     #[test]
-    fn brands_both_buttons_with_the_agentero_mark() {
-        assert!(NAV_BRIDGE.contains("agentero-import-logo"));
+    fn brands_both_buttons_with_the_library_mark() {
+        assert!(NAV_BRIDGE.contains("library-import-logo"));
         // The mark's copper spectacles.
         assert!(NAV_BRIDGE.contains("#B96442"));
         assert!(NAV_BRIDGE.contains("border-radius: 6px;"));

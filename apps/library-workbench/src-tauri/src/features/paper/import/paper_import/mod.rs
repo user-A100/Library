@@ -215,7 +215,7 @@ pub async fn paper_commit(
     if let Err(e) = commit_steps.await {
         if let Err(rm) = fs::remove_dir_all(&paper_dir) {
             log::warn!(
-                target: "agentero::import",
+                target: "library::import",
                 "rollback of {} failed: {rm}",
                 paper_dir.display()
             );
@@ -415,7 +415,7 @@ async fn merge_pdf_into_existing(
             dest.file_name().and_then(|s| s.to_str()).unwrap_or("")
         )
     };
-    log::info!(target: "agentero::import", "{}: {}", message, existing.path);
+    log::info!(target: "library::import", "{}: {}", message, existing.path);
 
     if became_main && caps.has_pdf() && !caps.has_tex && !caps.has_paper_md {
         #[cfg(feature = "desktop")]
@@ -473,7 +473,7 @@ mod tests {
 
     fn tmp_vault(tag: &str) -> std::path::PathBuf {
         let vault = std::env::temp_dir().join(format!(
-            "agentero-commit-{tag}-{}-{}",
+            "library-commit-{tag}-{}-{}",
             std::process::id(),
             uuid::Uuid::new_v4().simple()
         ));

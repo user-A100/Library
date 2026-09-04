@@ -90,7 +90,7 @@ export function HtmlBlockElement(
 						// biome-ignore lint/a11y/noAutofocus: matches the equation editor
 						autoFocus
 						aria-label={t("html.edit")}
-						className="agentero-scroll max-h-[50vh] min-h-24 grow resize-none rounded-md border bg-transparent p-2 font-mono text-sm outline-none"
+						className="library-scroll max-h-[50vh] min-h-24 grow resize-none rounded-md border bg-transparent p-2 font-mono text-sm outline-none"
 						placeholder={t("html.placeholder")}
 						value={draft}
 						onChange={(event) => setDraft(event.target.value)}

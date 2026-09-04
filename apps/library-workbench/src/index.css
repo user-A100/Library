@@ -173,12 +173,12 @@
  * interfaceFontFamily / monoFontFamily cannot take effect.
  */
 :root {
-	--agentero-font-sans:
+	--library-font-sans:
 		"Geist Variable", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
 		"PingFang SC", "Hiragino Sans GB", "Microsoft YaHei UI", "Microsoft YaHei",
 		"Noto Sans SC", sans-serif;
-	--agentero-font-heading: var(--agentero-font-sans);
-	--agentero-font-mono:
+	--library-font-heading: var(--library-font-sans);
+	--library-font-mono:
 		ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",
 		"Courier New", monospace;
 
@@ -194,9 +194,9 @@
 }
 
 @theme inline {
-	--font-heading: var(--agentero-font-heading);
-	--font-sans: var(--agentero-font-sans);
-	--font-mono: var(--agentero-font-mono);
+	--font-heading: var(--library-font-heading);
+	--font-sans: var(--library-font-sans);
+	--font-mono: var(--library-font-mono);
 	--color-sidebar-ring: var(--sidebar-ring);
 	--color-sidebar-border: var(--sidebar-border);
 	--color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -363,7 +363,7 @@
  * Auto-hiding pane scrollbars: hidden by default, shown while scrolling or on
  * hover so content bounds stay clean when idle.
  */
-.agentero-scroll {
+.library-scroll {
 	overflow-x: hidden;
 	overflow-y: auto;
 	overscroll-behavior: contain;
@@ -378,7 +378,7 @@
 }
 
 /* Both axes (e.g. papers library table) */
-.agentero-scroll-both {
+.library-scroll-both {
 	overflow: auto;
 	overscroll-behavior: contain;
 	scrollbar-width: thin;
@@ -390,14 +390,14 @@
  * full-size pointer div, so only !important reaches the page under it; the
  * descendant selector also covers the page layers' crosshair/pointer cursors.
  */
-.agentero-pdf-pan-ready,
-.agentero-pdf-pan-ready * {
+.library-pdf-pan-ready,
+.library-pdf-pan-ready * {
 	/* biome-ignore lint/complexity/noImportantStyles: must beat EmbedPDF's inline cursor */
 	cursor: grab !important;
 }
 
-.agentero-pdf-panning,
-.agentero-pdf-panning * {
+.library-pdf-panning,
+.library-pdf-panning * {
 	/* biome-ignore lint/complexity/noImportantStyles: must beat EmbedPDF's inline cursor */
 	cursor: grabbing !important;
 	user-select: none;
@@ -407,25 +407,25 @@
  * Horizontal-only nested scrollers (Markdown code blocks) must not trap a
  * vertical wheel gesture before it reaches the document pane.
  */
-.agentero-scroll-both.agentero-scroll-x-only {
+.library-scroll-both.library-scroll-x-only {
 	overflow-y: hidden;
 	overscroll-behavior-x: contain;
 	overscroll-behavior-y: auto;
 }
 
-.agentero-scroll::-webkit-scrollbar,
-.agentero-scroll-both::-webkit-scrollbar {
+.library-scroll::-webkit-scrollbar,
+.library-scroll-both::-webkit-scrollbar {
 	width: 8px;
 	height: 8px;
 }
 
-.agentero-scroll::-webkit-scrollbar-track,
-.agentero-scroll-both::-webkit-scrollbar-track {
+.library-scroll::-webkit-scrollbar-track,
+.library-scroll-both::-webkit-scrollbar-track {
 	background: transparent;
 }
 
-.agentero-scroll::-webkit-scrollbar-thumb,
-.agentero-scroll-both::-webkit-scrollbar-thumb {
+.library-scroll::-webkit-scrollbar-thumb,
+.library-scroll-both::-webkit-scrollbar-thumb {
 	background-color: transparent;
 	border-radius: 999px;
 	border: 2px solid transparent;
@@ -433,10 +433,10 @@
 	transition: background-color var(--motion-duration-fast) ease;
 }
 
-.agentero-scroll.scrolling::-webkit-scrollbar-thumb,
-.agentero-scroll-both.scrolling::-webkit-scrollbar-thumb,
-.agentero-scroll:hover::-webkit-scrollbar-thumb,
-.agentero-scroll-both:hover::-webkit-scrollbar-thumb {
+.library-scroll.scrolling::-webkit-scrollbar-thumb,
+.library-scroll-both.scrolling::-webkit-scrollbar-thumb,
+.library-scroll:hover::-webkit-scrollbar-thumb,
+.library-scroll-both:hover::-webkit-scrollbar-thumb {
 	background-color: color-mix(
 		in oklch,
 		var(--muted-foreground) 28%,
@@ -444,10 +444,10 @@
 	);
 }
 
-.agentero-scroll.scrolling::-webkit-scrollbar-thumb:hover,
-.agentero-scroll-both.scrolling::-webkit-scrollbar-thumb:hover,
-.agentero-scroll:hover::-webkit-scrollbar-thumb:hover,
-.agentero-scroll-both:hover::-webkit-scrollbar-thumb:hover {
+.library-scroll.scrolling::-webkit-scrollbar-thumb:hover,
+.library-scroll-both.scrolling::-webkit-scrollbar-thumb:hover,
+.library-scroll:hover::-webkit-scrollbar-thumb:hover,
+.library-scroll-both:hover::-webkit-scrollbar-thumb:hover {
 	background-color: color-mix(
 		in oklch,
 		var(--muted-foreground) 48%,
@@ -457,23 +457,23 @@
 	background-clip: content-box;
 }
 
-.agentero-scroll::-webkit-scrollbar-corner,
-.agentero-scroll-both::-webkit-scrollbar-corner {
+.library-scroll::-webkit-scrollbar-corner,
+.library-scroll-both::-webkit-scrollbar-corner {
 	background: transparent;
 }
 
 /* Firefox: restore thumb color while scrolling or hovering. */
-.agentero-scroll.scrolling,
-.agentero-scroll-both.scrolling,
-.agentero-scroll:hover,
-.agentero-scroll-both:hover {
+.library-scroll.scrolling,
+.library-scroll-both.scrolling,
+.library-scroll:hover,
+.library-scroll-both:hover {
 	scrollbar-color: color-mix(in oklch, var(--muted-foreground) 32%, transparent)
 		transparent;
 }
 
 /* dockview: map native theme class to app design tokens */
-.agentero-dockview,
-.agentero-dockview-theme {
+.library-dockview,
+.library-dockview-theme {
 	--dv-group-view-background-color: var(--background);
 	--dv-tabs-and-actions-container-background-color: var(--muted);
 	/* Match PaneHeader (`h-10`) so the workspace aligns with side-pane headers. */
@@ -520,7 +520,7 @@
 }
 
 /* Context menu / overflow popovers mount on this anchor (prepended to root). */
-.agentero-dockview .dv-popover-anchor {
+.library-dockview .dv-popover-anchor {
 	z-index: var(--dv-overlay-z-index, 1000);
 }
 
@@ -530,7 +530,7 @@
  * anchor that fallback at the workspace origin so its static position cannot
  * extend the document scroll area. Later inline left/top values still win.
  */
-.agentero-dockview .dv-render-overlay {
+.library-dockview .dv-render-overlay {
 	top: 0;
 	left: 0;
 }
@@ -541,15 +541,15 @@
  * the group makes it overflow by the tab bar height, so editor toolbars stack
  * over NOTES.md / tab titles.
  */
-.agentero-dockview .dv-dockview,
-.agentero-dockview .dv-groupview,
-.agentero-dockview .dv-view,
-.agentero-dockview .dv-split-view-container {
+.library-dockview .dv-dockview,
+.library-dockview .dv-groupview,
+.library-dockview .dv-view,
+.library-dockview .dv-split-view-container {
 	height: 100%;
 	min-height: 0;
 }
 
-.agentero-dockview .dv-groupview > .dv-content-container {
+.library-dockview .dv-groupview > .dv-content-container {
 	/* dockview defaults: flex-grow:1; min-height:0 */
 	min-height: 0;
 	overflow: hidden;
@@ -561,12 +561,12 @@
  * Temporarily contain those layout/paint trees so a heavy PDF or editor panel
  * cannot invalidate sibling panels while the divider is moving.
  */
-.agentero-dockview.agentero-dock-sash-active .dv-view,
-.agentero-dockview.agentero-dock-sash-active .dv-render-overlay {
+.library-dockview.library-dock-sash-active .dv-view,
+.library-dockview.library-dock-sash-active .dv-render-overlay {
 	contain: layout paint;
 }
 
-.agentero-dockview.agentero-dock-sash-active {
+.library-dockview.library-dock-sash-active {
 	-webkit-user-select: none;
 	user-select: none;
 }
@@ -577,7 +577,7 @@
  * `:active`, and dockview never sets pointer capture — so pseudo-class
  * styling cannot be relied on while dragging.
  */
-.agentero-dockview .dv-sash.agentero-dock-sash-dragging {
+.library-dockview .dv-sash.library-dock-sash-dragging {
 	background-color: var(--dv-active-sash-color);
 }
 
@@ -587,13 +587,13 @@
  */
 body.dragging,
 body.dragging *,
-body.agentero-dockview-dragging,
-body.agentero-dockview-dragging * {
+body.library-dockview-dragging,
+body.library-dockview-dragging * {
 	-webkit-user-select: none;
 	user-select: none;
 }
 
-.agentero-dockview .dv-tabs-and-actions-container {
+.library-dockview .dv-tabs-and-actions-container {
 	flex-shrink: 0;
 	position: relative;
 	z-index: 2;
@@ -605,7 +605,7 @@ body.agentero-dockview-dragging * {
  * Cap each document tab so long paper titles do not dominate the tab strip.
  * Ellipsis needs min-width:0 on the flex chain + overflow on the title span.
  */
-.agentero-dockview .dv-tab {
+.library-dockview .dv-tab {
 	max-width: 12rem;
 	min-width: 0;
 	overflow: hidden;
@@ -615,12 +615,12 @@ body.agentero-dockview-dragging * {
 		color var(--motion-duration-fast) var(--motion-ease-out);
 }
 
-.agentero-dockview .dv-tab .dv-default-tab {
+.library-dockview .dv-tab .dv-default-tab {
 	min-width: 0;
 	overflow: hidden;
 }
 
-.agentero-dockview .dv-tab .dv-default-tab-content {
+.library-dockview .dv-tab .dv-default-tab-content {
 	min-width: 0;
 	overflow: hidden;
 	text-overflow: ellipsis;
@@ -632,7 +632,7 @@ body.agentero-dockview-dragging * {
  * Expanded: dockview bottom underline under member tabs keeps group color.
  * Collapsed: no extra bar under the chip (dockview underline width is already 0).
  */
-.agentero-dockview .dv-tab-group-chip {
+.library-dockview .dv-tab-group-chip {
 	background-color: transparent;
 	color: var(--muted-foreground);
 	font-weight: 500;
@@ -640,13 +640,13 @@ body.agentero-dockview-dragging * {
 	box-shadow: none;
 }
 
-.agentero-dockview .dv-tab-group-chip:hover {
+.library-dockview .dv-tab-group-chip:hover {
 	color: var(--foreground);
 	background-color: transparent;
 }
 
 /* Nameless chip: solid accent swatch (identity only). */
-.agentero-dockview .dv-tab-group-chip:has(.dv-tab-group-chip-label--empty) {
+.library-dockview .dv-tab-group-chip:has(.dv-tab-group-chip-label--empty) {
 	background-color: var(--dv-tab-group-color, var(--muted-foreground));
 	color: transparent;
 	width: 12px;
@@ -656,122 +656,122 @@ body.agentero-dockview-dragging * {
 }
 
 /* Global workspace: always show dockview tab chrome (it owns document tabs). */
-.agentero-dockview.agentero-dock-global .dv-tabs-and-actions-container {
+.library-dockview.library-dock-global .dv-tabs-and-actions-container {
 	display: flex;
 }
 
 /*
  * Code block syntax highlighting. lowlight (via @platejs/code-block) emits
  * highlight.js token class names (.hljs-keyword etc.) on code_syntax leaves;
- * these rules give them color. Scoped to .agentero-codeblock so inline code
+ * these rules give them color. Scoped to .library-codeblock so inline code
  * (code-leaf.tsx) is unaffected. Colors: GitHub light / dark themes. Only color
  * declarations are kept — the upstream themes' padding/display/background rules
  * are dropped to preserve the editor's own code-block layout.
  */
-.agentero-codeblock .hljs-doctag,
-.agentero-codeblock .hljs-keyword,
-.agentero-codeblock .hljs-meta .hljs-keyword,
-.agentero-codeblock .hljs-template-tag,
-.agentero-codeblock .hljs-template-variable,
-.agentero-codeblock .hljs-type,
-.agentero-codeblock .hljs-variable.language_ {
+.library-codeblock .hljs-doctag,
+.library-codeblock .hljs-keyword,
+.library-codeblock .hljs-meta .hljs-keyword,
+.library-codeblock .hljs-template-tag,
+.library-codeblock .hljs-template-variable,
+.library-codeblock .hljs-type,
+.library-codeblock .hljs-variable.language_ {
 	color: #d73a49;
 }
-.agentero-codeblock .hljs-title,
-.agentero-codeblock .hljs-title.class_,
-.agentero-codeblock .hljs-title.class_.inherited__,
-.agentero-codeblock .hljs-title.function_ {
+.library-codeblock .hljs-title,
+.library-codeblock .hljs-title.class_,
+.library-codeblock .hljs-title.class_.inherited__,
+.library-codeblock .hljs-title.function_ {
 	color: #6f42c1;
 }
-.agentero-codeblock .hljs-attr,
-.agentero-codeblock .hljs-attribute,
-.agentero-codeblock .hljs-literal,
-.agentero-codeblock .hljs-meta,
-.agentero-codeblock .hljs-number,
-.agentero-codeblock .hljs-operator,
-.agentero-codeblock .hljs-variable,
-.agentero-codeblock .hljs-selector-attr,
-.agentero-codeblock .hljs-selector-class,
-.agentero-codeblock .hljs-selector-id {
+.library-codeblock .hljs-attr,
+.library-codeblock .hljs-attribute,
+.library-codeblock .hljs-literal,
+.library-codeblock .hljs-meta,
+.library-codeblock .hljs-number,
+.library-codeblock .hljs-operator,
+.library-codeblock .hljs-variable,
+.library-codeblock .hljs-selector-attr,
+.library-codeblock .hljs-selector-class,
+.library-codeblock .hljs-selector-id {
 	color: #005cc5;
 }
-.agentero-codeblock .hljs-regexp,
-.agentero-codeblock .hljs-string,
-.agentero-codeblock .hljs-meta .hljs-string {
+.library-codeblock .hljs-regexp,
+.library-codeblock .hljs-string,
+.library-codeblock .hljs-meta .hljs-string {
 	color: #032f62;
 }
-.agentero-codeblock .hljs-built_in,
-.agentero-codeblock .hljs-symbol {
+.library-codeblock .hljs-built_in,
+.library-codeblock .hljs-symbol {
 	color: #e36209;
 }
-.agentero-codeblock .hljs-comment,
-.agentero-codeblock .hljs-code,
-.agentero-codeblock .hljs-formula {
+.library-codeblock .hljs-comment,
+.library-codeblock .hljs-code,
+.library-codeblock .hljs-formula {
 	color: #6a737d;
 }
-.agentero-codeblock .hljs-name,
-.agentero-codeblock .hljs-quote,
-.agentero-codeblock .hljs-selector-tag,
-.agentero-codeblock .hljs-selector-pseudo {
+.library-codeblock .hljs-name,
+.library-codeblock .hljs-quote,
+.library-codeblock .hljs-selector-tag,
+.library-codeblock .hljs-selector-pseudo {
 	color: #22863a;
 }
-.agentero-codeblock .hljs-subst {
+.library-codeblock .hljs-subst {
 	color: #24292e;
 }
-.agentero-codeblock .hljs-bullet {
+.library-codeblock .hljs-bullet {
 	color: #735c0f;
 }
 
-.dark .agentero-codeblock .hljs-doctag,
-.dark .agentero-codeblock .hljs-keyword,
-.dark .agentero-codeblock .hljs-meta .hljs-keyword,
-.dark .agentero-codeblock .hljs-template-tag,
-.dark .agentero-codeblock .hljs-template-variable,
-.dark .agentero-codeblock .hljs-type,
-.dark .agentero-codeblock .hljs-variable.language_ {
+.dark .library-codeblock .hljs-doctag,
+.dark .library-codeblock .hljs-keyword,
+.dark .library-codeblock .hljs-meta .hljs-keyword,
+.dark .library-codeblock .hljs-template-tag,
+.dark .library-codeblock .hljs-template-variable,
+.dark .library-codeblock .hljs-type,
+.dark .library-codeblock .hljs-variable.language_ {
 	color: #ff7b72;
 }
-.dark .agentero-codeblock .hljs-title,
-.dark .agentero-codeblock .hljs-title.class_,
-.dark .agentero-codeblock .hljs-title.class_.inherited__,
-.dark .agentero-codeblock .hljs-title.function_ {
+.dark .library-codeblock .hljs-title,
+.dark .library-codeblock .hljs-title.class_,
+.dark .library-codeblock .hljs-title.class_.inherited__,
+.dark .library-codeblock .hljs-title.function_ {
 	color: #d2a8ff;
 }
-.dark .agentero-codeblock .hljs-attr,
-.dark .agentero-codeblock .hljs-attribute,
-.dark .agentero-codeblock .hljs-literal,
-.dark .agentero-codeblock .hljs-meta,
-.dark .agentero-codeblock .hljs-number,
-.dark .agentero-codeblock .hljs-operator,
-.dark .agentero-codeblock .hljs-variable,
-.dark .agentero-codeblock .hljs-selector-attr,
-.dark .agentero-codeblock .hljs-selector-class,
-.dark .agentero-codeblock .hljs-selector-id {
+.dark .library-codeblock .hljs-attr,
+.dark .library-codeblock .hljs-attribute,
+.dark .library-codeblock .hljs-literal,
+.dark .library-codeblock .hljs-meta,
+.dark .library-codeblock .hljs-number,
+.dark .library-codeblock .hljs-operator,
+.dark .library-codeblock .hljs-variable,
+.dark .library-codeblock .hljs-selector-attr,
+.dark .library-codeblock .hljs-selector-class,
+.dark .library-codeblock .hljs-selector-id {
 	color: #79c0ff;
 }
-.dark .agentero-codeblock .hljs-regexp,
-.dark .agentero-codeblock .hljs-string,
-.dark .agentero-codeblock .hljs-meta .hljs-string {
+.dark .library-codeblock .hljs-regexp,
+.dark .library-codeblock .hljs-string,
+.dark .library-codeblock .hljs-meta .hljs-string {
 	color: #a5d6ff;
 }
-.dark .agentero-codeblock .hljs-built_in,
-.dark .agentero-codeblock .hljs-symbol {
+.dark .library-codeblock .hljs-built_in,
+.dark .library-codeblock .hljs-symbol {
 	color: #ffa657;
 }
-.dark .agentero-codeblock .hljs-comment,
-.dark .agentero-codeblock .hljs-code,
-.dark .agentero-codeblock .hljs-formula {
+.dark .library-codeblock .hljs-comment,
+.dark .library-codeblock .hljs-code,
+.dark .library-codeblock .hljs-formula {
 	color: #8b949e;
 }
-.dark .agentero-codeblock .hljs-name,
-.dark .agentero-codeblock .hljs-quote,
-.dark .agentero-codeblock .hljs-selector-tag,
-.dark .agentero-codeblock .hljs-selector-pseudo {
+.dark .library-codeblock .hljs-name,
+.dark .library-codeblock .hljs-quote,
+.dark .library-codeblock .hljs-selector-tag,
+.dark .library-codeblock .hljs-selector-pseudo {
 	color: #7ee787;
 }
-.dark .agentero-codeblock .hljs-subst {
+.dark .library-codeblock .hljs-subst {
 	color: #c9d1d9;
 }
-.dark .agentero-codeblock .hljs-bullet {
+.dark .library-codeblock .hljs-bullet {
 	color: #f2cc60;
 }

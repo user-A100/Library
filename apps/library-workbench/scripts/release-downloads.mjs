@@ -5,7 +5,7 @@
 
 import { execFileSync } from "node:child_process";
 
-const REPO = "poco-ai/Agentero";
+const REPO = "poco-ai/Library";
 const showAssets = process.argv.includes("--assets");
 
 const releases = JSON.parse(
@@ -20,7 +20,7 @@ if (releases.length === 0) {
 	process.exit(0);
 }
 
-const EXCLUDE = /(^agentero-cli-|\.sig$|\.sha256$|^latest\.json$)/i;
+const EXCLUDE = /(^library-cli-|\.sig$|\.sha256$|^latest\.json$)/i;
 
 function platformOf(name) {
 	const n = name.toLowerCase();

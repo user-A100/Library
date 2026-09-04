@@ -583,7 +583,7 @@ fn note_blocks(item: &ReadItem, migrate_notes: bool, migrate_annotations: bool) 
     let mut blocks = Vec::new();
     if migrate_notes {
         for html in &item.note_html {
-            // Never import Agentero's own sync notes back into the vault
+            // Never import Library's own sync notes back into the vault
             // (intact, escaped or otherwise damaged marker forms alike).
             if super::codec::looks_like_sync_note(html) {
                 continue;

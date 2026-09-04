@@ -22,7 +22,7 @@ pub async fn cli_install_command<R: Runtime>(app: AppHandle<R>) -> ApiResult<Cli
     if let Err(e) = install_shim(&binary, &shim) {
         return map_err(e);
     }
-    // Windows: register the shim dir on the user PATH so `agentero-cli` works in
+    // Windows: register the shim dir on the user PATH so `library-cli` works in
     // new terminals without manual setup. Non-fatal — the message below then
     // still points the user at the directory to add.
     if let Err(e) = add_shim_dir_to_user_path() {
@@ -75,7 +75,7 @@ pub fn cli_uninstall_command<R: Runtime>(app: AppHandle<R>) -> ApiResult<CliInst
         log::warn!("cli uninstall: failed to remove shim dir from user PATH: {e}");
     }
     let mut status = collect_status(&app);
-    status.message = Some("Removed the Agentero-managed CLI shim.".into());
+    status.message = Some("Removed the Library-managed CLI shim.".into());
     ApiResult::ok(CliInstallResult {
         status,
         action: "uninstall".into(),

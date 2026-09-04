@@ -267,7 +267,7 @@ export function PlazaFeedItemDetail({
 			</div>
 			<div
 				ref={bodyRef}
-				className="agentero-scroll min-h-0 flex-1 select-text overflow-y-auto px-5 py-4"
+				className="library-scroll min-h-0 flex-1 select-text overflow-y-auto px-5 py-4"
 			>
 				{markdown ? (
 					<MessageResponse className="prose prose-sm dark:prose-invert max-w-none text-sm leading-relaxed [&_h1]:mt-0 [&_h1]:mb-3 [&_h1]:font-medium [&_h1]:text-base [&_h1]:leading-snug">

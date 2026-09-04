@@ -1,4 +1,4 @@
-//! `agentero config *`
+//! `library config *`
 
 use crate::config;
 use crate::error::CliError;

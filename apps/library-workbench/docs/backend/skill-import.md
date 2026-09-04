@@ -1,6 +1,6 @@
 # 魔棒解析 GitHub Skill 入库（Skill Import）
 
-> 状态：首版已实现。对应 [#118](https://github.com/poco-ai/Agentero/issues/118)。魔棒（⇧⌘I）除论文标识符外，还能识别 **GitHub 仓库链接 / `npx skills add` 指令**，把 Agent Skill 下载到当前 Vault 的 `.agents/skills/<name>/`。相关：[paper-import.md](paper-import.md)、[agent.md](agent.md)。
+> 状态：首版已实现。对应 [#118](https://github.com/poco-ai/Library/issues/118)。魔棒（⇧⌘I）除论文标识符外，还能识别 **GitHub 仓库链接 / `npx skills add` 指令**，把 Agent Skill 下载到当前 Vault 的 `.agents/skills/<name>/`。相关：[paper-import.md](paper-import.md)、[agent.md](agent.md)。
 
 ## 1. 背景与现状
 
@@ -13,7 +13,7 @@
 ### 社区规范（2026）
 
 - Skill = 自包含目录：`SKILL.md`（必需，frontmatter `name` ≤64 小写字母数字连字符、**必须与目录名一致**；`description` ≤1024）+ 可选 `scripts/` `references/` `assets/`。规范见 [agentskills.io/specification](https://agentskills.io/specification)。
-- 事实标准安装器为 **`npx skills`**（vercel-labs/skills）：`npx skills add <owner>/<repo> [--skill <name>]`，装到 `./.agents/skills/`（通用目录，与 Agentero 一致）；[skills.sh](https://skills.sh/) 页面复制出来的就是这条命令。
+- 事实标准安装器为 **`npx skills`**（vercel-labs/skills）：`npx skills add <owner>/<repo> [--skill <name>]`，装到 `./.agents/skills/`（通用目录，与 Library 一致）；[skills.sh](https://skills.sh/) 页面复制出来的就是这条命令。
 - 分发主体是 GitHub repo（单 skill repo 或 monorepo 如 `anthropics/skills`），npm 包分发非主流。
 
 ## 2. 输入形态识别（pattern 枚举）
@@ -44,7 +44,7 @@
 4. 将归档和候选 metadata 暂存为一次性 discovery，并返回前端选择；此阶段不写入 Vault。
 5. 用户确认后才落盘 `vault/.agents/skills/<name>/`（整目录拷贝，含 `references/` 等）：
    - 目标已存在 → 默认**不覆盖**，报「已存在，是否更新」（沿用 `ensure_vault` 不覆盖用户文件的原则）；
-   - 在 skill 目录写 `agentero-skill.json` 来源记录（source URL + ref + 安装时间），为将来「检查更新」留钩子（参考 `skills-lock.json` / Obsidian BRAT）。
+   - 在 skill 目录写 `library-skill.json` 来源记录（source URL + ref + 安装时间），为将来「检查更新」留钩子（参考 `skills-lock.json` / Obsidian BRAT）。
 6. **不落 catalog**（skill 不是论文；`Url` kind 已有 `identifier_kind_column → None` 先例），不建 `papers/` 条目、不跑 `paper_commit`。
 
 私有 repo / 浅 clone 回退、GitLab 支持均延后。
@@ -78,5 +78,5 @@
 
 | 阶段 | 内容 |
 |---|---|
-| P2 | 已装 Skill 的「检查更新 / 重装」（基于 `agentero-skill.json`）；`#ref` pin；多候选选择对话框 |
+| P2 | 已装 Skill 的「检查更新 / 重装」（基于 `library-skill.json`）；`#ref` pin；多候选选择对话框 |
 | P3 | 私有 repo（gh / git 回退）、GitLab、`.well-known` 源、远程 Vault |

@@ -97,7 +97,7 @@ export function AnnotationsPanel({
 					</p>
 				</div>
 			) : (
-				<div className="agentero-scroll min-h-0 flex-1 space-y-4 overflow-y-auto p-2">
+				<div className="library-scroll min-h-0 flex-1 space-y-4 overflow-y-auto p-2">
 					{asks.length > 0 ? (
 						<section aria-label={t("annotations.sectionAsks")}>
 							{multiSection ? (

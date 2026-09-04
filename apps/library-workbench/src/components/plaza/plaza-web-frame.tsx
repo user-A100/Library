@@ -28,7 +28,7 @@ import { importPlazaPaper, type PlazaImportRequest } from "@/lib/plaza/import";
 const SANDBOX = "allow-scripts allow-same-origin allow-forms";
 
 type NavMessage = {
-	source: "agentero-plaza";
+	source: "library-plaza";
 	/** In-frame navigation that just happened. */
 	path?: string;
 	/** Third-party link the frame refused to follow; open it outside. */
@@ -45,7 +45,7 @@ type NavMessage = {
 function isNavMessage(data: unknown): data is NavMessage {
 	if (typeof data !== "object" || data === null) return false;
 	const value = data as Partial<NavMessage>;
-	if (value.source !== "agentero-plaza") return false;
+	if (value.source !== "library-plaza") return false;
 	return (
 		typeof value.path === "string" ||
 		typeof value.external === "string" ||
@@ -117,7 +117,7 @@ export function PlazaWebFrame({
 				void importPlazaPaper(importPaper).then((ok) => {
 					frameRef.current?.contentWindow?.postMessage(
 						{
-							source: "agentero-plaza-host",
+							source: "library-plaza-host",
 							importedId: importPaper.id,
 							ok,
 						},

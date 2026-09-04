@@ -1,6 +1,6 @@
 use crate::features::agent::models::{AgentTemplate, AgentTemplateInfo};
 
-/// Preset command templates only — binaries are never bundled with Agentero.
+/// Preset command templates only — binaries are never bundled with Library.
 ///
 /// `detect_command` is used for "installed on PATH" status when the ACP entrypoint
 /// differs (e.g. Claude/Codex via npx adapters still want to show the host CLI).
@@ -40,14 +40,14 @@ pub fn dsh_launcher_dir() -> std::path::PathBuf {
         let base = std::env::var_os("USERPROFILE")
             .map(std::path::PathBuf::from)
             .unwrap_or_else(|| std::path::PathBuf::from("C:\\"));
-        base.join(".agentero").join("dsh-acp")
+        base.join(".library").join("dsh-acp")
     }
     #[cfg(not(target_os = "windows"))]
     {
         let home = std::env::var_os("HOME")
             .map(std::path::PathBuf::from)
             .unwrap_or_default();
-        home.join(".agentero").join("dsh-acp")
+        home.join(".library").join("dsh-acp")
     }
 }
 
@@ -225,7 +225,7 @@ pub fn builtin_templates() -> Vec<AgentTemplateInfo> {
             id: AgentTemplate::Dsh.as_str().to_string(),
             name: "Dsh".to_string(),
             description:
-                "DeepSeek Harness automation ACP demo (`@deepseek-ai/dsh-acp-demo`), npm-installed into ~/.agentero/dsh-acp."
+                "DeepSeek Harness automation ACP demo (`@deepseek-ai/dsh-acp-demo`), npm-installed into ~/.library/dsh-acp."
                     .to_string(),
             // The server resolves cordis.yml / plugins / .env from its own dir;
             // ACP stdio spawns have no cwd, so launch through a shell cd. Prefer
@@ -236,17 +236,17 @@ pub fn builtin_templates() -> Vec<AgentTemplateInfo> {
                 vec![
                     "/D".to_string(),
                     "/C".to_string(),
-                    "cd /d \"%USERPROFILE%\\.agentero\\dsh-acp\" && if exist node_modules\\.bin\\dsh-acp-demo.cmd (node_modules\\.bin\\dsh-acp-demo.cmd --config cordis.yml) else (if exist \"%USERPROFILE%\\node_modules\\.bin\\dsh-acp-demo.cmd\" (\"%USERPROFILE%\\node_modules\\.bin\\dsh-acp-demo.cmd\" --config cordis.yml) else (dsh-acp-demo --config cordis.yml))".to_string(),
+                    "cd /d \"%USERPROFILE%\\.library\\dsh-acp\" && if exist node_modules\\.bin\\dsh-acp-demo.cmd (node_modules\\.bin\\dsh-acp-demo.cmd --config cordis.yml) else (if exist \"%USERPROFILE%\\node_modules\\.bin\\dsh-acp-demo.cmd\" (\"%USERPROFILE%\\node_modules\\.bin\\dsh-acp-demo.cmd\" --config cordis.yml) else (dsh-acp-demo --config cordis.yml))".to_string(),
                 ]
             } else {
                 vec![
                     "-c".to_string(),
-                    "cd \"$HOME/.agentero/dsh-acp\" && if [ -x ./node_modules/.bin/dsh-acp-demo ]; then exec ./node_modules/.bin/dsh-acp-demo --config cordis.yml; elif [ -x \"$HOME/node_modules/.bin/dsh-acp-demo\" ]; then exec \"$HOME/node_modules/.bin/dsh-acp-demo\" --config cordis.yml; else exec dsh-acp-demo --config cordis.yml; fi".to_string(),
+                    "cd \"$HOME/.library/dsh-acp\" && if [ -x ./node_modules/.bin/dsh-acp-demo ]; then exec ./node_modules/.bin/dsh-acp-demo --config cordis.yml; elif [ -x \"$HOME/node_modules/.bin/dsh-acp-demo\" ]; then exec \"$HOME/node_modules/.bin/dsh-acp-demo\" --config cordis.yml; else exec dsh-acp-demo --config cordis.yml; fi".to_string(),
                 ]
             },
             detect_command: Some("node".to_string()),
             install_hint: format!(
-                "Install button runs `npm i` of the dsh-acp-demo stack into ~/.agentero/dsh-acp. \
+                "Install button runs `npm i` of the dsh-acp-demo stack into ~/.library/dsh-acp. \
                  `npm i -g @deepseek-ai/dsh` is the umbrella CLI without ACP — install \
                  @deepseek-ai/dsh-acp-demo instead. Needs Node 22.19+ and DEEPSEEK_API_KEY \
                  in {}/.env  ·  https://github.com/deepseek-ai/deepseek-harness",

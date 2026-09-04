@@ -86,7 +86,7 @@ pub(crate) fn windows_cmd_cwd(cwd: &Path) -> String {
 }
 
 /// Pre-quote the cwd environment value so metacharacters remain literal after
-/// `cmd.exe` expands `%AGENTERO_AGENT_CWD%`, even when the path has no spaces.
+/// `cmd.exe` expands `%LIBRARY_AGENT_CWD%`, even when the path has no spaces.
 #[cfg(any(windows, test))]
 pub(crate) fn windows_cmd_cwd_env_value(cwd: &Path) -> String {
     format!("\"{}\"", windows_cmd_cwd(cwd))
@@ -103,7 +103,7 @@ pub(crate) fn wrap_local_command_with_cwd(
     cwd: &Path,
 ) -> (PathBuf, Vec<String>) {
     env.insert(
-        "AGENTERO_AGENT_CWD".to_string(),
+        "LIBRARY_AGENT_CWD".to_string(),
         windows_cmd_cwd_env_value(cwd),
     );
     let mut agent_command = windows_shell_quote(&command.to_string_lossy());
@@ -111,13 +111,13 @@ pub(crate) fn wrap_local_command_with_cwd(
         agent_command.push(' ');
         agent_command.push_str(&windows_shell_quote(arg));
     }
-    env.insert("AGENTERO_AGENT_COMMAND".to_string(), agent_command);
+    env.insert("LIBRARY_AGENT_COMMAND".to_string(), agent_command);
     (
         PathBuf::from("cmd"),
         vec![
             "/D".to_string(),
             "/C".to_string(),
-            "cd /d %AGENTERO_AGENT_CWD% && %AGENTERO_AGENT_COMMAND%".to_string(),
+            "cd /d %LIBRARY_AGENT_CWD% && %LIBRARY_AGENT_COMMAND%".to_string(),
         ],
     )
 }
@@ -325,15 +325,15 @@ mod cwd_shell_wrap_tests {
             vec![
                 "/D".to_string(),
                 "/C".to_string(),
-                "cd /d %AGENTERO_AGENT_CWD% && %AGENTERO_AGENT_COMMAND%".to_string(),
+                "cd /d %LIBRARY_AGENT_CWD% && %LIBRARY_AGENT_COMMAND%".to_string(),
             ]
         );
         assert_eq!(
-            env.get("AGENTERO_AGENT_CWD"),
+            env.get("LIBRARY_AGENT_CWD"),
             Some(&r#""C:\My Vault""#.to_string())
         );
         assert_eq!(
-            env.get("AGENTERO_AGENT_COMMAND"),
+            env.get("LIBRARY_AGENT_COMMAND"),
             Some(&r#""C:\Program Files\pi-acp.cmd" --foo "bar baz""#.to_string())
         );
     }

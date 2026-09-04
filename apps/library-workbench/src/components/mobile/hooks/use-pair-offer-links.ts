@@ -6,7 +6,7 @@ export function isPairOfferUrl(value: string): boolean {
 	try {
 		const url = new URL(value);
 		return (
-			url.protocol === "agentero:" &&
+			url.protocol === "library:" &&
 			url.hostname === "pair" &&
 			url.hash.startsWith("#offer=")
 		);
@@ -16,7 +16,7 @@ export function isPairOfferUrl(value: string): boolean {
 }
 
 /**
- * Accepts `agentero://pair#offer=…` deep links, both for the URL that launched
+ * Accepts `library://pair#offer=…` deep links, both for the URL that launched
  * the app and for links opened while it is running.
  */
 export function usePairOfferLinks(onOffer: (offerUrl: string) => void) {

@@ -1,6 +1,6 @@
-# Agentero 用户指南
+# Library 用户指南
 
-面向第一次使用 Agentero 的研究者。不需要先了解 Tauri、ACP 或 Catalog；按目标选一篇即可。
+面向第一次使用 Library 的研究者。不需要先了解 Tauri、ACP 或 Catalog；按目标选一篇即可。
 
 ## 核心工作方式
 
@@ -27,15 +27,15 @@
 
 ### Vault
 
-普通文件夹。`papers/`、`NOTES.md`、PDF、`marks/` 等都在其中；离开 Agentero 仍可用编辑器、终端或 Git 访问。
+普通文件夹。`papers/`、`NOTES.md`、PDF、`marks/` 等都在其中；离开 Library 仍可用编辑器、终端或 Git 访问。
 
 ### Library
 
-根据 catalog 生成的论文列表。排序、标签与元数据来自 `.agentero/catalog.sqlite`；笔记正文以 Vault 内普通文件为准。
+根据 catalog 生成的论文列表。排序、标签与元数据来自 `.library/catalog.sqlite`；笔记正文以 Vault 内普通文件为准。
 
 ### Agent
 
-Agentero **不**内置模型，也**不**托管模型 API Key。通过 ACP 连接你本机或远程服务器上已安装并登录的 Agent。权限由设置中的全局权限模式控制。
+Library **不**内置模型，也**不**托管模型 API Key。通过 ACP 连接你本机或远程服务器上已安装并登录的 Agent。权限由设置中的全局权限模式控制。
 
 ## 使用边界（当前）
 

@@ -16,8 +16,8 @@ pub fn build_log_plugin() -> tauri_plugin_log::Builder {
 
     let mut builder = tauri_plugin_log::Builder::new()
         .level(default_level)
-        .level_for("agentero_lib::features::agent", agent_level)
-        .level_for("agentero::op", log::LevelFilter::Info)
+        .level_for("library_lib::features::agent", agent_level)
+        .level_for("library::op", log::LevelFilter::Info)
         // Third-party crates flood Debug with per-token / per-frame
         // traces (html5ever parsing, rustls handshakes); keep dev readable.
         .level_for("html5ever", log::LevelFilter::Error)
@@ -30,7 +30,7 @@ pub fn build_log_plugin() -> tauri_plugin_log::Builder {
         .clear_targets()
         .target(Target::new(TargetKind::Stdout))
         .target(Target::new(TargetKind::LogDir {
-            file_name: Some("agentero".into()),
+            file_name: Some("library".into()),
         }));
 
     // Dev: also mirror into the webview console (frontend calls attachConsole).

@@ -4,12 +4,12 @@
 
 ## 位置
 
-`$XDG_DATA_HOME/agentero/usage.sqlite`
+`$XDG_DATA_HOME/library/usage.sqlite`
 
 | 平台 | 未设 env 时的默认 |
 |---|---|
-| macOS / Linux | `~/.local/share/agentero/usage.sqlite` |
-| Windows | `%APPDATA%\agentero\usage.sqlite`（`dirs::data_dir`） |
+| macOS / Linux | `~/.local/share/library/usage.sqlite` |
+| Windows | `%APPDATA%\library\usage.sqlite`（`dirs::data_dir`） |
 
 代码：`src-tauri/src/core/usage/`。前端入口 `src/lib/activity/track.ts`（`track()` 缓冲批量上报）。
 
@@ -135,12 +135,12 @@ PRIMARY KEY (day, vault, kind, paper_path, facet)
 ## CLI
 
 ```bash
-agentero usage which --json
-agentero usage timeline --days 30 --json
-agentero usage summary --days 30 --json
-agentero usage timeline --kind paper.open --path papers/xxx --json
-agentero usage clear -y          # 当前 --vault
-agentero usage clear --all -y    # 本机全部
+library usage which --json
+library usage timeline --days 30 --json
+library usage summary --days 30 --json
+library usage timeline --kind paper.open --path papers/xxx --json
+library usage clear -y          # 当前 --vault
+library usage clear --all -y    # 本机全部
 ```
 
 未加 `--all-vaults` 时 timeline / summary 过滤当前 Vault。

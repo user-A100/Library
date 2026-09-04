@@ -29,7 +29,7 @@ use std::time::Duration;
 
 use futures_util::stream::{self, StreamExt};
 
-const CITING_SCAN_REL: &str = ".agentero/citing-scan.json";
+const CITING_SCAN_REL: &str = ".library/citing-scan.json";
 const CACHE_SCHEMA_VERSION: u32 = 1;
 const S2_BASE: &str = "https://api.semanticscholar.org/graph/v1";
 
@@ -927,7 +927,7 @@ pub async fn scan(
     cache.generated_at = result.generated_at.clone();
     cache.last_result = Some(result.clone());
     if let Err(e) = save_cache(vault, &cache) {
-        log::warn!(target: "agentero::refs", "citing scan cache write failed: {e}");
+        log::warn!(target: "library::refs", "citing scan cache write failed: {e}");
     }
     hooks.report("citingScore", None, None, Some(100));
     Ok(result)

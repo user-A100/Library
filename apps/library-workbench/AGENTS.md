@@ -2,7 +2,7 @@
 
 ## 项目概览
 
-Agentero 是一个基于 Tauri 2 + React 19 的本地优先科研工作台。Vault 中笔记与源文件以 Markdown/文件为准，论文结构化 metadata 以 `.agentero/catalog.sqlite` 为准。离开应用后数据仍可被外部工具读取。
+Library 是一个基于 Tauri 2 + React 19 的本地优先科研工作台。Vault 中笔记与源文件以 Markdown/文件为准，论文结构化 metadata 以 `.library/catalog.sqlite` 为准。离开应用后数据仍可被外部工具读取。
 
 **核心能力：**
 
@@ -43,7 +43,7 @@ papers/<id>/
 |---|---|---|---|
 | 前端 | React 19、TypeScript、Tailwind CSS 4、shadcn/ui、AI Elements | zustand 按域状态管理、Plate Markdown 编辑器、EmbedPDF 渲染、Dockview 多面板工作区 | [docs/frontend/](docs/frontend/index.md) |
 | Host | Rust、Tauri 2、feature-first 布局 | 文件系统与 Vault 树、Catalog SQLite、Wiki 双链索引、ACP Client、本地文件监听、可选 loopback MCP | [docs/backend/](docs/backend/index.md) |
-| CLI | Rust、`agentero` bin | headless Vault/Catalog 操作、论文标签管理、BibTeX 导入导出 | [docs/backend/cli.md](docs/backend/cli.md) |
+| CLI | Rust、`library` bin | headless Vault/Catalog 操作、论文标签管理、BibTeX 导入导出 | [docs/backend/cli.md](docs/backend/cli.md) |
 
 ## 开发规则
 
@@ -94,9 +94,9 @@ pnpm tauri build
 
 ```bash
 # Headless CLI（仓库根 workspace）
-cargo build -p agentero-cli
-cargo run -p agentero-cli -- vault which --json
-cargo test -p agentero-cli
+cargo build -p library-cli
+cargo run -p library-cli -- vault which --json
+cargo test -p library-cli
 ```
 
 完成实现前运行最小必要验证。UI 改动优先启动应用检查对应流程。

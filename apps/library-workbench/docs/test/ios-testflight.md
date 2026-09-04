@@ -51,7 +51,7 @@ RUSTUP_CARGO="$(rustup which --toolchain stable-aarch64-apple-darwin cargo)"
 RUSTUP_RUSTC="$(rustup which --toolchain stable-aarch64-apple-darwin rustc)"
 PATH="$(dirname "$RUSTUP_CARGO"):$PATH" RUSTC="$RUSTUP_RUSTC" CARGO_TARGET_DIR=target-ios \
   "$RUSTUP_CARGO" clippy --manifest-path src-tauri/Cargo.toml \
-  -p agentero --target aarch64-apple-ios-sim --lib -- -D warnings
+  -p library --target aarch64-apple-ios-sim --lib -- -D warnings
 ```
 
 The Rustup paths are intentional: this workstation also has a Homebrew Rust
@@ -64,7 +64,7 @@ metadata and opaque frames only.
 
 ## Apple Account Setup
 
-1. In Certificates, Identifiers & Profiles, create the `com.poco-ai.agentero`
+1. In Certificates, Identifiers & Profiles, create the `workbench.library.app`
    App ID and enable the capabilities actually used by the build.
 2. Install an Apple Development certificate for device testing and an Apple
    Distribution certificate plus App Store provisioning profile for TestFlight.
@@ -99,7 +99,7 @@ not upload it as part of the selected export flow.
 - Add a public privacy policy URL and complete the App Privacy questionnaire.
   Relay traffic, any configured Agent provider, and all third-party SDKs must
   be represented accurately.
-- Complete export-compliance questions. Agentero uses standard TLS plus
+- Complete export-compliance questions. Library uses standard TLS plus
   X25519/XSalsa20-Poly1305 and Ed25519 for the remote pairing protocol; do not
   claim the build is exempt without confirming the App Store Connect answers.
 - Fill **App Review Information** per
@@ -116,7 +116,7 @@ and [upload builds](https://developer.apple.com/help/app-store-connect/manage-bu
 
 ## Beta review: no login, no fake test page
 
-Agentero iOS has **no accounts and no in-app sign-in**. Do not invent a login
+Library iOS has **no accounts and no in-app sign-in**. Do not invent a login
 screen, a “reviewer password”, or a website where Apple must enter credentials
 just to pass review. That is the wrong fix for a no-account app.
 
@@ -141,11 +141,11 @@ PDF / Notes / Agent — not whether a username exists.
 
 Provide **App Review Notes** that explain:
 
-1. Install desktop Agentero and open a Vault
-   (`https://agentero.poco-ai.com`).
+1. Install desktop Library and open a Vault
+   (`https://library.poco-ai.com`).
 2. Enable Bridge (Settings → Remote Access → Start); keep the QR / 6-digit
    code visible.
-3. On iOS: Scan QR, or paste a pairing link (`agentero://pair#offer=...`).
+3. On iOS: Scan QR, or paste a pairing link (`library://pair#offer=...`).
 4. Confirm the code; then exercise Library → PDF / Notes → Agent over
    `wss://relay.philfan.cn`.
 
@@ -187,7 +187,7 @@ names are not translated.
 
 ### English (primary localization)
 
-**App name:** `Agentero`
+**App name:** `Library`
 **Subtitle (≤30 chars):** `Local-first research vault` (26)
 **Primary language:** English
 **Category (Primary / Secondary):** Productivity / Education
@@ -195,15 +195,15 @@ names are not translated.
 **Promotional text (≤170 chars, 169):**
 
 ```
-Agentero pairs your iPhone with a desktop research vault. Read PDFs, write notes, and chat with your own ACP Agent — end-to-end encrypted through your self-hosted relay.
+Library pairs your iPhone with a desktop research vault. Read PDFs, write notes, and chat with your own ACP Agent — end-to-end encrypted through your self-hosted relay.
 ```
 
 **Description:**
 
 ```
-Agentero is a local-first research workbench for individual researchers
+Library is a local-first research workbench for individual researchers
 and the Agents they collaborate with. The iOS app is a remote client for
-the desktop Agentero: it lets you carry your literature library, PDF
+the desktop Library: it lets you carry your literature library, PDF
 notes, and Agent conversations in your pocket — without moving your
 Vault off your own computer.
 
@@ -229,15 +229,15 @@ No accounts, no analytics, no telemetry. Pairing credentials live in
 iOS Keychain. The relay only sees opaque encrypted frames.
 
 COMING FROM THE DESKTOP
-Agentero is a Tauri 2 + React 19 local-first research workbench with
+Library is a Tauri 2 + React 19 local-first research workbench with
 BYOA Agent support, Zotero-compatible import, Obsidian-style wikilinks,
 WYSIWYG Markdown, in-place translation, and SSH remote Vaults. The
 desktop builds are MIT-licensed and ship for macOS, Windows, and Linux.
 
 Requirements
 • iOS 15.0 or later
-• An Agentero desktop install on macOS, Windows, or Linux
-  (agentero.poco-ai.com)
+• An Library desktop install on macOS, Windows, or Linux
+  (library.poco-ai.com)
 • An ACP-compatible Agent installed on the desktop for the Agent tab
 ```
 
@@ -252,14 +252,14 @@ research,vault,papers,PDF,notes,agent,markdown,obsidian,bibliography,academic
 ```
 • Initial TestFlight release.
 • iPhone and iPad support, iOS 15.0+.
-• Pair with desktop Agentero over an end-to-end encrypted relay.
+• Pair with desktop Library over an end-to-end encrypted relay.
 • Read desktop library, PDFs, and notes; write notes back.
 • Streamed chat with the desktop's ACP Agent.
 ```
 
-**Support URL:** `https://agentero.poco-ai.com/usage/`
-**Marketing URL:** `https://github.com/poco-ai/agentero`
-**Privacy policy URL:** `https://agentero.poco-ai.com/privacy/` (must
+**Support URL:** `https://library.poco-ai.com/usage/`
+**Marketing URL:** `https://github.com/poco-ai/library`
+**Privacy policy URL:** `https://library.poco-ai.com/privacy/` (must
 exist before the version can be submitted for review).
 
 **Sign-in required:** No  
@@ -269,12 +269,12 @@ login; do not create a dummy account form for review)
 **App Review notes (paste verbatim):**
 
 ```
-Agentero iOS is a remote client for a desktop Agentero Vault — it
+Library iOS is a remote client for a desktop Library Vault — it
 cannot create or open a Vault on the device. To exercise the app, a
 reviewer needs:
 
-1. macOS, Windows, or Linux desktop with Agentero installed and a
-   Vault opened (download: https://agentero.poco-ai.com).
+1. macOS, Windows, or Linux desktop with Library installed and a
+   Vault opened (download: https://library.poco-ai.com).
 2. The desktop Bridge enabled (Settings → Remote Access → Start). The
    desktop will show a QR code and a 6-digit pairing code.
 3. On the iOS app, tap "Scan QR code" and point at the desktop's QR.
@@ -327,22 +327,22 @@ once the English version is in. Reuse the same Support, Marketing, and
 Privacy URLs and the same App Privacy answers as English — privacy
 questionnaire answers are language-independent.
 
-**App name:** `Agentero`
+**App name:** `Library`
 **Subtitle (≤30 chars):** `本地优先科研知识库` (9)
 **Category (Primary / Secondary):** 效率 / 教育
 
 **Promotional text (≤170 chars):**
 
 ```
-Agentero 让 iPhone 配对你的桌面科研 Vault。浏览论文库、分屏阅读
+Library 让 iPhone 配对你的桌面科研 Vault。浏览论文库、分屏阅读
 PDF 与笔记、与你自己的 ACP Agent 对话——全程经自建中继端到端加密。
 ```
 
 **Description:**
 
 ```
-Agentero 是为独立科研工作者和他们协作的 Agent 设计的本地优先
-科研工作台。iOS 应用是桌面 Agentero 的远程客户端：把论文库、
+Library 是为独立科研工作者和他们协作的 Agent 设计的本地优先
+科研工作台。iOS 应用是桌面 Library 的远程客户端：把论文库、
 PDF 笔记和 Agent 对话装进口袋，Vault 不离开你自己的电脑。
 
 配对你的桌面
@@ -364,15 +364,15 @@ Claude、Codex、OpenCode、Gemini、Qoder、Grok 或任意兼容 ACP
 中继只看到不透明的加密帧。
 
 桌面端的延伸
-Agentero 是基于 Tauri 2 + React 19 的本地优先科研工作台，支持
+Library 是基于 Tauri 2 + React 19 的本地优先科研工作台，支持
 BYOA Agent、Zotero 兼容导入、Obsidian 风格双链、所见即所得
 Markdown、就地翻译和 SSH 远程 Vault。桌面端为 MIT 协议，发布
 于 macOS、Windows 和 Linux。
 
 要求
 • iOS 15.0 或更高版本
-• 桌面端（macOS、Windows 或 Linux）已安装 Agentero
-  （agentero.poco-ai.com）
+• 桌面端（macOS、Windows 或 Linux）已安装 Library
+  （library.poco-ai.com）
 • Agent 标签页需要在桌面端安装 ACP 兼容的 Agent
 ```
 
@@ -387,7 +387,7 @@ Markdown、就地翻译和 SSH 远程 Vault。桌面端为 MIT 协议，发布
 ```
 • 首次 TestFlight 发布。
 • 支持 iPhone 与 iPad，iOS 15.0+。
-• 通过端到端加密中继配对桌面 Agentero。
+• 通过端到端加密中继配对桌面 Library。
 • 阅读桌面文献库、PDF 与笔记；笔记可写回桌面。
 • 与桌面 ACP Agent 流式对话。
 ```
@@ -402,8 +402,8 @@ note unchanged across localizations.
 **Beta app description:**
 
 ```
-Internal pre-release of Agentero iOS. Pairs with the developer's
-desktop Agentero build over the relay at relay.philfan.cn. Used for
+Internal pre-release of Library iOS. Pairs with the developer's
+desktop Library build over the relay at relay.philfan.cn. Used for
 smoke testing the iOS remote-client shell (Connect → Library → PDF /
 Notes → Agent chat) before the public App Store submission.
 ```

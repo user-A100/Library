@@ -49,7 +49,7 @@ export function RemoteAccessPane({ vaultPath }: { vaultPath: string | null }) {
 	const [offerUrl, setOfferUrl] = useState("");
 	const [qrUrl, setQrUrl] = useState("");
 	const [hostName, setHostName] = useState(
-		() => window.location.hostname || "Agentero",
+		() => window.location.hostname || "Library",
 	);
 	const [busy, setBusy] = useState(false);
 

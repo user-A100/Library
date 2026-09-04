@@ -930,7 +930,7 @@ describe("wikilink completion grammar", () => {
 	});
 
 	it("moves through both closing and opening delimiters without skipping them", () => {
-		const raw = "![[验收说明#4. Agentero 内改名]]";
+		const raw = "![[验收说明#4. Library 内改名]]";
 		const editor = createSlateEditor({
 			plugins: [WikiLinkPlugin],
 			value: [
@@ -977,7 +977,7 @@ describe("wikilink completion grammar", () => {
 	});
 
 	it("places text typed at the exterior boundary after the rendered embed", () => {
-		const raw = "![[验收说明#4. Agentero 内改名]]";
+		const raw = "![[验收说明#4. Library 内改名]]";
 		const editor = createSlateEditor({
 			plugins: [WikiLinkPlugin],
 			value: [
@@ -1015,7 +1015,7 @@ describe("wikilink completion grammar", () => {
 					{
 						type: "wikiLink",
 						value: "验收说明",
-						heading: "4. Agentero 内改名",
+						heading: "4. Library 内改名",
 						alias: null,
 						embed: true,
 						children: [{ text: raw }],
@@ -1075,7 +1075,7 @@ describe("wikilink completion grammar", () => {
 	});
 
 	it("keeps text typed after a rendered ordinary Wikilink inline", () => {
-		const raw = "[[验收说明#4. Agentero 内改名]]";
+		const raw = "[[验收说明#4. Library 内改名]]";
 		const editor = createSlateEditor({
 			plugins: [WikiLinkPlugin],
 			value: [
@@ -1108,7 +1108,7 @@ describe("wikilink completion grammar", () => {
 					{
 						type: "wikiLink",
 						value: "验收说明",
-						heading: "4. Agentero 内改名",
+						heading: "4. Library 内改名",
 						alias: null,
 						embed: false,
 						children: [{ text: raw }],

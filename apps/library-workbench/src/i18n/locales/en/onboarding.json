@@ -1,5 +1,5 @@
 {
-	"title": "Welcome to Agentero",
+	"title": "Welcome to Library",
 	"subtitle": "Read papers and take notes alongside your AI assistant. A few quick steps to set up your workspace.",
 	"steps": {
 		"welcome": "Welcome",
@@ -20,7 +20,7 @@
 	},
 	"agent": {
 		"title": "Choose your AI assistant",
-		"desc": "Agentero plugs into agents already installed on this computer to summarize papers and answer questions — no extra API keys, just pick one.",
+		"desc": "Library plugs into agents already installed on this computer to summarize papers and answer questions — no extra API keys, just pick one.",
 		"rescan": "Rescan",
 		"scanning": "Scanning…",
 		"none": "No agents found yet. Install one on this computer (e.g. opencode or claude-acp), then click Rescan.",

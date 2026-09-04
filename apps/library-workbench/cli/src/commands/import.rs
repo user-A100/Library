@@ -1,11 +1,11 @@
-//! `agentero import *`
+//! `library import *`
 
 use crate::error::CliError;
 use crate::output::to_value;
 use crate::resolve::{resolve_vault, GlobalOpts};
-use agentero_lib::features::import as paper_import;
-use agentero_lib::features::import::{LookupImportArgs, PaperImportArgs};
-use agentero_lib::features::zotero;
+use library_lib::features::import as paper_import;
+use library_lib::features::import::{LookupImportArgs, PaperImportArgs};
+use library_lib::features::zotero;
 use clap::{Subcommand, ValueHint};
 use serde_json::{json, Value};
 use std::fs;

@@ -15,7 +15,7 @@ export function buildPdfAskPrompt(
 		.join("\n\n");
 
 	const parts = [
-		"You are helping the user read a research paper PDF in Agentero.",
+		"You are helping the user read a research paper PDF in Library.",
 		`Page: ${page}`,
 	];
 	if (thread.anchor.visualKind === "formula") {

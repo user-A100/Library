@@ -685,7 +685,7 @@ fn read_file(path: &PathBuf) -> (AppSettings, bool) {
             }
             Err(e) => {
                 log::warn!(
-                    target: "agentero::settings",
+                    target: "library::settings",
                     "invalid settings.json ({}): {e}; using defaults",
                     path.display()
                 );
@@ -694,7 +694,7 @@ fn read_file(path: &PathBuf) -> (AppSettings, bool) {
         },
         Err(e) => {
             log::warn!(
-                target: "agentero::settings",
+                target: "library::settings",
                 "failed to read settings.json: {e}"
             );
             (AppSettings::default(), false)
@@ -1016,7 +1016,7 @@ mod tests {
             .duration_since(UNIX_EPOCH)
             .unwrap()
             .as_nanos();
-        let dir = std::env::temp_dir().join(format!("agentero-settings-test-{n}"));
+        let dir = std::env::temp_dir().join(format!("library-settings-test-{n}"));
         let _ = fs::create_dir_all(&dir);
         let path = dir.join("settings.json");
         let s = AppSettings::default();
@@ -1038,7 +1038,7 @@ mod tests {
             .duration_since(UNIX_EPOCH)
             .unwrap()
             .as_nanos();
-        let dir = std::env::temp_dir().join(format!("agentero-settings-onboarding-{n}"));
+        let dir = std::env::temp_dir().join(format!("library-settings-onboarding-{n}"));
         let _ = fs::create_dir_all(&dir);
         let path = dir.join("settings.json");
         let s = AppSettings {
@@ -1263,7 +1263,7 @@ mod tests {
             .duration_since(UNIX_EPOCH)
             .unwrap()
             .as_nanos();
-        let dir = std::env::temp_dir().join(format!("agentero-settings-sub-test-{n}"));
+        let dir = std::env::temp_dir().join(format!("library-settings-sub-test-{n}"));
         let _ = fs::create_dir_all(&dir);
         let store = AppSettingsStore {
             inner: Mutex::new(AppSettings::default()),

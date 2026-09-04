@@ -15,7 +15,7 @@ export function PdfReferencesPanel({
 	if (!showReferences || !paperPath) return null;
 
 	return (
-		<aside className="agentero-scroll absolute inset-y-0 left-0 z-20 w-80 border-r bg-background/95 pt-11 pb-2 backdrop-blur-sm">
+		<aside className="library-scroll absolute inset-y-0 left-0 z-20 w-80 border-r bg-background/95 pt-11 pb-2 backdrop-blur-sm">
 			<ReferencesPanel
 				vaultPath={vaultPath}
 				paperPath={paperPath}

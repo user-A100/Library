@@ -1,6 +1,6 @@
 /**
  * Per-page layer stack rendered by EmbedPDF's `<Scroller renderPage>`: raster /
- * tiling / search / selection / annotation layers plus every Agentero overlay
+ * tiling / search / selection / annotation layers plus every Library overlay
  * (citation hits, layout boxes, bulk-translate text, mark source frames, gutter
  * pins).
  *

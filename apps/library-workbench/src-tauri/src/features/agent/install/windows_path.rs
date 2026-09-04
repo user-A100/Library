@@ -1,8 +1,8 @@
 //! Windows user-PATH management for the CLI shim directory.
 //!
-//! The installer writes `agentero-cli.cmd` into the shim dir and then adds that
+//! The installer writes `library-cli.cmd` into the shim dir and then adds that
 //! dir to the *user* PATH (`HKCU\Environment\Path`) so a fresh terminal can run
-//! `agentero-cli` without manual setup. PATH is read/written through the
+//! `library-cli` without manual setup. PATH is read/written through the
 //! registry (the process env is the merged system+user PATH, so editing it
 //! would duplicate or expand entries), preserving the existing value type
 //! (`REG_EXPAND_SZ` / `REG_SZ`). After writing we broadcast `WM_SETTINGCHANGE`
@@ -202,12 +202,12 @@ mod tests {
     #[test]
     fn normalizes_windows_style_dirs() {
         assert_eq!(
-            normalize_dir(Path::new("C:\\Users\\a b\\AppData\\Local\\Agentero\\bin")),
-            "C:\\Users\\a b\\AppData\\Local\\Agentero\\bin"
+            normalize_dir(Path::new("C:\\Users\\a b\\AppData\\Local\\Library\\bin")),
+            "C:\\Users\\a b\\AppData\\Local\\Library\\bin"
         );
         assert_eq!(
-            normalize_dir(Path::new("C:/Users/foo/AppData/Local/Agentero/bin/")),
-            "C:\\Users\\foo\\AppData\\Local\\Agentero\\bin"
+            normalize_dir(Path::new("C:/Users/foo/AppData/Local/Library/bin/")),
+            "C:\\Users\\foo\\AppData\\Local\\Library\\bin"
         );
     }
 

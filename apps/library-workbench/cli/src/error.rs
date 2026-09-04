@@ -104,8 +104,8 @@ impl fmt::Display for CliError {
 
 impl std::error::Error for CliError {}
 
-impl From<agentero_lib::core::error::AppError> for CliError {
-    fn from(err: agentero_lib::core::error::AppError) -> Self {
+impl From<library_lib::core::error::AppError> for CliError {
+    fn from(err: library_lib::core::error::AppError) -> Self {
         let msg = err.to_string();
         let lower = msg.to_ascii_lowercase();
         if lower.contains("not found") {

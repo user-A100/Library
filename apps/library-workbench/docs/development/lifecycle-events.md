@@ -141,7 +141,7 @@ Rust 关键节点 ──emit──▶ Tauri wire 事件 ──┐
    - bootstrap：store 种子移入 `boot()`（不再在 render 期做副作用）、JobCenter 订阅补 disposer、`app:ready` 等校验 settle、`window:closed` 收进 bus
    - 各 store 的 vault 级 clear + `vault_release`（驱逐 Host catalog 连接）
    - 退出时 `BridgeController::stop()`
-6. 后续（本稿不含）：hook 表用户可配置（settings / `.agentero/`），动作接 JobCenter 执行
+6. 后续（本稿不含）：hook 表用户可配置（settings / `.library/`），动作接 JobCenter 执行
 
 ## 非目标
 

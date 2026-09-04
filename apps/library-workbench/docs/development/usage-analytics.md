@@ -1,6 +1,6 @@
 # 使用记录、Memory 与产品分析
 
-> 状态：**P0 存储已落地**（XDG `usage.sqlite` schema v2 + `track()` + CLI `usage`），漏斗与画像仍按本文推进。关联 [\#239](https://github.com/poco-ai/Agentero/issues/239)。实现契约见 [`../backend/usage.md`](../backend/usage.md)。
+> 状态：**P0 存储已落地**（XDG `usage.sqlite` schema v2 + `track()` + CLI `usage`），漏斗与画像仍按本文推进。关联 [\#239](https://github.com/poco-ai/Library/issues/239)。实现契约见 [`../backend/usage.md`](../backend/usage.md)。
 > 相关：[`../backend/catalog.md`](../backend/catalog.md)、[`../backend/agent.md`](../backend/agent.md)、[`../backend/telemetry.md`](../backend/telemetry.md)、[`../backend/translate.md`](../backend/translate.md)、[`../backend/skill-import.md`](../backend/skill-import.md)、[`../frontend/pdf.md`](../frontend/pdf.md)、[`../frontend/pdf-layout-analysis.md`](../frontend/pdf-layout-analysis.md)、[`plaza.md`](plaza.md)
 
 ## 1. 目标与非目标
@@ -245,7 +245,7 @@ UI / Host 动作
 | `settings.change` | 只传 **allowlist 键名**（`telemetryEnabled`、`uiTheme`、`translate.provider`…），永不传值 |
 | `onboarding.step` | 比只记 complete 更能看流失；P0 有 complete 即可 |
 | `remote.open` / `bridge.pair` | 远程 / iOS 采用；移动端本身无 PostHog |
-| `cli.invoke` | `agentero` 子命令名；看 Agent 是否真走 CLI |
+| `cli.invoke` | `library` 子命令名；看 Agent 是否真走 CLI |
 
 #### 明确不记
 
@@ -264,7 +264,7 @@ UI / Host 动作
 
 ## 4. 存储
 
-### 4.1 `$XDG_DATA_HOME/agentero/usage.sqlite`
+### 4.1 `$XDG_DATA_HOME/library/usage.sqlite`
 
 **P0 已落地。** 不放进 Vault、也不放进 `catalog.sqlite`：远程会镜像 catalog；使用记录是设备本地事实。一台机器上的多个 Vault 用 `vault` 列（绝对路径）区分。
 
@@ -345,9 +345,9 @@ usage_memories  -- 声明式短句（P3 再写）
 细节走 CLI，不塞 prompt。已落地：
 
 ```bash
-agentero usage which --json
-agentero usage summary --days 30 --json
-agentero usage timeline --path papers/xxx --json
+library usage which --json
+library usage summary --days 30 --json
+library usage timeline --path papers/xxx --json
 ```
 
 `usage top` / `usage tools` 仍是规划，画像未做前先用 `timeline` + `summary`。

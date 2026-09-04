@@ -16,7 +16,7 @@ jobs:
       - name: Checkout tap repository
         uses: actions/checkout@v5
         with:
-          repository: poco-ai/homebrew-agentero
+          repository: poco-ai/homebrew-library
           token: ${{ secrets.HOMEBREW_TAP_TOKEN }}
 
       - name: Fetch release assets
@@ -77,9 +77,9 @@ jobs:
           }
 
           expected_assets=(
-            "agentero-cli-${VERSION}-aarch64-apple-darwin.tar.gz"
-            "agentero-cli-${VERSION}-x86_64-unknown-linux-gnu.tar.gz"
-            "agentero-cli-${VERSION}-aarch64-unknown-linux-gnu.tar.gz"
+            "library-cli-${VERSION}-aarch64-apple-darwin.tar.gz"
+            "library-cli-${VERSION}-x86_64-unknown-linux-gnu.tar.gz"
+            "library-cli-${VERSION}-aarch64-unknown-linux-gnu.tar.gz"
           )
           for asset in "${expected_assets[@]}"; do
             grep -Fxq "$asset" assets.txt || {
@@ -90,22 +90,22 @@ jobs:
 
           while IFS= read -r asset; do
             case "$asset" in
-              agentero-cli-${VERSION}-aarch64-apple-darwin.tar.gz)
+              library-cli-${VERSION}-aarch64-apple-darwin.tar.gz)
                 sha=$(download_and_hash "$asset")
-                update_checksum ../Formula/agentero.rb "$asset" "$sha"
+                update_checksum ../Formula/library.rb "$asset" "$sha"
                 ;;
-              agentero-cli-${VERSION}-x86_64-unknown-linux-gnu.tar.gz)
+              library-cli-${VERSION}-x86_64-unknown-linux-gnu.tar.gz)
                 sha=$(download_and_hash "$asset")
-                update_checksum ../Formula/agentero.rb "$asset" "$sha"
+                update_checksum ../Formula/library.rb "$asset" "$sha"
                 ;;
-              agentero-cli-${VERSION}-aarch64-unknown-linux-gnu.tar.gz)
+              library-cli-${VERSION}-aarch64-unknown-linux-gnu.tar.gz)
                 sha=$(download_and_hash "$asset")
-                update_checksum ../Formula/agentero.rb "$asset" "$sha"
+                update_checksum ../Formula/library.rb "$asset" "$sha"
                 ;;
             esac
           done < assets.txt
 
-          sed -i -E "s/version \"[^\"]*\"/version \"${VERSION}\"/" ../Formula/agentero.rb
+          sed -i -E "s/version \"[^\"]*\"/version \"${VERSION}\"/" ../Formula/library.rb
 
       - name: Update Cask
         env:
@@ -140,9 +140,9 @@ jobs:
           }
 
           expected_assets=(
-            "Agentero_${VERSION}_aarch64.dmg"
-            "Agentero_${VERSION}_aarch64.AppImage"
-            "Agentero_${VERSION}_amd64.AppImage"
+            "Library_${VERSION}_aarch64.dmg"
+            "Library_${VERSION}_aarch64.AppImage"
+            "Library_${VERSION}_amd64.AppImage"
           )
           for asset in "${expected_assets[@]}"; do
             grep -Fxq "$asset" assets.txt || {
@@ -153,26 +153,26 @@ jobs:
 
           while IFS= read -r asset; do
             case "$asset" in
-              Agentero_${VERSION}_aarch64.dmg)
+              Library_${VERSION}_aarch64.dmg)
                 curl -sL "https://github.com/${{ github.repository }}/releases/download/v${VERSION}/${asset}" -o "$asset"
                 sha=$(sha256sum "$asset" | cut -d' ' -f1)
-                update_checksum ../Casks/agentero.rb "$asset" "$sha"
+                update_checksum ../Casks/library.rb "$asset" "$sha"
                 has_aarch64=1
                 ;;
-              Agentero_${VERSION}_aarch64.AppImage)
+              Library_${VERSION}_aarch64.AppImage)
                 curl -sL "https://github.com/${{ github.repository }}/releases/download/v${VERSION}/${asset}" -o "$asset"
                 sha=$(sha256sum "$asset" | cut -d' ' -f1)
-                update_checksum ../Casks/agentero.rb "$asset" "$sha"
+                update_checksum ../Casks/library.rb "$asset" "$sha"
                 ;;
-              Agentero_${VERSION}_amd64.AppImage)
+              Library_${VERSION}_amd64.AppImage)
                 curl -sL "https://github.com/${{ github.repository }}/releases/download/v${VERSION}/${asset}" -o "$asset"
                 sha=$(sha256sum "$asset" | cut -d' ' -f1)
-                update_checksum ../Casks/agentero.rb "$asset" "$sha"
+                update_checksum ../Casks/library.rb "$asset" "$sha"
                 ;;
             esac
           done < assets.txt
 
-          sed -i -E "s/version \"[^\"]*\"/version \"${VERSION}\"/" ../Casks/agentero.rb
+          sed -i -E "s/version \"[^\"]*\"/version \"${VERSION}\"/" ../Casks/library.rb
 
           if [ "$has_aarch64" -eq 0 ]; then
             echo "::error::No macOS ARM64 DMG was updated."
@@ -183,10 +183,10 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add Formula/agentero.rb Casks/agentero.rb
+          git add Formula/library.rb Casks/library.rb
           if git diff --cached --quiet; then
             echo "No changes to tap."
             exit 0
           fi
-          git commit -m "chore: bump agentero to v${{ steps.fetch.outputs.version }}"
+          git commit -m "chore: bump library to v${{ steps.fetch.outputs.version }}"
           git push

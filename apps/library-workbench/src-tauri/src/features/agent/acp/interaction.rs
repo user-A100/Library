@@ -128,7 +128,7 @@ pub(crate) struct ElicitationOptionView {
 #[serde(rename_all = "camelCase")]
 pub(crate) struct ElicitationRequestEvent {
     pub(crate) request_id: String,
-    /// Agentero runtime session id (correlates with the active chat run).
+    /// Library runtime session id (correlates with the active chat run).
     pub(crate) session_id: String,
     pub(crate) message: String,
     /// Optional ACP provider tool call id when the elicitation is scoped to a tool.
@@ -319,7 +319,7 @@ pub(crate) async fn await_grok_ask_user(
     let questions = questions_to_dto(&params.questions);
     if questions.is_empty() {
         log::warn!(
-            target: "agentero::agent",
+            target: "library::agent",
             "grok ask_user_question with no valid questions; cancelling"
         );
         return cancelled_response();
@@ -361,7 +361,7 @@ pub(crate) async fn await_user_elicitation(
     // URL elicitations: surface message only; user can open URL externally later.
     if matches!(request.mode, ElicitationMode::Url(_)) {
         log::debug!(
-            target: "agentero::agent",
+            target: "library::agent",
             "elicitation url mode not fully implemented; cancelling"
         );
         return CreateElicitationResponse::new(ElicitationAction::Cancel);
@@ -377,7 +377,7 @@ pub(crate) async fn await_user_elicitation(
         "agent:elicitation-request",
         ElicitationRequestEvent {
             request_id: request_id.clone(),
-            // Prefer Agentero runtime id so the chat panel can match the open run.
+            // Prefer Library runtime id so the chat panel can match the open run.
             session_id: runtime_session_id.to_string(),
             message: request.message.clone(),
             tool_call_id: tool_call_id.or(provider_session),

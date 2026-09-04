@@ -238,14 +238,14 @@ describe("Wiki rename target classification", () => {
 		]) {
 			expect(isWikiTargetPath(path), path).toBe(true);
 		}
-		expect(isWikiTargetPath("/vault/source/agentero-cite.json")).toBe(false);
+		expect(isWikiTargetPath("/vault/source/library-cite.json")).toBe(false);
 	});
 
 	it("handles Wiki targets, mixed events, and directory-like paths", () => {
 		expect(renameMayAffectWikiTargets(["/vault/notes/Source.md"])).toBe(true);
 		expect(
 			renameMayAffectWikiTargets([
-				"/vault/source/agentero-cite.json",
+				"/vault/source/library-cite.json",
 				"/vault/assets/paper.pdf",
 			]),
 		).toBe(true);
@@ -257,8 +257,8 @@ describe("Wiki rename target classification", () => {
 	it("skips Wiki handling for explicit non-target file extensions", () => {
 		expect(
 			renameMayAffectWikiTargets([
-				"/vault/source/agentero-cite.json.tmp",
-				"/vault/source/agentero-cite.json",
+				"/vault/source/library-cite.json.tmp",
+				"/vault/source/library-cite.json",
 				"C:\\vault\\source\\references.bib",
 			]),
 		).toBe(false);
@@ -266,7 +266,7 @@ describe("Wiki rename target classification", () => {
 });
 
 describe("wikilink preview rewrite", () => {
-	it("rewrites real links to agentero hrefs without touching code", async () => {
+	it("rewrites real links to library hrefs without touching code", async () => {
 		const vault = await createTestVault({
 			"notes/Source.md": "See [[notes/Target#Intro|Target Note]].",
 			"notes/Target.md": "# Target",
@@ -284,11 +284,11 @@ describe("wikilink preview rewrite", () => {
 				files,
 			);
 
-			expect(rewritten).toContain("[Target Note](agentero-wiki:");
+			expect(rewritten).toContain("[Target Note](library-wiki:");
 			expect(rewritten).toContain("`[[ignored-inline]]`");
 			expect(rewritten).toContain("[[ignored-fence]]");
 
-			const href = rewritten.match(/\((agentero-wiki:[^)]+)\)/)?.[1];
+			const href = rewritten.match(/\((library-wiki:[^)]+)\)/)?.[1];
 			expect(href?.startsWith(WIKI_HREF_PREFIX)).toBe(true);
 			expect(parseWikiHref(href ?? "")).toEqual({
 				targetRaw: "notes/Target",

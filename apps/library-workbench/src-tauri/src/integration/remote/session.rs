@@ -136,7 +136,7 @@ impl RemoteRegistry {
                 return Err(AppError::message(
                     "Remote vault over SSH is not supported on Windows yet \
                      (openssh/SFTP client is Unix-only). Open a local vault, \
-                     or use Agentero on macOS/Linux for remote vaults.",
+                     or use Library on macOS/Linux for remote vaults.",
                 ));
             }
         };
@@ -145,7 +145,7 @@ impl RemoteRegistry {
         let cache_key = hex::encode(Sha256::digest(format!("{host}\0{remote_path}").as_bytes()));
         let base_cache = dirs::cache_dir()
             .unwrap_or_else(std::env::temp_dir)
-            .join("agentero")
+            .join("library")
             .join("remote")
             .join(&cache_key);
         let work_root = base_cache.join("work").join(&session_id);
@@ -190,7 +190,7 @@ mod tests {
             .duration_since(UNIX_EPOCH)
             .unwrap()
             .as_nanos();
-        let p = std::env::temp_dir().join(format!("agentero-remote-sim-{n}"));
+        let p = std::env::temp_dir().join(format!("library-remote-sim-{n}"));
         std::fs::create_dir_all(p.join("papers/demo")).unwrap();
         std::fs::create_dir_all(p.join("notes")).unwrap();
         std::fs::write(p.join("AGENTS.md"), "# agents\n").unwrap();
@@ -231,9 +231,9 @@ mod tests {
         assert!(root.join("notes/idea.md").is_file());
 
         // catalog work mirror exists
-        assert!(session.work_root.join(".agentero/catalog.sqlite").is_file());
+        assert!(session.work_root.join(".library/catalog.sqlite").is_file());
         // and was pushed to "remote" authority
-        assert!(root.join(".agentero/catalog.sqlite").is_file());
+        assert!(root.join(".library/catalog.sqlite").is_file());
 
         reg.disconnect(&info.session_id).await.unwrap();
         let _ = std::fs::remove_dir_all(&root);
@@ -248,22 +248,22 @@ mod tests {
     /// Live SSH smoke test against any Host in `~/.ssh/config`.
     ///
     /// ```bash
-    /// AGENTERO_REMOTE_SSH_HOST=<alias> \
-    /// AGENTERO_REMOTE_SSH_PATH=<absolute-remote-vault> \
-    /// cargo test -p agentero --lib live_ssh_remote_vault -- --ignored --nocapture
+    /// LIBRARY_REMOTE_SSH_HOST=<alias> \
+    /// LIBRARY_REMOTE_SSH_PATH=<absolute-remote-vault> \
+    /// cargo test -p library --lib live_ssh_remote_vault -- --ignored --nocapture
     /// ```
     #[cfg(unix)]
     #[tokio::test]
-    #[ignore = "set AGENTERO_REMOTE_SSH_HOST + AGENTERO_REMOTE_SSH_PATH for live SSH"]
+    #[ignore = "set LIBRARY_REMOTE_SSH_HOST + LIBRARY_REMOTE_SSH_PATH for live SSH"]
     async fn live_ssh_remote_vault() {
         use crate::core::fs::WriteOpts;
         use crate::integration::remote::agent_exec;
 
-        let host = std::env::var("AGENTERO_REMOTE_SSH_HOST")
-            .expect("AGENTERO_REMOTE_SSH_HOST (ssh config Host alias)");
-        let path = std::env::var("AGENTERO_REMOTE_SSH_PATH")
-            .expect("AGENTERO_REMOTE_SSH_PATH (absolute remote vault path)");
-        let user = std::env::var("AGENTERO_REMOTE_SSH_USER").ok();
+        let host = std::env::var("LIBRARY_REMOTE_SSH_HOST")
+            .expect("LIBRARY_REMOTE_SSH_HOST (ssh config Host alias)");
+        let path = std::env::var("LIBRARY_REMOTE_SSH_PATH")
+            .expect("LIBRARY_REMOTE_SSH_PATH (absolute remote vault path)");
+        let user = std::env::var("LIBRARY_REMOTE_SSH_USER").ok();
 
         eprintln!("connecting host={host} path={path} user={user:?}");
         let reg = RemoteRegistry::new();
@@ -325,13 +325,13 @@ mod tests {
 
         // catalog work mirror present + paper rescan markers
         assert!(
-            session.work_root.join(".agentero/catalog.sqlite").is_file(),
+            session.work_root.join(".library/catalog.sqlite").is_file(),
             "work catalog missing"
         );
         // push already done at connect; re-stat remote catalog
         let cat_meta = session
             .fs
-            .stat(".agentero/catalog.sqlite")
+            .stat(".library/catalog.sqlite")
             .await
             .expect("remote catalog after connect");
         eprintln!(
@@ -443,21 +443,21 @@ mod tests {
     /// Paper + catalog features over live SSH.
     ///
     /// ```bash
-    /// AGENTERO_REMOTE_SSH_HOST=<alias> \
-    /// AGENTERO_REMOTE_SSH_PATH=<absolute-remote-vault> \
-    /// cargo test -p agentero --lib live_paper_features -- --ignored --nocapture
+    /// LIBRARY_REMOTE_SSH_HOST=<alias> \
+    /// LIBRARY_REMOTE_SSH_PATH=<absolute-remote-vault> \
+    /// cargo test -p library --lib live_paper_features -- --ignored --nocapture
     /// ```
     #[cfg(unix)]
     #[tokio::test]
-    #[ignore = "set AGENTERO_REMOTE_SSH_HOST + AGENTERO_REMOTE_SSH_PATH for live SSH"]
+    #[ignore = "set LIBRARY_REMOTE_SSH_HOST + LIBRARY_REMOTE_SSH_PATH for live SSH"]
     async fn live_paper_features() {
         use crate::core::fs::WriteOpts;
         use crate::features::catalog::papers::{self, PaperRecord, PaperTag};
         use crate::integration::remote::catalog_mirror::CatalogMirror;
 
-        let host = std::env::var("AGENTERO_REMOTE_SSH_HOST").expect("AGENTERO_REMOTE_SSH_HOST");
-        let path = std::env::var("AGENTERO_REMOTE_SSH_PATH").expect("AGENTERO_REMOTE_SSH_PATH");
-        let user = std::env::var("AGENTERO_REMOTE_SSH_USER").ok();
+        let host = std::env::var("LIBRARY_REMOTE_SSH_HOST").expect("LIBRARY_REMOTE_SSH_HOST");
+        let path = std::env::var("LIBRARY_REMOTE_SSH_PATH").expect("LIBRARY_REMOTE_SSH_PATH");
+        let user = std::env::var("LIBRARY_REMOTE_SSH_USER").ok();
 
         eprintln!("=== live_paper_features host={host} path={path} ===");
         let reg = RemoteRegistry::new();
@@ -649,7 +649,7 @@ mod tests {
         }
         // re-checkout remote catalog into a fresh work root to prove authority is remote
         let pull_root =
-            std::env::temp_dir().join(format!("agentero-live-pull-{}", uuid::Uuid::new_v4()));
+            std::env::temp_dir().join(format!("library-live-pull-{}", uuid::Uuid::new_v4()));
         std::fs::create_dir_all(&pull_root).unwrap();
         let _mirror = CatalogMirror::checkout(session.fs.clone(), &pull_root)
             .await
@@ -768,7 +768,7 @@ mod tests {
         );
     }
 
-    /// Local-sim magic-wand import (arXiv fallback; needs network unless AGENTERO_SKIP_NETWORK).
+    /// Local-sim magic-wand import (arXiv fallback; needs network unless LIBRARY_SKIP_NETWORK).
     #[tokio::test]
     async fn local_sim_remote_import_arxiv() {
         use crate::features::import::{LookupImportArgs, PaperDownloadAssetsArgs};
@@ -779,7 +779,7 @@ mod tests {
             .duration_since(UNIX_EPOCH)
             .unwrap()
             .as_nanos();
-        let root = std::env::temp_dir().join(format!("agentero-remote-import-{n}"));
+        let root = std::env::temp_dir().join(format!("library-remote-import-{n}"));
         std::fs::create_dir_all(root.join("papers")).unwrap();
         std::fs::create_dir_all(root.join("notes")).unwrap();
         std::fs::write(root.join("AGENTS.md"), "# t\n").unwrap();
@@ -791,7 +791,7 @@ mod tests {
             .expect("connect");
         let session = reg.get(&info.session_id).await.unwrap();
 
-        if std::env::var("AGENTERO_SKIP_NETWORK").is_ok() {
+        if std::env::var("LIBRARY_SKIP_NETWORK").is_ok() {
             reg.disconnect(&info.session_id).await.ok();
             let _ = std::fs::remove_dir_all(&root);
             return;
@@ -868,7 +868,7 @@ mod tests {
             .duration_since(UNIX_EPOCH)
             .unwrap()
             .as_nanos();
-        let root = std::env::temp_dir().join(format!("agentero-all-import-{n}"));
+        let root = std::env::temp_dir().join(format!("library-all-import-{n}"));
         std::fs::create_dir_all(root.join("papers")).unwrap();
         std::fs::create_dir_all(root.join("notes")).unwrap();
         std::fs::write(root.join("AGENTS.md"), "# t\n").unwrap();
@@ -927,7 +927,7 @@ mod tests {
         }
 
         // 2) Magic wand arXiv (network)
-        if std::env::var("AGENTERO_SKIP_NETWORK").is_err() {
+        if std::env::var("LIBRARY_SKIP_NETWORK").is_err() {
             match import_bridge::import_by_identifier_remote(
                 session.clone(),
                 LookupImportArgs {
@@ -1079,12 +1079,12 @@ mod tests {
     /// Live SSH magic-wand import smoke (env-driven; needs network).
     #[cfg(unix)]
     #[tokio::test]
-    #[ignore = "set AGENTERO_REMOTE_SSH_HOST + AGENTERO_REMOTE_SSH_PATH for live SSH"]
+    #[ignore = "set LIBRARY_REMOTE_SSH_HOST + LIBRARY_REMOTE_SSH_PATH for live SSH"]
     async fn live_ssh_import_arxiv() {
         use crate::features::import::LookupImportArgs;
         use crate::integration::remote::import_bridge;
-        let host = std::env::var("AGENTERO_REMOTE_SSH_HOST").unwrap();
-        let path = std::env::var("AGENTERO_REMOTE_SSH_PATH").unwrap();
+        let host = std::env::var("LIBRARY_REMOTE_SSH_HOST").unwrap();
+        let path = std::env::var("LIBRARY_REMOTE_SSH_PATH").unwrap();
         let reg = RemoteRegistry::new();
         let info = reg.connect(&host, None, &path).await.expect("connect");
         let session = reg.get(&info.session_id).await.unwrap();

@@ -39,7 +39,7 @@ export type PdfVisualTraceMessage = {
  */
 export type PdfVisualAgent = {
 	agentId: string;
-	/** Agentero runtime/event session id from runOnce. */
+	/** Library runtime/event session id from runOnce. */
 	runtimeSessionId: string;
 	messageId: string;
 	/** ACP provider session id when available after completion. */

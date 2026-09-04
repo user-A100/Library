@@ -1,4 +1,4 @@
-//! Sync credentials — XDG `agentero/sync.json`, keyed by vault root path.
+//! Sync credentials — XDG `library/sync.json`, keyed by vault root path.
 //!
 //! Secrets stay outside the vault (the vault itself is what gets synced).
 //! The secret key is masked with `*` on the way to the WebView, mirroring the
@@ -125,7 +125,7 @@ struct SyncConfigFile {
 }
 
 fn config_path() -> PathBuf {
-    paths::agentero_config_dir().join("sync.json")
+    paths::library_config_dir().join("sync.json")
 }
 
 fn read_all() -> HashMap<String, SyncBackendConfig> {
@@ -136,7 +136,7 @@ fn read_all() -> HashMap<String, SyncBackendConfig> {
     match serde_json::from_str::<SyncConfigFile>(&raw) {
         Ok(file) => file.vaults,
         Err(e) => {
-            log::warn!(target: "agentero::sync", "invalid sync.json: {e}");
+            log::warn!(target: "library::sync", "invalid sync.json: {e}");
             HashMap::new()
         }
     }

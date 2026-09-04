@@ -27,7 +27,7 @@
 
 ### 2.1 非交互 SSH 的 PATH ≠ 交互终端 PATH（主因）
 
-Agentero 探测 / 启动远端 Agent 使用：
+Library 探测 / 启动远端 Agent 使用：
 
 ```bash
 ssh -T -o BatchMode=yes <host> 'bash -lc "…"'
@@ -35,7 +35,7 @@ ssh -T -o BatchMode=yes <host> 'bash -lc "…"'
 
 特点：
 
-| 项 | 交互 `ssh host` | Agentero BatchMode |
+| 项 | 交互 `ssh host` | Library BatchMode |
 |----|-----------------|-------------------|
 | TTY | 有 | 无（`-T`） |
 | 是否交互 | 是 | 否 |
@@ -140,7 +140,7 @@ npm i -g @agentclientprotocol/claude-agent-acp --prefix "$HOME/.local"
 
 ## 4. 运维注意点（排障清单）
 
-1. **先在 BatchMode 下验证**（与 Agentero 一致），不要只看交互终端：
+1. **先在 BatchMode 下验证**（与 Library 一致），不要只看交互终端：
 
    ```bash
    ssh -T -o BatchMode=yes <host> 'bash -lc "command -v claude-agent-acp; echo PATH=$PATH"'
@@ -152,7 +152,7 @@ npm i -g @agentclientprotocol/claude-agent-acp --prefix "$HOME/.local"
    ls -la /home/linuxbrew/.linuxbrew/bin/claude-agent-acp
    ```
 
-   Agentero 新版本应能通过 PATH bootstrap / 绝对路径扫到。
+   Library 新版本应能通过 PATH bootstrap / 绝对路径扫到。
 
 3. **推荐** 在远端 `~/.profile` 或非交互也会执行的配置中加入（且不要被「仅交互」return 挡掉）：
 

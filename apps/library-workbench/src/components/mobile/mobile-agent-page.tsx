@@ -210,7 +210,7 @@ function MobileAgentHistoryDialog({
 						{t("agent.historyEmpty")}
 					</p>
 				) : (
-					<ul className="agentero-scroll max-h-80 divide-y">
+					<ul className="library-scroll max-h-80 divide-y">
 						{result?.sessions.map((session) => (
 							<li key={session.sessionId}>
 								<button

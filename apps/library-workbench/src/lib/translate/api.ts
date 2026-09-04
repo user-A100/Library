@@ -10,7 +10,7 @@ export type { TranslateTextArgs, TranslateTextResult };
 /**
  * Host MT command via the generated typed binding (tauri-specta pilot).
  * `provider` selects a free web engine or a commercial BYOK engine.
- * Regenerate bindings: `cargo test -p agentero export_typescript_bindings`.
+ * Regenerate bindings: `cargo test -p library export_typescript_bindings`.
  */
 export async function invokeTranslateText(args: {
 	text: string;

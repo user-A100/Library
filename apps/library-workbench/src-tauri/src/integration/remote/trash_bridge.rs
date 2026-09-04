@@ -1,6 +1,6 @@
 //! Recycle bin over remote `VaultFs` (SFTP / local-sim).
 //!
-//! Semantics match local `services/trash.rs`: `.agentero/.trash/<batchId>/` +
+//! Semantics match local `services/trash.rs`: `.library/.trash/<batchId>/` +
 //! `manifest.json` with catalog snapshots. Files move via rename (copy+remove
 //! fallback). Catalog mutations hit the session work mirror then PUT.
 
@@ -12,7 +12,7 @@ use crate::features::trash::{TrashEntry, TrashResult};
 use serde::{Deserialize, Serialize};
 use std::path::Path;
 
-const TRASH_REL: &str = ".agentero/.trash";
+const TRASH_REL: &str = ".library/.trash";
 
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -70,7 +70,7 @@ pub async fn trash_paths(
         if rel.is_empty() || rel == "papers" || rel.contains("..") {
             continue;
         }
-        if rel.starts_with(".agentero") {
+        if rel.starts_with(".library") {
             continue;
         }
         if !fs.exists(&rel).await? {
@@ -428,11 +428,11 @@ mod tests {
             .duration_since(std::time::UNIX_EPOCH)
             .unwrap()
             .as_nanos();
-        let root = env::temp_dir().join(format!("agentero-remote-trash-{n}"));
+        let root = env::temp_dir().join(format!("library-remote-trash-{n}"));
         let _ = std::fs::remove_dir_all(&root);
         std::fs::create_dir_all(root.join("papers/x")).unwrap();
         std::fs::write(root.join("papers/x/NOTES.md"), "# x\n").unwrap();
-        std::fs::create_dir_all(root.join(".agentero")).unwrap();
+        std::fs::create_dir_all(root.join(".library")).unwrap();
 
         let reg = RemoteRegistry::new();
         let info = reg

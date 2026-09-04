@@ -1,4 +1,4 @@
-//! Vault paper catalog: `.agentero/catalog.sqlite`.
+//! Vault paper catalog: `.library/catalog.sqlite`.
 //!
 //! Authoritative store for paper set + structured metadata.
 //! See `docs/backend/catalog.md`.

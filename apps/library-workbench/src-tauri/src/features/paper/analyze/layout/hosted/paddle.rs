@@ -347,14 +347,14 @@ pub(crate) async fn run_paddle_ocr_job(
     }
 
     // Keep the raw JSONL for diagnosis (scale/field issues); best effort.
-    let debug_path = crate::core::paths::agentero_cache_dir().join("paddle-last-result.jsonl");
+    let debug_path = crate::core::paths::library_cache_dir().join("paddle-last-result.jsonl");
     if let Some(parent) = debug_path.parent() {
         let _ = std::fs::create_dir_all(parent);
     }
     if let Err(e) = std::fs::write(&debug_path, result_text.as_bytes()) {
-        log::warn!(target: "agentero::layout::hosted", "failed to write {debug_path:?}: {e}");
+        log::warn!(target: "library::layout::hosted", "failed to write {debug_path:?}: {e}");
     } else {
-        log::info!(target: "agentero::layout::hosted", "raw cloud result saved to {debug_path:?}");
+        log::info!(target: "library::layout::hosted", "raw cloud result saved to {debug_path:?}");
     }
 
     Ok((result_text, data_info))
@@ -458,7 +458,7 @@ async fn analyze_pdf(ctx: LayoutAnalyzeContext) -> Result<LayoutRemoteAnalyzePdf
     }
     let unknown = dim_sources.iter().filter(|s| **s == "none").count();
     log::info!(
-        target: "agentero::layout::hosted",
+        target: "library::layout::hosted",
         "cloud result: pages={} rendered_size_known={} unknown={}{}",
         pages.len(),
         pages.len() - unknown,

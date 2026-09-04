@@ -38,7 +38,7 @@ function resolveGroupAccent(color: string | undefined): string | undefined {
 	return color;
 }
 
-export function AgenteroTabGroupChip({ tabGroup }: IDockviewTabGroupChipProps) {
+export function LibraryTabGroupChip({ tabGroup }: IDockviewTabGroupChipProps) {
 	const { t } = useTranslation("app");
 	const [label, setLabel] = useState(tabGroup.label);
 	const [collapsed, setCollapsed] = useState(tabGroup.collapsed);

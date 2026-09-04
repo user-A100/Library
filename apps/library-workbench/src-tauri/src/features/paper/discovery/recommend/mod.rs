@@ -215,7 +215,7 @@ async fn fetch_candidates(categories: &[String]) -> Result<Vec<Candidate>, AppEr
         let parsed = match fetch_feed(&client, &url, category).await {
             Ok(feed) => feed,
             Err(e) => {
-                log::warn!(target: "agentero::recommend", "feed {category} failed: {e}");
+                log::warn!(target: "library::recommend", "feed {category} failed: {e}");
                 last_error = Some(e);
                 continue;
             }
@@ -260,7 +260,7 @@ async fn fetch_feed(
 ) -> Result<Vec<crate::features::feeds::parse::ParsedItem>, AppError> {
     let resp = client
         .get(url)
-        .header("User-Agent", "Agentero/1.0 (+https://github.com/Phil-Fan)")
+        .header("User-Agent", "Library/1.0 (+https://github.com/Phil-Fan)")
         .send()
         .await
         .map_err(|e| AppError::message(format!("recommend feed fetch: {e}")))?;

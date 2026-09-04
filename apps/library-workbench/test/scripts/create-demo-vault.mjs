@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
- * Create a Agentero demo vault matching the current data model:
- * - AGENTS.md, papers/, notes/, assets/, .agentero/catalog.sqlite
+ * Create a Library demo vault matching the current data model:
+ * - AGENTS.md, papers/, notes/, assets/, .library/catalog.sqlite
  * - No default PAPERS.md / library.bib
  * - Paper folders as minimal units (flat + nested under papers/)
  * - Loose PDFs / images outside papers/ (center-pane preview fixtures)
@@ -15,8 +15,8 @@
  *   node test/scripts/create-demo-vault.mjs --verify [path]
  *
  * Defaults:
- *   --downloads → ~/Downloads/agentero-demo-vault
- *   no path     → ./tmp/agentero-demo-vault
+ *   --downloads → ~/Downloads/library-demo-vault
+ *   no path     → ./tmp/library-demo-vault
  */
 
 import { execFileSync } from "node:child_process";
@@ -298,14 +298,14 @@ const LOOSE_MEDIA = {
 
 const AGENTS_MD = `# AGENTS.md
 
-This file is the L0 map for agents working in this Agentero research vault.
+This file is the L0 map for agents working in this Library research vault.
 
 ## Layout
 
 - \`papers/\` — paper folders at **any depth**. A paper folder is the minimal unit (has \`NOTES.md\`, optional \`PAPER.md\` / \`marks/\`, and \`source/\`).
 - \`notes/\` — free-form concept notes (\`[[wikilinks]]\` welcome). May also hold loose PDFs under \`notes/attachments/\`.
 - \`assets/\` — non-paper media (sample PDF / figures) for preview; not catalogued as papers.
-- \`.agentero/catalog.sqlite\` — paper **catalog** (collection + metadata). There is usually **no** root \`PAPERS.md\` unless exported.
+- \`.library/catalog.sqlite\` — paper **catalog** (collection + metadata). There is usually **no** root \`PAPERS.md\` unless exported.
 
 ## Progressive disclosure
 
@@ -523,7 +523,7 @@ function buildCatalogSql(papers) {
 	const lines = [
 		DDL.trim(),
 		`INSERT OR REPLACE INTO schema_meta(key, value) VALUES('schema_version', '${SCHEMA_VERSION}');`,
-		`INSERT OR REPLACE INTO schema_meta(key, value) VALUES('agentero_app', 'agentero');`,
+		`INSERT OR REPLACE INTO schema_meta(key, value) VALUES('library_app', 'library');`,
 	];
 	for (const p of papers) {
 		const added = "2026-07-01T10:00:00.000Z";
@@ -594,8 +594,8 @@ async function ensureDir(root, rel) {
 
 /** Recreate catalog.sqlite from scratch (avoids stale schema on re-run). */
 async function writeCatalog(root, papers) {
-	const dbPath = path.join(root, ".agentero", "catalog.sqlite");
-	await ensureDir(root, ".agentero");
+	const dbPath = path.join(root, ".library", "catalog.sqlite");
+	await ensureDir(root, ".library");
 	await rm(dbPath, { force: true });
 	// also drop side-car journals if any
 	await rm(`${dbPath}-wal`, { force: true });
@@ -605,7 +605,7 @@ async function writeCatalog(root, papers) {
 
 /** Skeleton equivalent to Create Vault (no sample papers / loose media). */
 async function scaffoldEmpty(root) {
-	for (const d of ["papers", "notes", "assets", ".agentero"]) {
+	for (const d of ["papers", "notes", "assets", ".library"]) {
 		await ensureDir(root, d);
 	}
 	await writeText(root, "AGENTS.md", AGENTS_MD);
@@ -669,12 +669,12 @@ async function pathExists(p) {
 }
 
 /**
- * Verify vault layout + catalog against current Agentero conventions.
+ * Verify vault layout + catalog against current Library conventions.
  * @returns {Promise<{ ok: boolean; checks: { name: string; ok: boolean; detail?: string }[] }>}
  */
 async function verifyVault(root) {
 	const checks = [];
-	const needDirs = ["papers", "notes", ".agentero"];
+	const needDirs = ["papers", "notes", ".library"];
 	for (const d of needDirs) {
 		const full = path.join(root, d);
 		const ok = await pathExists(full);
@@ -705,7 +705,7 @@ async function verifyVault(root) {
 		ok: !(await pathExists(bib)),
 	});
 
-	const dbPath = path.join(root, ".agentero", "catalog.sqlite");
+	const dbPath = path.join(root, ".library", "catalog.sqlite");
 	const dbOk = await pathExists(dbPath);
 	checks.push({ name: "catalog.sqlite", ok: dbOk });
 
@@ -845,7 +845,7 @@ async function collectPaperFolders(root) {
 		for (const e of entries) {
 			if (!e.isDirectory() || e.name.startsWith(".")) continue;
 			const childRel = rel ? `${rel}/${e.name}` : e.name;
-			if (childRel === ".agentero") continue;
+			if (childRel === ".library") continue;
 			await walk(path.join(dir, e.name), childRel);
 		}
 	}
@@ -864,25 +864,25 @@ function parseArgs(argv) {
 }
 
 function defaultDownloadsPath() {
-	return path.join(os.homedir(), "Downloads", "agentero-demo-vault");
+	return path.join(os.homedir(), "Downloads", "library-demo-vault");
 }
 
 function printHelp() {
-	console.log(`Create Agentero demo vault
+	console.log(`Create Library demo vault
 
 Usage:
   node test/scripts/create-demo-vault.mjs [options] [path]
 
 Options:
-  --downloads   Use ~/Downloads/agentero-demo-vault
+  --downloads   Use ~/Downloads/library-demo-vault
   --empty       Skeleton only (Create Vault equivalent)
   --verify      Verify an existing vault (no write unless path missing + create)
   --help        Show this help
 
 Examples:
   node test/scripts/create-demo-vault.mjs --downloads
-  node test/scripts/create-demo-vault.mjs --empty ~/Downloads/agentero-empty-vault
-  node test/scripts/create-demo-vault.mjs --verify ~/Downloads/agentero-demo-vault
+  node test/scripts/create-demo-vault.mjs --empty ~/Downloads/library-empty-vault
+  node test/scripts/create-demo-vault.mjs --verify ~/Downloads/library-demo-vault
 `);
 }
 
@@ -898,7 +898,7 @@ async function main() {
 		target = defaultDownloadsPath();
 	}
 	if (!target) {
-		target = path.join(REPO_ROOT, "tmp", "agentero-demo-vault");
+		target = path.join(REPO_ROOT, "tmp", "library-demo-vault");
 	}
 
 	const root = path.resolve(target);
@@ -919,10 +919,10 @@ async function main() {
 
 	if (flags.has("empty")) {
 		await scaffoldEmpty(root);
-		console.log(`Empty Agentero vault created at ${root}`);
+		console.log(`Empty Library vault created at ${root}`);
 	} else {
 		await scaffoldDemo(root);
-		console.log(`Demo Agentero vault created at ${root}`);
+		console.log(`Demo Library vault created at ${root}`);
 		console.log(`  papers: ${PAPERS.length} (nested under papers/<topic>/…)`);
 		console.log(
 			`  loose PDFs: ${LOOSE_MEDIA.pdfs.length} · images: ${LOOSE_MEDIA.images.length}`,
@@ -939,7 +939,7 @@ async function main() {
 		console.error("Verification failed");
 		process.exit(1);
 	}
-	console.log("\nOpen in Agentero: File → Open Vault… → select this folder");
+	console.log("\nOpen in Library: File → Open Vault… → select this folder");
 	console.log(`  ${root}`);
 }
 

@@ -26,7 +26,7 @@ const IGNORE_NAMES: &[&str] = &[
     "node_modules",
     "target",
     "dist",
-    ".agentero",
+    ".library",
 ];
 
 fn is_markdown(path: &Path) -> bool {
@@ -302,7 +302,7 @@ impl WikiIndex {
         let root = crate::core::fs::resolve_vault(vault_path).map_err(|e| e.to_string())?;
         let files = collect_wiki_target_files(&root).map_err(|error| error.to_string())?;
         if let Err(error) = discard_snapshot(cache_path) {
-            log::warn!(target: "agentero::wiki", "{error}");
+            log::warn!(target: "library::wiki", "{error}");
         }
         self.rebuild_with_cache_path(vault_path, &root, files, cache_path, false)
     }
@@ -319,7 +319,7 @@ impl WikiIndex {
             Ok(fingerprints) => fingerprints,
             Err(error) => {
                 log::warn!(
-                    target: "agentero::wiki",
+                    target: "library::wiki",
                     "Wiki cache fingerprint validation unavailable: {error}"
                 );
                 return self.rebuild_from(vault_path, root, files, Vec::new(), None, None);
@@ -382,18 +382,18 @@ impl WikiIndex {
                 WikiCacheLoad::Miss => None,
                 WikiCacheLoad::Stale => {
                     if let Err(discard_error) = discard_snapshot(cache_path) {
-                        log::warn!(target: "agentero::wiki", "{discard_error}");
+                        log::warn!(target: "library::wiki", "{discard_error}");
                     }
                     None
                 }
                 WikiCacheLoad::Invalid(error) => {
                     log::warn!(
-                        target: "agentero::wiki",
+                        target: "library::wiki",
                         "discarding invalid Wiki cache {}: {error}",
                         cache_path.display()
                     );
                     if let Err(discard_error) = discard_snapshot(cache_path) {
-                        log::warn!(target: "agentero::wiki", "{discard_error}");
+                        log::warn!(target: "library::wiki", "{discard_error}");
                     }
                     None
                 }
@@ -563,7 +563,7 @@ impl WikiIndex {
                     Ok(()) => self.cache_synced = true,
                     Err(error) => {
                         log::warn!(
-                            target: "agentero::wiki",
+                            target: "library::wiki",
                             "could not persist Wiki cache {}: {error}",
                             cache_path.display()
                         );
@@ -1015,7 +1015,7 @@ mod tests {
     use uuid::Uuid;
 
     fn test_vault() -> PathBuf {
-        let root = std::env::temp_dir().join(format!("agentero-wiki-embed-{}", Uuid::new_v4()));
+        let root = std::env::temp_dir().join(format!("library-wiki-embed-{}", Uuid::new_v4()));
         fs::create_dir_all(root.join("notes")).expect("create embed fixture vault");
         root
     }
@@ -1516,7 +1516,7 @@ mod tests {
                 },
                 BlockAnchor {
                     id: "asb".into(),
-                    preview: "请仅在 Agentero 内将本文件改名。".into(),
+                    preview: "请仅在 Library 内将本文件改名。".into(),
                     line: 21,
                 },
             ],
@@ -1539,7 +1539,7 @@ mod tests {
         }));
         assert!(blocks.iter().any(|candidate| {
             candidate.label == "^asb"
-                && candidate.detail.as_deref() == Some("请仅在 Agentero 内将本文件改名。")
+                && candidate.detail.as_deref() == Some("请仅在 Library 内将本文件改名。")
         }));
     }
 
@@ -1558,7 +1558,7 @@ mod tests {
         .expect("write cache source");
         fs::write(root.join("assets/figure.png"), b"cache image").expect("write cache image");
         let cache_path =
-            std::env::temp_dir().join(format!("agentero-wiki-cache-{}.sqlite", Uuid::new_v4()));
+            std::env::temp_dir().join(format!("library-wiki-cache-{}.sqlite", Uuid::new_v4()));
         (root, cache_path)
     }
 
@@ -1709,7 +1709,7 @@ mod tests {
     fn cache_store_failure_does_not_block_in_memory_rebuild() {
         let (root, unused_cache_path) = cache_fixture();
         let blocker =
-            std::env::temp_dir().join(format!("agentero-wiki-cache-blocker-{}", Uuid::new_v4()));
+            std::env::temp_dir().join(format!("library-wiki-cache-blocker-{}", Uuid::new_v4()));
         fs::write(&blocker, b"not a directory").expect("write cache parent blocker");
         let cache_path = blocker.join("wiki.sqlite");
         let mut index = WikiIndex::default();
@@ -1774,7 +1774,7 @@ mod tests {
         let root = test_vault();
         fs::write(root.join("notes/Source.md"), "[[FutureTarget]]\n").expect("write source");
         let cache_path =
-            std::env::temp_dir().join(format!("agentero-wiki-cache-{}.sqlite", Uuid::new_v4()));
+            std::env::temp_dir().join(format!("library-wiki-cache-{}.sqlite", Uuid::new_v4()));
         let mut hot = WikiIndex::default();
         rebuild_with_test_cache(&mut hot, &root, &cache_path);
         assert_eq!(hot.edges[0].status, LinkResolutionStatus::Missing);
@@ -1815,14 +1815,14 @@ mod tests {
     }
 
     /// Release-mode benchmark for the production rebuild paths:
-    /// `cargo test -p agentero --release --lib -- --ignored bench_wiki_rebuild --nocapture`
+    /// `cargo test -p library --release --lib -- --ignored bench_wiki_rebuild --nocapture`
     #[test]
     #[ignore = "perf benchmark; run manually in release mode"]
     fn bench_wiki_rebuild_scenarios() {
         use std::fmt::Write as _;
         use std::time::Instant;
 
-        let root = std::env::temp_dir().join(format!("agentero-wiki-bench-{}", Uuid::new_v4()));
+        let root = std::env::temp_dir().join(format!("library-wiki-bench-{}", Uuid::new_v4()));
         fs::create_dir_all(root.join("notes")).expect("create bench vault");
         let file_count = 1000usize;
         for i in 0..file_count {
@@ -1836,7 +1836,7 @@ mod tests {
                 .expect("write bench note");
         }
         let cache_path = std::env::temp_dir().join(format!(
-            "agentero-wiki-bench-cache-{}.sqlite",
+            "library-wiki-bench-cache-{}.sqlite",
             Uuid::new_v4()
         ));
         let vault = root.to_str().expect("utf-8 bench vault").to_string();

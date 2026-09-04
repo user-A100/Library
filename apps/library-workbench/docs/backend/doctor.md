@@ -6,8 +6,8 @@ Doctor 聚合本地 Vault 的只读完整性检查，并为论文别名、双链
 
 `DoctorReport` 包含五组结果：
 
-1. Vault 目录结构（`papers/`、`notes/`、`.agentero/`）；
-2. `.agentero/catalog.sqlite` 是否存在且 schema 与当前版本一致；
+1. Vault 目录结构（`papers/`、`notes/`、`.library/`）；
+2. `.library/catalog.sqlite` 是否存在且 schema 与当前版本一致；
 3. Catalog 中是否存在重复行：同一 `id` 出现在多条记录，或同一 `path` 出现多次（后者为 schema 完整性校验）；
 4. 与桌面导航共用 `WikiIndex::check_links` 的双链语义结果；
 5. Catalog 中每篇 `papers/**/NOTES.md` 的 frontmatter aliases；
@@ -28,7 +28,7 @@ Doctor 聚合本地 Vault 的只读完整性检查，并为论文别名、双链
 
 ### Catalog 重复行
 
-`doctor_fix_catalog_duplicates` / CLI `agentero doctor fix catalog-duplicates`：
+`doctor_fix_catalog_duplicates` / CLI `library doctor fix catalog-duplicates`：
 
 - 对每组重复 `id`，按「路径存在磁盘 > `updated_at` 最新 > 路径最短 > 字典序最小」保留一条 canonical 记录，删除其余行；
 - 对重复 `path`（schema 完整性校验），保留 `updated_at` 最新的一条；
@@ -49,7 +49,7 @@ Doctor 聚合本地 Vault 的只读完整性检查，并为论文别名、双链
 
 #### 忽略（持久化）
 
-用户可在设置页对单篇或已勾选论文选择 **忽略** 别名检查。忽略列表落在 Vault 本地 `.agentero/doctor.json` 的 `ignoredAliasPaths`（相对 `papers/**/NOTES.md` 路径）：
+用户可在设置页对单篇或已勾选论文选择 **忽略** 别名检查。忽略列表落在 Vault 本地 `.library/doctor.json` 的 `ignoredAliasPaths`（相对 `papers/**/NOTES.md` 路径）：
 
 - 再诊断时这些路径不再计入别名错误 / 修复候选，也不使 `aliases.ok` 为 false；
 - `DoctorReport.aliases.ignoredPaths` 返回仍不完整且仍被忽略的路径，供 UI 恢复；
@@ -81,7 +81,7 @@ Doctor 聚合本地 Vault 的只读完整性检查，并为论文别名、双链
 ## 入口
 
 - 桌面：设置 → 知识库诊断；远程 Vault 当前显示不可用。
-- CLI：`agentero doctor`、`agentero doctor fix aliases`、`agentero doctor fix visual-marks`、`agentero doctor fix catalog-duplicates`、`agentero -y doctor fix …`（CLI 诊断同样尊重 `.agentero/doctor.json` 忽略列表）。
+- CLI：`library doctor`、`library doctor fix aliases`、`library doctor fix visual-marks`、`library doctor fix catalog-duplicates`、`library -y doctor fix …`（CLI 诊断同样尊重 `.library/doctor.json` 忽略列表）。
 - Host：`doctor_check`、`doctor_apply_aliases`、`doctor_ignore_aliases`、`doctor_set_dirty_paths`、`doctor_plan_wikilinks`、`doctor_apply_wikilinks`、`doctor_apply_visual_marks`、`doctor_fix_catalog_duplicates`。
 
 代码：`src-tauri/src/features/vault/doctor/`（聚合入口）、`src-tauri/src/features/markdown/wiki/doctor.rs`（双链修复）、`src-tauri/src/features/pdf/marks/doctor.rs`（视觉批注修复）、`src/lib/doctor/`、`src/components/settings/panes/doctor-pane.tsx`。

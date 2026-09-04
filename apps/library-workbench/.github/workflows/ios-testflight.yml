@@ -148,7 +148,7 @@ jobs:
           IOS_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_DISTRIBUTION_CERTIFICATE_PASSWORD }}
         run: |
           set -euo pipefail
-          KEYCHAIN="$RUNNER_TEMP/agentero-signing.keychain-db"
+          KEYCHAIN="$RUNNER_TEMP/library-signing.keychain-db"
           KEYCHAIN_PASSWORD="$(openssl rand -base64 24)"
           echo "::add-mask::${KEYCHAIN_PASSWORD}"
           CERT_PATH="$RUNNER_TEMP/distribution.p12"
@@ -181,18 +181,18 @@ jobs:
           # MobileDevice copy so older xcodebuild versions find it too.
           XCODE_DIR="$HOME/Library/Developer/Xcode/UserData/Provisioning Profiles"
           LEGACY_DIR="$HOME/Library/MobileDevice/Provisioning Profiles"
-          PROFILE_PATH="${XCODE_DIR}/agentero-app-store.mobileprovision"
-          DECODED_PLIST="${RUNNER_TEMP}/agentero-profile.plist"
+          PROFILE_PATH="${XCODE_DIR}/library-app-store.mobileprovision"
+          DECODED_PLIST="${RUNNER_TEMP}/library-profile.plist"
           mkdir -p "$XCODE_DIR" "$LEGACY_DIR"
 
           echo "$IOS_MOBILE_PROVISION" | base64 --decode > "$PROFILE_PATH"
-          cp "$PROFILE_PATH" "${LEGACY_DIR}/agentero-app-store.mobileprovision"
+          cp "$PROFILE_PATH" "${LEGACY_DIR}/library-app-store.mobileprovision"
           security cms -D -i "$PROFILE_PATH" > "$DECODED_PLIST"
 
           PROFILE_UUID=$(/usr/libexec/PlistBuddy -c 'Print :UUID' "$DECODED_PLIST")
           PROFILE_NAME=$(/usr/libexec/PlistBuddy -c 'Print :Name' "$DECODED_PLIST")
           APP_IDENTIFIER=$(/usr/libexec/PlistBuddy -c 'Print :Entitlements:application-identifier' "$DECODED_PLIST")
-          EXPECTED_IDENTIFIER="${APPLE_DEVELOPMENT_TEAM}.com.poco-ai.agentero"
+          EXPECTED_IDENTIFIER="${APPLE_DEVELOPMENT_TEAM}.workbench.library.app"
 
           if [[ "$APP_IDENTIFIER" != "$EXPECTED_IDENTIFIER" ]]; then
             echo "::error::Provisioning profile application identifier is ${APP_IDENTIFIER}, expected ${EXPECTED_IDENTIFIER}"
@@ -235,7 +235,7 @@ jobs:
         if: steps.signing-config.outputs.ready == 'true'
         run: |
           set -euo pipefail
-          ARCHIVE="src-tauri/gen/apple/build/agentero_iOS.xcarchive"
+          ARCHIVE="src-tauri/gen/apple/build/library_iOS.xcarchive"
           EXPORT_PLIST="src-tauri/gen/apple/build/ExportOptions.fixed.plist"
           if [[ ! -d "$ARCHIVE" ]]; then
             echo "::error::Archive not found at ${ARCHIVE}"
@@ -269,7 +269,7 @@ jobs:
           	<true/>
           	<key>provisioningProfiles</key>
           	<dict>
-          		<key>com.poco-ai.agentero</key>
+          		<key>workbench.library.app</key>
           		<string>${PROVISIONING_PROFILE_SPECIFIER}</string>
           	</dict>
           </dict>
@@ -281,7 +281,7 @@ jobs:
             -exportPath "src-tauri/gen/apple/build/arm64" \
             -exportOptionsPlist "$EXPORT_PLIST" >/dev/null
 
-          IPA="src-tauri/gen/apple/build/arm64/Agentero.ipa"
+          IPA="src-tauri/gen/apple/build/arm64/Library.ipa"
           if ! unzip -l "$IPA" 2>/dev/null | grep -q "embedded.mobileprovision"; then
             echo "::error::embedded.mobileprovision is missing from ${IPA}; refusing to upload."
             exit 1
@@ -296,5 +296,5 @@ jobs:
         run: |
           set -euo pipefail
           xcrun altool --upload-app \
-            -f "src-tauri/gen/apple/build/arm64/Agentero.ipa" -t ios \
+            -f "src-tauri/gen/apple/build/arm64/Library.ipa" -t ios \
             --apiKey "$APPLE_API_KEY" --apiIssuer "$APPLE_API_ISSUER"

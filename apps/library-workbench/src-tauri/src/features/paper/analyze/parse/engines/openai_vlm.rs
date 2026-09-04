@@ -131,7 +131,7 @@ async fn ocr_rendered_pages(
                 if msg.contains(super::super::CANCELLED_MESSAGE) {
                     return Err(e);
                 }
-                log::warn!(target: "agentero::pdf_parse", "VLM OCR page {} failed: {msg}", index + 1);
+                log::warn!(target: "library::pdf_parse", "VLM OCR page {} failed: {msg}", index + 1);
                 failed += 1;
                 page_texts[index] = format!("<!-- page {}: OCR failed -->", index + 1);
             }
@@ -334,19 +334,19 @@ mod tests {
     /// binary), then runs the same OCR path the engine uses.
     ///
     /// ```sh
-    /// AGENTERO_VLM_LIVE_PDF=/tmp/x.pdf AGENTERO_VLM_API_KEY=sk-… \
-    ///   cargo test -p agentero --lib -- live_openai_vlm --ignored --nocapture
+    /// LIBRARY_VLM_LIVE_PDF=/tmp/x.pdf LIBRARY_VLM_API_KEY=sk-… \
+    ///   cargo test -p library --lib -- live_openai_vlm --ignored --nocapture
     /// ```
     #[tokio::test]
     #[ignore = "live network + billed API key"]
     async fn live_openai_vlm_ocr() {
-        let Ok(pdf) = std::env::var("AGENTERO_VLM_LIVE_PDF") else {
-            panic!("set AGENTERO_VLM_LIVE_PDF");
+        let Ok(pdf) = std::env::var("LIBRARY_VLM_LIVE_PDF") else {
+            panic!("set LIBRARY_VLM_LIVE_PDF");
         };
-        let api_key = std::env::var("AGENTERO_VLM_API_KEY").expect("set AGENTERO_VLM_API_KEY");
-        let model = std::env::var("AGENTERO_VLM_MODEL").unwrap_or_default();
-        let base_url = std::env::var("AGENTERO_VLM_BASE_URL").unwrap_or_default();
-        let prompt = std::env::var("AGENTERO_VLM_PROMPT").unwrap_or_default();
+        let api_key = std::env::var("LIBRARY_VLM_API_KEY").expect("set LIBRARY_VLM_API_KEY");
+        let model = std::env::var("LIBRARY_VLM_MODEL").unwrap_or_default();
+        let base_url = std::env::var("LIBRARY_VLM_BASE_URL").unwrap_or_default();
+        let prompt = std::env::var("LIBRARY_VLM_PROMPT").unwrap_or_default();
 
         let dir = std::env::temp_dir().join(format!("vlm-live-{}", uuid::Uuid::new_v4()));
         std::fs::create_dir_all(&dir).unwrap();

@@ -30,7 +30,7 @@ async function ensureStarted(): Promise<UnlistenFn | null> {
 		});
 	})().catch((error) => {
 		startPromise = null;
-		console.warn("[agentero] tauri file-drop listen failed", error);
+		console.warn("[library] tauri file-drop listen failed", error);
 		return null;
 	});
 	return startPromise;

@@ -6,14 +6,14 @@ use serde_json::Value;
 use std::fs;
 use tempfile::tempdir;
 
-fn agentero() -> assert_cmd::Command {
-    cargo_bin_cmd!("agentero-cli")
+fn library() -> assert_cmd::Command {
+    cargo_bin_cmd!("library-cli")
 }
 
 #[test]
 fn completion_zsh_prints_raw_script() {
-    let out = agentero()
-        .args(["completion", "zsh", "--bin-name", "agentero"])
+    let out = library()
+        .args(["completion", "zsh", "--bin-name", "library"])
         .assert()
         .success()
         .get_output()
@@ -21,8 +21,8 @@ fn completion_zsh_prints_raw_script() {
         .clone();
     let script = String::from_utf8(out).unwrap();
     assert!(
-        script.contains("#compdef agentero") || script.contains("compdef agentero"),
-        "zsh script should define agentero:\n{script}"
+        script.contains("#compdef library") || script.contains("compdef library"),
+        "zsh script should define library:\n{script}"
     );
     assert!(
         !script.contains("\"ok\""),
@@ -32,8 +32,8 @@ fn completion_zsh_prints_raw_script() {
 
 #[test]
 fn completion_bash_lists_subcommands() {
-    let out = agentero()
-        .args(["completion", "bash", "--bin-name", "agentero"])
+    let out = library()
+        .args(["completion", "bash", "--bin-name", "library"])
         .assert()
         .success()
         .get_output()
@@ -47,21 +47,21 @@ fn completion_bash_lists_subcommands() {
 
 #[test]
 fn completion_json_flag_still_prints_raw_script() {
-    let out = agentero()
-        .args(["--json", "completion", "fish", "--bin-name", "agentero"])
+    let out = library()
+        .args(["--json", "completion", "fish", "--bin-name", "library"])
         .assert()
         .success()
         .get_output()
         .stdout
         .clone();
     let script = String::from_utf8(out).unwrap();
-    assert!(script.contains("complete") || script.contains("agentero"));
+    assert!(script.contains("complete") || script.contains("library"));
     assert!(!script.trim_start().starts_with('{'));
 }
 
 #[test]
 fn completion_unknown_shell_fails() {
-    agentero()
+    library()
         .args(["completion", "noshell"])
         .assert()
         .failure()
@@ -73,7 +73,7 @@ fn completion_install_bash_writes_xdg_file() {
     let tmp = tempdir().unwrap();
     let home = tmp.path();
     let data = home.join("share");
-    let out = agentero()
+    let out = library()
         .env("HOME", home)
         .env("XDG_DATA_HOME", &data)
         .args([
@@ -81,7 +81,7 @@ fn completion_install_bash_writes_xdg_file() {
             "bash",
             "--install",
             "--bin-name",
-            "agentero",
+            "library",
             "--json",
         ])
         .assert()
@@ -92,16 +92,16 @@ fn completion_install_bash_writes_xdg_file() {
     let v: Value = serde_json::from_slice(&out).unwrap();
     assert_eq!(v["ok"], true);
     assert_eq!(v["data"]["shell"], "bash");
-    assert_eq!(v["data"]["binName"], "agentero");
+    assert_eq!(v["data"]["binName"], "library");
     let path = v["data"]["path"].as_str().unwrap();
-    assert!(path.ends_with("bash-completion/completions/agentero"));
+    assert!(path.ends_with("bash-completion/completions/library"));
     let script = fs::read_to_string(path).unwrap();
-    assert!(script.contains("agentero"));
+    assert!(script.contains("library"));
 }
 
 #[test]
 fn help_lists_completion() {
-    agentero()
+    library()
         .arg("--help")
         .assert()
         .success()

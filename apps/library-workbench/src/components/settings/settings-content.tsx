@@ -275,7 +275,7 @@ export function SettingsContent({
 				) : null}
 				<ul
 					className={cn(
-						"agentero-scroll flex min-h-0 flex-1 flex-col gap-0.5 px-2 pb-2",
+						"library-scroll flex min-h-0 flex-1 flex-col gap-0.5 px-2 pb-2",
 						!onClose && "pt-3",
 					)}
 				>
@@ -341,7 +341,7 @@ export function SettingsContent({
 			</nav>
 
 			{/* Content */}
-			<div ref={contentScrollRef} className="agentero-scroll min-w-0 flex-1">
+			<div ref={contentScrollRef} className="library-scroll min-w-0 flex-1">
 				<div className="px-6 py-5">
 					{/* One boundary per pane: a section still loading must not blank out
 					    the panes already visited and kept mounted next to it. */}

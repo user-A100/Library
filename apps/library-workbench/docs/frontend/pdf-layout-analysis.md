@@ -88,7 +88,7 @@ LayoutAnalysisPluginPackage: {
 
 | 项 | 值 |
 |---|---|
-| 路径 | `$XDG_CACHE_HOME/agentero/models/pp-doclayoutv3.onnx`（Unix 默认 `~/.cache/agentero/models/`） |
+| 路径 | `$XDG_CACHE_HOME/library/models/pp-doclayoutv3.onnx`（Unix 默认 `~/.cache/library/models/`） |
 | 启动 | Host `spawn_background_download`（task id 固定 `layout-model`；已有文件则跳过） |
 | 面板 | App `useLayoutModelPrefetch` 监听 `layout-model:task` / 进度，写入左下角后台任务（可取消） |
 | 代理 | 设置里的 `networkProxyEnabled` / `networkProxyUrl`（`core::http::client_builder`） |
@@ -96,7 +96,7 @@ LayoutAnalysisPluginPackage: {
 | ModelScope | `greatv/oar-ocr` → `pp-doclayoutv3.onnx` |
 | HuggingFace | EmbedPDF `PP-DocLayoutV3-ONNX/model_fp16.onnx` |
 | 来源标记 | 同目录 `pp-doclayoutv3.onnx.source` |
-| 前端 | `agentero-model://…/pp-doclayoutv3.onnx`（Windows：`http://agentero-model.localhost/…`） |
+| 前端 | `library-model://…/pp-doclayoutv3.onnx`（Windows：`http://library-model.localhost/…`） |
 | Commands | `layout_model_status` / `layout_model_ensure({ progressTaskId? })` |
 
 实现：`src-tauri/src/features/paper/analyze/layout/model_assets/`、`src/lib/pdf/layout/model.ts`、`ai-runtime.ts`。
@@ -149,7 +149,7 @@ type LayoutSidecar = {
 - 分区：figure（image+chart）→ table → algorithm → formula
 - 字段：`id`（如 `figure-3`）、`stableKey`、`kind`、`section`、`page`（**1-based**）、`pageIndex`、`bbox`（0–1）、`score`、`title?`、`layoutRegionId`
 - 代码：`src/lib/pdf/layout/layout-index.ts`、`writeLayoutIndexFromRaw`（`io.ts`）
-- CLI：`agentero layout list|get`、`agentero mark add --region <id>`（见 [../backend/cli.md](../backend/cli.md)）
+- CLI：`library layout list|get`、`library mark add --region <id>`（见 [../backend/cli.md](../backend/cli.md)）
 
 缓存只在已知 paper folder 时启用；散落 PDF 没有 `{paper}` 路径，仍使用当前内存流程（也不写 index）。
 
@@ -309,5 +309,5 @@ type PdfLayoutRegion = {
 
 - 实验路径；大模型推理可能卡顿。
 - 不改 PDF 二进制；只写可重建的 `{paper}/source/layout.json`。
-- `layout.json` 只缓存 raw layout，不等同于未来 `agentero-figures.json` / 缩略图资产 sidecar。
+- `layout.json` 只缓存 raw layout，不等同于未来 `library-figures.json` / 缩略图资产 sidecar。
 - 后续：最终 figure sidecar、自动分析、一键视觉批注。

@@ -1,6 +1,6 @@
 # 阅读标注：惰性文字定位（打开再算）
 
-> 状态：设计草案。关联 [\#170](https://github.com/poco-ai/Agentero/issues/170)。  
+> 状态：设计草案。关联 [\#170](https://github.com/poco-ai/Library/issues/170)。  
 > 姊妹篇：[即时定位](mark-locate-eager.md) · [开发路线](mark-cli-roadmap.md)
 
 ## 1. 一句话

@@ -41,8 +41,8 @@ export const ConversationContent = ({
 	<StickToBottom.Content
 		className={cn("flex flex-col gap-8 p-4", className)}
 		scrollClassName={cn(
-			// Right-edge scrollbar (agentero thin style); stable gutter so layout does not jump.
-			"agentero-scroll [scrollbar-gutter:stable]",
+			// Right-edge scrollbar (library thin style); stable gutter so layout does not jump.
+			"library-scroll [scrollbar-gutter:stable]",
 			scrollClassName,
 		)}
 		{...props}

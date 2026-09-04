@@ -32,7 +32,7 @@ describe("stripPromptEnvelopeForDisplay — visual annotation", () => {
 
 	it("extracts user question from continue prompt", () => {
 		const cont = [
-			"You are helping the user discuss a visual region from a research paper PDF in Agentero.",
+			"You are helping the user discuss a visual region from a research paper PDF in Library.",
 			"Page: 2",
 			"Original annotation comment: first",
 			"User question:",

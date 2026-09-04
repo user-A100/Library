@@ -6,7 +6,7 @@
 
 - `src/components/viewer/pdf/hooks/use-pdf-navigation.ts` — 阅读位置恢复守卫
 
-**Issue**：[#427](https://github.com/poco-ai/Agentero/issues/427)
+**Issue**：[#427](https://github.com/poco-ai/Library/issues/427)
 
 ---
 

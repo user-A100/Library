@@ -24,9 +24,9 @@ import { mergeCaptionsIntoHosts } from "@/lib/pdf/layout/merge-captions";
 
 /**
  * Real-PDF fixtures live outside the repo, so these cases are opt-in: point
- * AGENTERO_TEST_PAPER at a paper folder to exercise the parser end to end.
+ * LIBRARY_TEST_PAPER at a paper folder to exercise the parser end to end.
  */
-const paperDir = process.env.AGENTERO_TEST_PAPER;
+const paperDir = process.env.LIBRARY_TEST_PAPER;
 
 describe("citation destination keys", () => {
 	it("returns an empty map for a PDF without hyperref cite destinations", async () => {
@@ -108,7 +108,7 @@ describe("citation destination keys", () => {
 			// than hyperref `cite.<key>` — skip when this fixture has no cites.
 			if (map.size === 0) return;
 			const sidecar = JSON.parse(
-				readFileSync(`${dir}/source/agentero-cite.json`, "utf8"),
+				readFileSync(`${dir}/source/library-cite.json`, "utf8"),
 			);
 			const rawKeys = new Set(
 				sidecar.citations
@@ -637,7 +637,7 @@ describe("ACS paper link-rect crossrefs", () => {
 					true,
 				);
 			} catch {
-				// Sidecar optional outside the Agentero vault fixture.
+				// Sidecar optional outside the Library vault fixture.
 			}
 		},
 	);
@@ -660,7 +660,7 @@ describe("ACS paper link-rect crossrefs", () => {
 			expect(ref64).toBeTruthy();
 
 			const sidecar = JSON.parse(
-				readFileSync(`${dir}/source/agentero-cite.json`, "utf8"),
+				readFileSync(`${dir}/source/library-cite.json`, "utf8"),
 			) as { citations: { id: string; rawKey?: string }[] };
 			const keys = new Set(citationSidecarKeysForDest("mk:ref1"));
 			const matched = sidecar.citations.find(

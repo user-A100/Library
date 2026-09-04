@@ -2,7 +2,7 @@
 //!
 //! Priority: online structured references (Semantic Scholar → Crossref) →
 //! local `source/` BibTeX / `.bbl` / inline `thebibliography` fallback.
-//! Results persist to the rebuildable sidecar `{paper}/source/agentero-cite.json`.
+//! Results persist to the rebuildable sidecar `{paper}/source/library-cite.json`.
 //!
 //! @see docs/backend/citation-parsing.md
 
@@ -26,7 +26,7 @@ use std::sync::{Arc, OnceLock};
 use tauri::Manager;
 use tokio::sync::{Mutex, Notify};
 
-pub const SIDECAR_FILE: &str = "agentero-cite.json";
+pub const SIDECAR_FILE: &str = "library-cite.json";
 pub const SCHEMA_VERSION: u32 = 1;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -451,7 +451,7 @@ fn write_sidecar(path: &Path, sidecar: &CiteSidecar) -> Result<(), AppError> {
 }
 
 /// All `.bib` / `.bbl` / `.tex` / `.ltx` under the paper folder (skips dotfiles
-/// and `agentero-*` derived files), sorted for deterministic fingerprints.
+/// and `library-*` derived files), sorted for deterministic fingerprints.
 fn collect_ref_files(paper_dir: &Path) -> Vec<PathBuf> {
     fn walk(dir: &Path, depth: usize, out: &mut Vec<PathBuf>) {
         if depth > 16 {
@@ -462,7 +462,7 @@ fn collect_ref_files(paper_dir: &Path) -> Vec<PathBuf> {
         };
         for entry in rd.flatten() {
             let name = entry.file_name().to_string_lossy().to_string();
-            if name.starts_with('.') || name.starts_with("agentero-") {
+            if name.starts_with('.') || name.starts_with("library-") {
                 continue;
             }
             let p = entry.path();
@@ -895,7 +895,7 @@ mod tests {
 
     fn temp_vault(tag: &str) -> PathBuf {
         let dir =
-            std::env::temp_dir().join(format!("agentero-refs-test-{tag}-{}", std::process::id()));
+            std::env::temp_dir().join(format!("library-refs-test-{tag}-{}", std::process::id()));
         let _ = fs::remove_dir_all(&dir);
         fs::create_dir_all(dir.join("papers/demo/source")).unwrap();
         dir

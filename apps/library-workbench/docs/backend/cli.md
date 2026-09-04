@@ -1,20 +1,20 @@
-# CLI（`agentero`）
+# CLI（`library`）
 
 Headless Vault / Catalog / Wiki 接口；**不含** BYOA / paper-reader。
 
 ## 位置
 
-- 目录：`cli/`（crate `agentero-cli`）
-- path 依赖 `agentero_lib`：`features::{vault,catalog,import,wiki}` + `core::{error,fs}`
-- 可选同版本 CLI 安装（不随桌面安装包打入，减小体积 [#285](https://github.com/poco-ai/Agentero/issues/285)；open/deep-link 仍见 [#165](https://github.com/poco-ai/Agentero/issues/165) / [#166](https://github.com/poco-ai/Agentero/issues/166)）
-  - 设置 → 关于：**安装 CLI** 从 GitHub Release 下载与 App **同版本** 的 `agentero-cli-{ver}-{triple}` 归档，校验 `.sha256` 后写入用户目录并创建 PATH shim。POSIX 写 `~/.local/bin/agentero` 软链（不静默改 shell rc）；Windows 写 `agentero-cli.cmd` 并**自动把安装目录加入用户 PATH**（`HKCU\Environment`，广播 `WM_SETTINGCHANGE`，无需重启，新开终端即可用 `agentero-cli`）。下载 404 的错误文案会带上完整资产 URL（含宿主 triple），架构/版本不匹配时自解释；`CliInstallStatus.commandName` 供前端按平台展示验证命令
-  - 独立 CLI 归档仍随每次 Release 发布，供无桌面的 headless 机器使用；macOS 亦可通过 Homebrew tap `poco-ai/agentero` 安装 headless CLI
+- 目录：`cli/`（crate `library-cli`）
+- path 依赖 `library_lib`：`features::{vault,catalog,import,wiki}` + `core::{error,fs}`
+- 可选同版本 CLI 安装（不随桌面安装包打入，减小体积 [#285](https://github.com/poco-ai/Library/issues/285)；open/deep-link 仍见 [#165](https://github.com/poco-ai/Library/issues/165) / [#166](https://github.com/poco-ai/Library/issues/166)）
+  - 设置 → 关于：**安装 CLI** 从 GitHub Release 下载与 App **同版本** 的 `library-cli-{ver}-{triple}` 归档，校验 `.sha256` 后写入用户目录并创建 PATH shim。POSIX 写 `~/.local/bin/library` 软链（不静默改 shell rc）；Windows 写 `library-cli.cmd` 并**自动把安装目录加入用户 PATH**（`HKCU\Environment`，广播 `WM_SETTINGCHANGE`，无需重启，新开终端即可用 `library-cli`）。下载 404 的错误文案会带上完整资产 URL（含宿主 triple），架构/版本不匹配时自解释；`CliInstallStatus.commandName` 供前端按平台展示验证命令
+  - 独立 CLI 归档仍随每次 Release 发布，供无桌面的 headless 机器使用；macOS 亦可通过 Homebrew tap `poco-ai/library` 安装 headless CLI
 
 ## 命令组
 
 | 组 | 用途 |
 |---|---|
-| `open` | 在桌面 App 打开本地目录为 Vault（`agentero open <PATH>`；简写 `agentero <PATH>`） |
+| `open` | 在桌面 App 打开本地目录为 Vault（`library open <PATH>`；简写 `library <PATH>`） |
 | `completion` | 生成 / 安装 shell 自动补全（bash / zsh / fish / powershell / elvish） |
 | `vault` | create / which / info 等 |
 | `tree` | 列树 |
@@ -31,7 +31,7 @@ Headless Vault / Catalog / Wiki 接口；**不含** BYOA / paper-reader。
 | `usage` | 本机活动日志：`which` / `timeline` / `summary` / `clear`（XDG `usage.sqlite`） |
 | `feed` | 广场订阅：`add` / `list` / `remove`（XDG `feeds.sqlite`，与 UI 共用） |
 
-稳定 `--json` 输出，供脚本与外部 Agent 组合。JSON 默认 **compact 单行**（省 token），`--pretty` 恢复缩进美化（[#367](https://github.com/poco-ai/Agentero/issues/367)）。
+稳定 `--json` 输出，供脚本与外部 Agent 组合。JSON 默认 **compact 单行**（省 token），`--pretty` 恢复缩进美化（[#367](https://github.com/poco-ai/Library/issues/367)）。
 
 `paper list --json` 默认每行只含 `id/path/title`；用 `--fields year,tags,abstract,…`（逗号分隔、可重复）按需加字段，或 `--full` 输出完整 `PaperRecord`。未知字段报 `usage` 错误并列出合法字段。text 表格输出不受影响。
 
@@ -41,15 +41,15 @@ Headless Vault / Catalog / Wiki 接口；**不含** BYOA / paper-reader。
 
 ```bash
 # 列出图 / 表 / 算法 / 公式（--kind 可重复，OR）
-agentero layout list papers/demo --json
-agentero layout list papers/demo --kind figure --kind formula --json
-agentero layout get  papers/demo figure-3 --json
+library layout list papers/demo --json
+library layout list papers/demo --kind figure --kind formula --json
+library layout get  papers/demo figure-3 --json
 
 # 按区域钉批注（bbox 归一，页面尺寸由 PDF 引擎测量）
-agentero mark add papers/demo --region figure-3 --comment "核心图" --json
-agentero mark add papers/demo --region formula-p3-… --question "推导？" --json
-agentero mark list papers/demo --json
-agentero mark delete papers/demo <id> -y --json
+library mark add papers/demo --region figure-3 --comment "核心图" --json
+library mark add papers/demo --region formula-p3-… --question "推导？" --json
+library mark list papers/demo --json
+library mark delete papers/demo <id> -y --json
 ```
 
 Mark id 是 nanoid，字母表含 `-`，约 1/64 的 id 以 `-` 开头。`mark get` / `mark update` / `mark delete` 的 id 位置参数按 `allow_hyphen_values` 接收，无需 `--` 分隔。
@@ -73,21 +73,21 @@ CLI **不手算坐标**，也不接受外部传入坐标。跨页的句子仍搜
 
 ```bash
 # 高亮；加 --comment 即批注（等价于桌面划词后写评论）
-agentero mark add papers/demo --kind highlight --quote "we propose a novel …" \
+library mark add papers/demo --kind highlight --quote "we propose a novel …" \
   --page 3 --comment "核心贡献" --mark-color yellow --json
 
 # 同句多处命中：--page 过滤、--match-index 选第几处、--all 全标
-agentero mark add papers/demo --kind highlight --quote "attention" --all --json
+library mark add papers/demo --kind highlight --quote "attention" --all --json
 
 # 钉翻译（免费 MT）/ 提问壳
-agentero mark add papers/demo --kind translate --quote "…" --to zh-CN --json
-agentero mark add papers/demo --kind ask --quote "…" --question "为什么？" --json
+library mark add papers/demo --kind translate --quote "…" --to zh-CN --json
+library mark add papers/demo --kind ask --quote "…" --question "为什么？" --json
 
 # 改评论 / 改颜色
-agentero mark update papers/demo <id> --comment "改过的批注" --mark-color green --json
+library mark update papers/demo <id> --comment "改过的批注" --mark-color green --json
 
 # 纯文本翻译，不落 mark
-agentero translate "Hello world" --to zh-CN --json
+library translate "Hello world" --to zh-CN --json
 ```
 
 | 落盘 | 内容 |
@@ -98,7 +98,7 @@ agentero translate "Hello world" --to zh-CN --json
 零命中返回 `mark_locate_failed`（业务错误，退出码 1）且**不落盘**——让 Agent 换更独特的
 句子重试，而不是写一条没有位置的垃圾 mark。论文无本地 PDF 时返回 `paper_pdf_missing`。
 
-定位跑在与 `PAPER.md` 解析同一套隔离 worker 子进程里（`--agentero-internal-pdf-locate-worker`，
+定位跑在与 `PAPER.md` 解析同一套隔离 worker 子进程里（`--library-internal-pdf-locate-worker`，
 30s 硬超时），PDFium 卡死不会拖住 CLI。翻译只用免费引擎（`translate_text` 的 FREE_PROVIDERS，
 zh 目标走并行竞速）；商业 BYOK Key 只在桌面 settings 里，CLI 拿不到也不去读。
 
@@ -106,17 +106,17 @@ zh 目标走并行竞速）；商业 BYOK Key 只在桌面 settings 里，CLI �
 所以论文开着时跑 CLI 也能在 1~2 秒内看到黄底（见 [frontend/pdf.md](../frontend/pdf.md)）。
 
 ```bash
-# CLI 以 `default-features = false` 依赖 `agentero_lib`，headless 构建不走 tauri-build。
-# 桌面安装包不内置 CLI（已移除 `externalBin`，安装目录不会出现占位 agentero-cli.exe）；
+# CLI 以 `default-features = false` 依赖 `library_lib`，headless 构建不走 tauri-build。
+# 桌面安装包不内置 CLI（已移除 `externalBin`，安装目录不会出现占位 library-cli.exe）；
 # 开发机可选跑下面命令把真二进制放进 src-tauri/binaries，让 设置 → 安装 CLI 走本地路径：
 pnpm cli:bundle
-cargo build -p agentero-cli
-cargo run -p agentero-cli -- vault which --json
-cargo run -p agentero-cli -- wiki check papers/demo/NOTES.md --json
-cargo run -p agentero-cli -- doctor --json
-cargo run -p agentero-cli -- layout list papers/demo --json
-cargo run -p agentero-cli -- completion zsh
-cargo test -p agentero-cli
+cargo build -p library-cli
+cargo run -p library-cli -- vault which --json
+cargo run -p library-cli -- wiki check papers/demo/NOTES.md --json
+cargo run -p library-cli -- doctor --json
+cargo run -p library-cli -- layout list papers/demo --json
+cargo run -p library-cli -- completion zsh
+cargo test -p library-cli
 ```
 
 ## 论文与 Tag
@@ -124,8 +124,8 @@ cargo test -p agentero-cli
 Tag 写入支持桌面端相同的 8 色后缀格式：
 
 ```bash
-agentero paper tag add papers/demo "survey:blue"
-agentero paper tag set papers/demo "nlp:green" "must-read:orange"
+library paper tag add papers/demo "survey:blue"
+library paper tag set papers/demo "nlp:green" "must-read:orange"
 ```
 
 只有合法颜色后缀会被解析为颜色；例如 `owner:alice` 仍是普通 Tag 名称。
@@ -133,69 +133,69 @@ agentero paper tag set papers/demo "nlp:green" "must-read:orange"
 `@zotero:`（Connector）和 `@arxiv:`（arXiv 学科分类，如 `Computer Science - Machine Learning`）是内部标签，默认不参与论文列表筛选和 Tag 汇总；需要包含它们时传 `--all`：
 
 ```bash
-agentero paper list --tag topic
-agentero paper list --tag "@zotero:imported" --all
-agentero paper tag list --all
+library paper list --tag topic
+library paper list --tag "@zotero:imported" --all
+library paper tag list --all
 ```
 
 `paper delete` 默认移入可恢复回收站；明确传 `--files` 才会物理删除。回收站操作：
 
 ```bash
-agentero trash list
-agentero trash restore <batch-id> <stored>
-agentero -y trash purge <batch-id> <stored>
-agentero -y trash purge
+library trash list
+library trash restore <batch-id> <stored>
+library -y trash purge <batch-id> <stored>
+library -y trash purge
 ```
 
 论文移动会更新文件夹和 Catalog 路径。目标父目录不存在时会自动创建；目标已存在或路径逃出 `papers/` 时失败且不改 Catalog：
 
 ```bash
-agentero paper move papers/inbox/demo papers/archive
+library paper move papers/inbox/demo papers/archive
 # 目标父目录可尚未存在：
-agentero paper move papers/inbox/demo papers/new-shelf
+library paper move papers/inbox/demo papers/new-shelf
 ```
 
 ### 从命令行打开桌面 App
 
 ```bash
-agentero open ~/research
-agentero ~/research    # 路径简写（已知子命令名优先）
-agentero .             # 当前目录
+library open ~/research
+library ~/research    # 路径简写（已知子命令名优先）
+library .             # 当前目录
 ```
 
-CLI 通过 `agentero://open?path=…` 深链唤起已安装的桌面 App；无参数时仍打印 help，不会隐式打开最近 Vault。
+CLI 通过 `library://open?path=…` 深链唤起已安装的桌面 App；无参数时仍打印 help，不会隐式打开最近 Vault。
 
-### 系统外壳集成（右键「用 Agentero 打开」）
+### 系统外壳集成（右键「用 Library 打开」）
 
 除 CLI 外，文件夹也可以直接从系统外壳作为 Vault 打开。两条路径最终都走
-`features::open_request::collect_open_args`（GUI argv 支持 `agentero://` URL 与**裸目录路径**，裸路径对空格、`&`、`%`、中文路径无损）：
+`features::open_request::collect_open_args`（GUI argv 支持 `library://` URL 与**裸目录路径**，裸路径对空格、`&`、`%`、中文路径无损）：
 
-- **Windows 资源管理器**：NSIS 安装钩子（`src-tauri/nsis/hooks.nsh`，经 `bundle.windows.nsis.installerHooks` 引入）在 `Software\Classes\Directory\shell` 与 `Directory\Background\shell` 下写入 `OpenWithAgentero` 条目，命令为 `"$INSTDIR\agentero.exe" "%1"`；卸载时仅清理指向本安装位置的条目。Win11 新式菜单中条目位于「显示更多选项」。
-- **macOS 访达**：Finder 对目录没有「打开方式」，改用 Quick Action。桌面 App 启动时自动安装/刷新 `~/Library/Services/Open with Agentero.workflow`（`features::finder_service`，shell 动作直接调用当前 App 二进制并传裸路径）；用户显式移除后写入配置标记（`finder-service.removed`），启动时不再自动恢复。设置 → 关于 提供安装/更新/移除入口；App 移动位置后状态显示为过期，可一键更新。
+- **Windows 资源管理器**：NSIS 安装钩子（`src-tauri/nsis/hooks.nsh`，经 `bundle.windows.nsis.installerHooks` 引入）在 `Software\Classes\Directory\shell` 与 `Directory\Background\shell` 下写入 `OpenWithLibrary` 条目，命令为 `"$INSTDIR\library.exe" "%1"`；卸载时仅清理指向本安装位置的条目。Win11 新式菜单中条目位于「显示更多选项」。
+- **macOS 访达**：Finder 对目录没有「打开方式」，改用 Quick Action。桌面 App 启动时自动安装/刷新 `~/Library/Services/Open with Library.workflow`（`features::finder_service`，shell 动作直接调用当前 App 二进制并传裸路径）；用户显式移除后写入配置标记（`finder-service.removed`），启动时不再自动恢复。设置 → 关于 提供安装/更新/移除入口；App 移动位置后状态显示为过期，可一键更新。
 
 ## Shell 自动补全
 
-`agentero completion <SHELL>` 向 stdout 打印补全脚本（始终是原始脚本，即使带了 `--json`）。`--install` 把脚本写入用户目录，**不**改 shell rc。
+`library completion <SHELL>` 向 stdout 打印补全脚本（始终是原始脚本，即使带了 `--json`）。`--install` 把脚本写入用户目录，**不**改 shell rc。
 
 ```bash
 # 打印脚本
-agentero completion zsh
-agentero completion bash
-agentero completion fish
+library completion zsh
+library completion bash
+library completion fish
 
 # 写入用户补全目录（不改 rc）
-agentero completion zsh --install
-agentero completion bash --install
-agentero completion fish --install
+library completion zsh --install
+library completion bash --install
+library completion fish --install
 ```
 
 | Shell | `--install` 路径 | 是否自动加载 |
 |---|---|---|
-| bash | `~/.local/share/bash-completion/completions/agentero` | bash-completion 2.8+ 会自动加载 |
-| zsh | `~/.zfunc/_agentero` | 需把 `~/.zfunc` 加进 `fpath` 后 `compinit` |
-| fish | `~/.config/fish/completions/agentero.fish` | 自动 |
-| powershell | `~/.config/powershell/Completions/agentero-cli.ps1` | 需在 `$PROFILE` 里 `.` source |
-| elvish | `~/.config/elvish/lib/agentero.elv` | 需在 `rc.elv` 里 `use agentero` |
+| bash | `~/.local/share/bash-completion/completions/library` | bash-completion 2.8+ 会自动加载 |
+| zsh | `~/.zfunc/_library` | 需把 `~/.zfunc` 加进 `fpath` 后 `compinit` |
+| fish | `~/.config/fish/completions/library.fish` | 自动 |
+| powershell | `~/.config/powershell/Completions/library-cli.ps1` | 需在 `$PROFILE` 里 `.` source |
+| elvish | `~/.config/elvish/lib/library.elv` | 需在 `rc.elv` 里 `use library` |
 
 zsh 若尚未配置 `fpath`，在 `~/.zshrc` 加：
 
@@ -204,17 +204,17 @@ fpath=(~/.zfunc $fpath)
 autoload -Uz compinit && compinit
 ```
 
-Windows 安装后命令名是 `agentero-cli`，可显式指定：
+Windows 安装后命令名是 `library-cli`，可显式指定：
 
 ```powershell
-agentero-cli completion powershell --install --bin-name agentero-cli
+library-cli completion powershell --install --bin-name library-cli
 ```
 
 补全会带上子命令、全局 flag，以及已声明的枚举值（如 `layout --kind`、`mark --mark-color`）。路径参数带 `ValueHint`，由 shell 按目录/文件补全。
 
 ## 双链检查
 
-`agentero wiki check [<source>] --json` 使用桌面端导航、嵌入、反链和重命名事务共用的 `WikiIndex` resolver，不维护第二套正则解析器。
+`library wiki check [<source>] --json` 使用桌面端导航、嵌入、反链和重命名事务共用的 `WikiIndex` resolver，不维护第二套正则解析器。
 
 - 不传 `source`：检查整个 Vault。
 - 传 Markdown 文件：只检查该文件，适合 paper-reader 写入后的局部验收。
@@ -228,10 +228,10 @@ agentero-cli completion powershell --install --bin-name agentero-cli
 
 ## Doctor
 
-`agentero doctor` 只读聚合 Vault 结构、Catalog schema、双链语义、Catalog 论文 `NOTES.md` aliases，以及 `papers/**/marks/*.json` 视觉批注格式；任一错误/待修项存在时返回 `doctor_issues` 和非零退出码。诊断会尊重设置页写入的 `.agentero/doctor.json` 别名忽略列表（这些路径不计入别名错误）。
+`library doctor` 只读聚合 Vault 结构、Catalog schema、双链语义、Catalog 论文 `NOTES.md` aliases，以及 `papers/**/marks/*.json` 视觉批注格式；任一错误/待修项存在时返回 `doctor_issues` 和非零退出码。诊断会尊重设置页写入的 `.library/doctor.json` 别名忽略列表（这些路径不计入别名错误）。
 
-`agentero doctor fix aliases` 在 TTY 中逐篇展示已有 alias，并允许编辑生成的标题 alias / 短 alias，最后进行一次批量确认。`-y` 接受全部安全默认值；`--json` 从不提示，未同时传 `-y` 时返回 `needs_confirmation`。修复会保留已有自定义 aliases，以内容哈希做竞态检查，并作为一个可回滚批次写入。
+`library doctor fix aliases` 在 TTY 中逐篇展示已有 alias，并允许编辑生成的标题 alias / 短 alias，最后进行一次批量确认。`-y` 接受全部安全默认值；`--json` 从不提示，未同时传 `-y` 时返回 `needs_confirmation`。修复会保留已有自定义 aliases，以内容哈希做竞态检查，并作为一个可回滚批次写入。
 
-`agentero doctor fix visual-marks -y` 将旧版 `kind: agent-trace`（扁平 agent 字段）迁移为 `kind: visual` v2（可选嵌套 `agent`），幂等；不改 id 与裁剪图路径。详见 [doctor.md](doctor.md)。
+`library doctor fix visual-marks -y` 将旧版 `kind: agent-trace`（扁平 agent 字段）迁移为 `kind: visual` v2（可选嵌套 `agent`），幂等；不改 id 与裁剪图路径。详见 [doctor.md](doctor.md)。
 
-Skill 种子：`templates/vault/.agents/skills/agentero-cli/`，含两个平台变体——`SKILL.md`（POSIX，命令 `agentero`）与 `SKILL-windows.md`（Windows，命令 `agentero-cli`、PowerShell/cmd 语法）。播种时按宿主平台选择变体写入同一个 skill id，skill 目录不随平台变化。
+Skill 种子：`templates/vault/.agents/skills/library-cli/`，含两个平台变体——`SKILL.md`（POSIX，命令 `library`）与 `SKILL-windows.md`（Windows，命令 `library-cli`、PowerShell/cmd 语法）。播种时按宿主平台选择变体写入同一个 skill id，skill 目录不随平台变化。

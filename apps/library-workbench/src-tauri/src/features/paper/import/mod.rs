@@ -212,7 +212,7 @@ pub struct LocalPdfExtraMeta {
     pub abstract_text: Option<String>,
 }
 
-/// Stage a dropped PDF (path-less WKWebView drop) into `~/.agentero/import-tmp/`.
+/// Stage a dropped PDF (path-less WKWebView drop) into `~/.library/import-tmp/`.
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct StageImportFileArgs {
@@ -660,7 +660,7 @@ pub async fn download_paper_assets_with_progress(
     Ok(result)
 }
 
-/// Write drop payload bytes to `~/.agentero/import-tmp/<stamp>-<name>` and return the path.
+/// Write drop payload bytes to `~/.library/import-tmp/<stamp>-<name>` and return the path.
 /// Used when the webview cannot expose `File.path` (typical on macOS WKWebView).
 pub fn stage_import_file(args: StageImportFileArgs) -> Result<StageImportFileResult, AppError> {
     use base64::Engine;
@@ -691,7 +691,7 @@ pub fn stage_import_file(args: StageImportFileArgs) -> Result<StageImportFileRes
 
     let home =
         dirs::home_dir().ok_or_else(|| AppError::message("cannot resolve home directory"))?;
-    let dir = home.join(".agentero").join("import-tmp");
+    let dir = home.join(".library").join("import-tmp");
     fs::create_dir_all(&dir)?;
     let stamp = format!(
         "{}-{}",
@@ -1207,7 +1207,7 @@ pub enum NoteShellMode {
     TitleOnly,
     /// aliases frontmatter only; empty body.
     Blank,
-    /// Render the vault template `.agentero/templates/NOTES.md`.
+    /// Render the vault template `.library/templates/NOTES.md`.
     Custom,
 }
 
@@ -1251,12 +1251,12 @@ aliases:\n\
 ## Results\n\
 \n";
 
-/// Seed `{vault}/.agentero/templates/NOTES.md` with [`NOTES_TEMPLATE_SEED`].
+/// Seed `{vault}/.library/templates/NOTES.md` with [`NOTES_TEMPLATE_SEED`].
 /// Returns `true` only when the file was created; an existing template is
 /// never touched.
 pub fn seed_notes_template(vault_root: &Path) -> Result<bool, AppError> {
     let path = vault_root
-        .join(".agentero")
+        .join(".library")
         .join("templates")
         .join("NOTES.md");
     if path.is_file() {
@@ -1361,7 +1361,7 @@ async fn standard_note_body(meta: &PaperMeta, translate_abstract: bool) -> Strin
     format!("# {}\n\n{abstract_block}", meta.title)
 }
 
-/// Render the vault template `.agentero/templates/NOTES.md` for one paper.
+/// Render the vault template `.library/templates/NOTES.md` for one paper.
 /// `None` when the template file is missing or blank (caller falls back to
 /// the Standard shell). The rendered document then gets the aliases
 /// guarantee (a template without aliases gets title + short alias merged in).
@@ -1371,14 +1371,14 @@ async fn custom_note_shell(
     aliases: &[String],
 ) -> Option<String> {
     let path = vault_root
-        .join(".agentero")
+        .join(".library")
         .join("templates")
         .join("NOTES.md");
     let template = match fs::read_to_string(&path) {
         Ok(raw) if !raw.trim().is_empty() => raw,
         _ => {
             log::warn!(
-                target: "agentero::import",
+                target: "library::import",
                 "NOTES template missing or empty ({}); falling back to standard shell",
                 path.display()
             );
@@ -1563,7 +1563,7 @@ mod tests {
     #[test]
     fn allocate_paper_path_free_and_collision() {
         let vault = std::env::temp_dir().join(format!(
-            "agentero-alloc-{}-{}",
+            "library-alloc-{}-{}",
             std::process::id(),
             uuid::Uuid::new_v4().simple()
         ));
@@ -1620,7 +1620,7 @@ mod tests {
 
     fn note_shell_tmp_dir(tag: &str) -> PathBuf {
         let dir = std::env::temp_dir().join(format!(
-            "agentero-notes-{tag}-{}-{}",
+            "library-notes-{tag}-{}-{}",
             std::process::id(),
             uuid::Uuid::new_v4().simple()
         ));
@@ -1694,7 +1694,7 @@ mod tests {
     async fn note_shell_custom_renders_variables() {
         let vault = note_shell_tmp_dir("custom-vars");
         let meta = note_shell_test_meta();
-        let templates = vault.join(".agentero").join("templates");
+        let templates = vault.join(".library").join("templates");
         fs::create_dir_all(&templates).unwrap();
         fs::write(
             templates.join("NOTES.md"),
@@ -1732,7 +1732,7 @@ mod tests {
     async fn note_shell_custom_adds_missing_aliases() {
         let vault = note_shell_tmp_dir("custom-aliases");
         let meta = note_shell_test_meta();
-        let templates = vault.join(".agentero").join("templates");
+        let templates = vault.join(".library").join("templates");
         fs::create_dir_all(&templates).unwrap();
         fs::write(templates.join("NOTES.md"), "# {{title}}\n\nBody\n").unwrap();
 
@@ -1776,7 +1776,7 @@ mod tests {
         let vault = note_shell_tmp_dir("custom-insert");
         // No authors/year → suggest_short_alias returns None → title alias only.
         let meta = local_pdf_meta("2501.00001".into(), "Deep".into());
-        let templates = vault.join(".agentero").join("templates");
+        let templates = vault.join(".library").join("templates");
         fs::create_dir_all(&templates).unwrap();
         // Frontmatter without aliases: the single title alias must be inserted
         // before the closing fence even though patch_aliases needs two.
@@ -1806,7 +1806,7 @@ mod tests {
     async fn note_shell_custom_keeps_unsupported_frontmatter_verbatim() {
         let vault = note_shell_tmp_dir("custom-unsupported");
         let meta = note_shell_test_meta();
-        let templates = vault.join(".agentero").join("templates");
+        let templates = vault.join(".library").join("templates");
         fs::create_dir_all(&templates).unwrap();
         // Unterminated frontmatter fence → AliasEdit::Unsupported: the
         // rendered note must be kept verbatim (Doctor surfaces it later).
@@ -1852,7 +1852,7 @@ mod tests {
         let vault = note_shell_tmp_dir("seed");
         let created = seed_notes_template(&vault).unwrap();
         assert!(created);
-        let path = vault.join(".agentero").join("templates").join("NOTES.md");
+        let path = vault.join(".library").join("templates").join("NOTES.md");
         assert!(path.is_file());
         assert!(fs::read_to_string(&path).unwrap().contains("{{title}}"));
 

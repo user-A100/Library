@@ -71,7 +71,7 @@ function EquationPopoverContent({
 			contentEditable={false}
 		>
 			<EquationInput
-				className="agentero-scroll max-h-[50vh] grow resize-none rounded-md border bg-transparent p-2 text-sm outline-none"
+				className="library-scroll max-h-[50vh] grow resize-none rounded-md border bg-transparent p-2 text-sm outline-none"
 				state={{ isInline, open, onClose }}
 				placeholder={placeholder}
 				autoFocus

@@ -12,7 +12,7 @@ type NativeMenuHandlers = {
 };
 
 /**
- * Subscribe to the desktop native menu bar events (Agentero → Settings…, File,
+ * Subscribe to the desktop native menu bar events (Library → Settings…, File,
  * View). No-op outside the Tauri shell. `new_window` is handled natively in Rust.
  */
 export function useNativeMenuEvents(handlers: NativeMenuHandlers): void {

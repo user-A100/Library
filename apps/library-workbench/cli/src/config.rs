@@ -1,4 +1,4 @@
-//! CLI-only config: `~/.config/agentero/config.toml` (isolated from GUI).
+//! CLI-only config: `~/.config/library/config.toml` (isolated from GUI).
 
 use crate::error::CliError;
 use serde::{Deserialize, Serialize};
@@ -14,13 +14,13 @@ pub struct CliConfig {
 }
 
 pub fn config_path() -> Result<PathBuf, CliError> {
-    // Prefer XDG-style `~/.config/agentero` (docs/development/cli.md) even on macOS,
+    // Prefer XDG-style `~/.config/library` (docs/development/cli.md) even on macOS,
     // so agents/scripts share one predictable path across platforms.
     let base = dirs::home_dir()
         .map(|h| h.join(".config"))
         .or_else(dirs::config_dir)
         .ok_or_else(|| CliError::message("cannot resolve user config directory (~/.config)"))?;
-    Ok(base.join("agentero").join("config.toml"))
+    Ok(base.join("library").join("config.toml"))
 }
 
 pub fn load() -> Result<CliConfig, CliError> {

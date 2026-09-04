@@ -157,7 +157,7 @@ mod tests {
     #[test]
     fn creates_schema() {
         let dir = std::env::temp_dir().join(format!(
-            "agentero-feeds-schema-{}-{}",
+            "library-feeds-schema-{}-{}",
             std::process::id(),
             std::time::SystemTime::now()
                 .duration_since(std::time::UNIX_EPOCH)
@@ -182,7 +182,7 @@ mod tests {
     #[test]
     fn migrates_v1_to_v2() {
         let dir = std::env::temp_dir().join(format!(
-            "agentero-feeds-schema-v1-{}-{}",
+            "library-feeds-schema-v1-{}-{}",
             std::process::id(),
             std::time::SystemTime::now()
                 .duration_since(std::time::UNIX_EPOCH)
@@ -219,7 +219,7 @@ mod tests {
     #[test]
     fn migrates_v2_to_v3_timestamps() {
         let dir = std::env::temp_dir().join(format!(
-            "agentero-feeds-schema-v2-{}-{}",
+            "library-feeds-schema-v2-{}-{}",
             std::process::id(),
             std::time::SystemTime::now()
                 .duration_since(std::time::UNIX_EPOCH)
@@ -331,7 +331,7 @@ mod tests {
     #[test]
     fn migrates_v3_to_v4_clears_body_cache() {
         let dir = std::env::temp_dir().join(format!(
-            "agentero-feeds-schema-v4-{}-{}",
+            "library-feeds-schema-v4-{}-{}",
             std::process::id(),
             std::time::SystemTime::now()
                 .duration_since(std::time::UNIX_EPOCH)

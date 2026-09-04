@@ -25,7 +25,7 @@ pub(super) fn collect_device_info() -> DeviceInfo {
 
 /// Stable anonymous install id (UUID v4 persisted in the config dir).
 pub(super) fn install_id() -> String {
-    let path = paths::agentero_config_dir().join("telemetry_id");
+    let path = paths::library_config_dir().join("telemetry_id");
     if let Ok(raw) = std::fs::read_to_string(&path) {
         let id = raw.trim();
         if !id.is_empty() {
@@ -33,7 +33,7 @@ pub(super) fn install_id() -> String {
         }
     }
     let id = uuid::Uuid::new_v4().to_string();
-    let _ = std::fs::create_dir_all(paths::agentero_config_dir());
+    let _ = std::fs::create_dir_all(paths::library_config_dir());
     let _ = std::fs::write(&path, &id);
     id
 }

@@ -179,7 +179,7 @@ mod tests {
             .duration_since(UNIX_EPOCH)
             .unwrap_or_default()
             .as_nanos();
-        let dir = std::env::temp_dir().join(format!("agentero-localfs-{nanos}-{seq}"));
+        let dir = std::env::temp_dir().join(format!("library-localfs-{nanos}-{seq}"));
         std::fs::create_dir_all(&dir).unwrap();
         dir
     }

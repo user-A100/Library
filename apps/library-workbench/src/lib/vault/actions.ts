@@ -349,7 +349,7 @@ export function openSelectedInTerminal(): void {
 	})();
 }
 
-/** Delete vault paths into the recycle bin (`.agentero/.trash/`). */
+/** Delete vault paths into the recycle bin (`.library/.trash/`). */
 export async function trashPathsAndNotify(absPaths: string[]): Promise<void> {
 	const vaultPath = getVaultPath();
 	if (!vaultPath || !isTauri()) {

@@ -1,9 +1,9 @@
-//! MCP resource `agentero://vault` — Markdown vault overview.
+//! MCP resource `library://vault` — Markdown vault overview.
 
 use super::McpController;
 use crate::features::catalog::{self, papers};
 
-pub const VAULT_URI: &str = "agentero://vault";
+pub const VAULT_URI: &str = "library://vault";
 pub const VAULT_NAME: &str = "vault";
 
 pub fn vault_markdown(ctrl: &McpController) -> String {
@@ -23,7 +23,7 @@ pub fn vault_markdown(ctrl: &McpController) -> String {
                 .map(|v| v.to_string())
                 .unwrap_or_else(|| "unknown".into());
             format!(
-                "# Agentero vault\n\n\
+                "# Library vault\n\n\
                  - **path**: `{}`\n\
                  - **schemaVersion**: {schema}\n\
                  - **papers**: {papers_n}\n\
@@ -33,7 +33,7 @@ pub fn vault_markdown(ctrl: &McpController) -> String {
             )
         }
         Err(_) => {
-            "# Agentero vault\n\nNo local vault is open. Open a vault in Agentero, then read this resource again.\n"
+            "# Library vault\n\nNo local vault is open. Open a vault in Library, then read this resource again.\n"
                 .into()
         }
     }

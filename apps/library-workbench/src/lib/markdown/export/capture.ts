@@ -4,7 +4,7 @@
  */
 
 import { toPng } from "html-to-image";
-import agenteroAppIconUrl from "@/assets/agentero-app-icon.svg";
+import libraryAppIconUrl from "@/assets/library-app-icon.svg";
 
 const PNG_PIXEL_RATIO = 2;
 
@@ -91,7 +91,7 @@ let watermarkLogoPromise: Promise<HTMLImageElement | null> | null = null;
 
 function loadWatermarkLogo(): Promise<HTMLImageElement | null> {
 	if (!watermarkLogoPromise) {
-		watermarkLogoPromise = loadImage(agenteroAppIconUrl).catch(() => null);
+		watermarkLogoPromise = loadImage(libraryAppIconUrl).catch(() => null);
 	}
 	return watermarkLogoPromise;
 }

@@ -81,7 +81,7 @@ impl FsWatchController {
                 let mut debouncer = match new_debouncer(Duration::from_millis(300), None, tx) {
                     Ok(d) => d,
                     Err(e) => {
-                        log::error!(target: "agentero::watcher", "vault watcher init failed: {e}");
+                        log::error!(target: "library::watcher", "vault watcher init failed: {e}");
                         return;
                     }
                 };
@@ -89,7 +89,7 @@ impl FsWatchController {
                     .watcher()
                     .watch(std::path::Path::new(&watch_root), RecursiveMode::Recursive)
                 {
-                    log::error!(target: "agentero::watcher", "vault watcher watch failed: {e}");
+                    log::error!(target: "library::watcher", "vault watcher watch failed: {e}");
                     return;
                 }
                 debouncer
@@ -141,7 +141,7 @@ impl FsWatchController {
 /// Ignore churn from internal state, VCS metadata, and dependencies.
 fn is_ignored(path: &str) -> bool {
     let p = path.replace('\\', "/");
-    p.contains("/.agentero/") || p.contains("/.git/") || p.contains("/node_modules/")
+    p.contains("/.library/") || p.contains("/.git/") || p.contains("/node_modules/")
 }
 
 /// Files whose presence decides `PaperCaps`: a PDF to parse, LaTeX source that
@@ -204,8 +204,8 @@ fn invalidate_caps_for_paths(app: &AppHandle, vault_root: &str, paths: &[String]
 /// Those temps are never user-facing wiki targets. Emitting them as `rename`
 /// without a trusted pair triggers a false "unverified external rename" toast
 /// for content-only overwrites.
-fn is_agentero_atomic_temp(path: &str) -> bool {
-    path.replace('\\', "/").contains(".agentero-rename-")
+fn is_library_atomic_temp(path: &str) -> bool {
+    path.replace('\\', "/").contains(".library-rename-")
 }
 
 fn kind_label(kind: &EventKind) -> &'static str {
@@ -251,10 +251,10 @@ fn payloads_from_events(
             continue;
         }
         // Content replace via tmp+rename is not a user/wiki path rename.
-        let from_atomic_write = raw_paths.iter().any(|p| is_agentero_atomic_temp(p));
+        let from_atomic_write = raw_paths.iter().any(|p| is_library_atomic_temp(p));
         let paths: Vec<String> = raw_paths
             .into_iter()
-            .filter(|p| !is_agentero_atomic_temp(p))
+            .filter(|p| !is_library_atomic_temp(p))
             .collect();
         if paths.is_empty() {
             continue;
@@ -299,21 +299,21 @@ mod tests {
     }
 
     #[test]
-    fn agentero_atomic_write_temps_are_content_modifies() {
-        assert!(is_agentero_atomic_temp(
-            "/vault/papers/demo/.NOTES.md.agentero-rename-deadbeef.tmp"
+    fn library_atomic_write_temps_are_content_modifies() {
+        assert!(is_library_atomic_temp(
+            "/vault/papers/demo/.NOTES.md.library-rename-deadbeef.tmp"
         ));
-        assert!(!is_agentero_atomic_temp("/vault/papers/demo/NOTES.md"));
+        assert!(!is_library_atomic_temp("/vault/papers/demo/NOTES.md"));
     }
 
     #[test]
     fn catalog_sqlite_changes_are_ignored() {
-        assert!(is_ignored("/vault/.agentero/catalog.sqlite"));
-        assert!(is_ignored("/vault/.agentero/catalog.sqlite-wal"));
-        assert!(is_ignored("/vault/.agentero/catalog.sqlite-shm"));
-        assert!(is_ignored("/vault/.agentero/catalog.sqlite-journal"));
-        assert!(is_ignored(r"C:\vault\.agentero\catalog.sqlite"));
-        assert!(is_ignored("/vault/.agentero/wiki-cache.json"));
+        assert!(is_ignored("/vault/.library/catalog.sqlite"));
+        assert!(is_ignored("/vault/.library/catalog.sqlite-wal"));
+        assert!(is_ignored("/vault/.library/catalog.sqlite-shm"));
+        assert!(is_ignored("/vault/.library/catalog.sqlite-journal"));
+        assert!(is_ignored(r"C:\vault\.library\catalog.sqlite"));
+        assert!(is_ignored("/vault/.library/wiki-cache.json"));
         assert!(is_ignored("/vault/.git/index"));
     }
 

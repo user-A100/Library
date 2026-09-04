@@ -98,7 +98,7 @@ fn migrate(conn: &Connection) -> Result<(), AppError> {
     }
     if version > SCHEMA_VERSION {
         return Err(AppError::message(format!(
-            "usage schema version {version} is newer than this app supports ({SCHEMA_VERSION}); upgrade Agentero"
+            "usage schema version {version} is newer than this app supports ({SCHEMA_VERSION}); upgrade Library"
         )));
     }
     if version < 1 {
@@ -143,7 +143,7 @@ mod tests {
 
     fn temp_dir() -> std::path::PathBuf {
         let dir = std::env::temp_dir().join(format!(
-            "agentero-usage-schema-{}-{}",
+            "library-usage-schema-{}-{}",
             std::process::id(),
             std::time::SystemTime::now()
                 .duration_since(std::time::UNIX_EPOCH)

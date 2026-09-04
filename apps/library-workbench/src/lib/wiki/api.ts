@@ -753,7 +753,7 @@ export function resolveDemoWikiReference(
 }
 
 /** Protocol for preview-only markdown links generated from `[[wikilinks]]`. */
-export const WIKI_HREF_PREFIX = "agentero-wiki:";
+export const WIKI_HREF_PREFIX = "library-wiki:";
 
 export type WikiNavTarget = {
 	targetRaw: string;

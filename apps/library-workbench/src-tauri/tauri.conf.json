@@ -1,8 +1,8 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "Agentero",
+  "productName": "Library",
   "version": "0.9.4",
-  "identifier": "com.poco-ai.agentero",
+  "identifier": "workbench.library.app",
   "build": {
     "beforeDevCommand": "pnpm pdfium:stage && pnpm dev",
     "devUrl": "http://localhost:1420",
@@ -12,7 +12,7 @@
   "app": {
     "windows": [
       {
-        "title": "Agentero",
+        "title": "Library",
         "dragDropEnabled": false,
         "width": 1280,
         "height": 800,
@@ -29,20 +29,14 @@
     "fs": {
       "requireLiteralLeadingDot": false
     },
-    "updater": {
-      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDc4Q0VGREIxQjk3OTBDQkQKUldTOURIbTVzZjNPZUwzVW9OcExLS0VxUTVyOExrTEJ1VmZQcVdmVTBqaUZ0WW8zak53MnpNQ0oK",
-      "endpoints": [
-        "https://github.com/poco-ai/Agentero/releases/latest/download/latest.json"
-      ]
-    },
     "deep-link": {
       "desktop": {
-        "schemes": ["agentero"]
+        "schemes": ["library"]
       },
       "mobile": [
         {
           "scheme": [
-            "agentero"
+            "library"
           ],
           "appLink": false
         }
@@ -51,7 +45,7 @@
   },
   "bundle": {
     "active": true,
-    "createUpdaterArtifacts": true,
+    "createUpdaterArtifacts": false,
     "targets": "all",
     "category": "Productivity",
     "resources": [

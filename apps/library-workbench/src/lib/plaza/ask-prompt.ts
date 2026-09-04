@@ -19,7 +19,7 @@ export function buildPlazaAskPrompt(
 		.join("\n\n");
 
 	const parts = [
-		"You are helping the user read a research feed item in Agentero.",
+		"You are helping the user read a research feed item in Library.",
 	];
 	const title = opts?.title?.trim();
 	if (title) parts.push(`Item title: ${title}`);

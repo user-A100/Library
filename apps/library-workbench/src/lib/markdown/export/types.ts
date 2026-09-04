@@ -14,7 +14,7 @@ export type MarkdownExportOptions = {
 	 * Ignored for non-paper notes. Default true when paper meta is available.
 	 */
 	includePaperHeader: boolean;
-	/** Semi-transparent “Agentero” corner watermark. Default from settings. */
+	/** Semi-transparent “Library” corner watermark. Default from settings. */
 	watermark: boolean;
 };
 

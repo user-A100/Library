@@ -140,7 +140,7 @@ export function providerSessionIdForHistoryLoad(
 
 /**
  * Publish a newly accepted runtime turn without splitting one provider
- * conversation into multiple Agentero history rows.
+ * conversation into multiple Library history rows.
  *
  * ACP creates a fresh runtime id for every request, including resumed turns.
  * The provider session id is the durable conversation identity, so remove the
@@ -256,11 +256,11 @@ export function isBackgroundWorkflowHistoryTitle(title: string): boolean {
 	return (
 		raw.includes("paper-reader") ||
 		raw.includes("paper_reader") ||
-		raw.includes("agentero paper-reader") ||
+		raw.includes("library paper-reader") ||
 		raw.includes("write structured lecture notes") ||
 		raw.includes("activate and follow $paper-reader") ||
 		raw.includes("activate and follow /paper-reader") ||
-		raw.includes("you are running the agentero paper-reader") ||
+		raw.includes("you are running the library paper-reader") ||
 		raw.includes("you are helping the user discuss a visual region") ||
 		t.includes("activate and follow $paper-reader") ||
 		t.includes("write structured lecture notes")

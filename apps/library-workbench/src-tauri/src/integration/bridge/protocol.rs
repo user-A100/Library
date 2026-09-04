@@ -32,7 +32,7 @@ impl BridgeOffer {
     pub fn to_pair_url(&self) -> Result<Url, AppError> {
         let raw = serde_json::to_vec(self)?;
         Url::parse(&format!(
-            "agentero://pair#offer={}",
+            "library://pair#offer={}",
             URL_SAFE_NO_PAD.encode(raw)
         ))
         .map_err(|error| AppError::message(format!("invalid pair URL: {error}")))
@@ -41,8 +41,8 @@ impl BridgeOffer {
     pub fn from_pair_url(value: &str) -> Result<Self, AppError> {
         let url = Url::parse(value)
             .map_err(|error| AppError::message(format!("invalid pairing URL: {error}")))?;
-        if url.scheme() != "agentero" || url.host_str() != Some("pair") {
-            return Err(AppError::message("pairing URL must use agentero://pair"));
+        if url.scheme() != "library" || url.host_str() != Some("pair") {
+            return Err(AppError::message("pairing URL must use library://pair"));
         }
         let offer = url
             .fragment()
@@ -156,7 +156,7 @@ mod tests {
     }
 
     #[test]
-    fn pairing_offer_round_trips_through_an_agentero_url() {
+    fn pairing_offer_round_trips_through_an_library_url() {
         let original = offer();
         let url = original.to_pair_url().expect("encode offer");
         assert_eq!(

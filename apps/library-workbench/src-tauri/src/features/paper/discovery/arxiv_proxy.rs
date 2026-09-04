@@ -68,7 +68,7 @@ pub fn handle(request: tauri::http::Request<Vec<u8>>, responder: tauri::UriSchem
                 responder.respond(response(status, &content_type, body))
             }
             Err(error) => {
-                log::warn!(target: "agentero::arxiv", "arXiv proxy request failed: {error}");
+                log::warn!(target: "library::arxiv", "arXiv proxy request failed: {error}");
                 responder.respond(response(
                     StatusCode::BAD_GATEWAY,
                     "text/plain",

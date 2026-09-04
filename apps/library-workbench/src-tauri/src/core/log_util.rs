@@ -3,7 +3,7 @@
 use crate::core::error::{map_err, ApiResult, AppError};
 use std::time::Instant;
 
-const TARGET: &str = "agentero::op";
+const TARGET: &str = "library::op";
 
 /// Timed operation: always pair `start` with `finish_*`.
 pub struct OpTimer {

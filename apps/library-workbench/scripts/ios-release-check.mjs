@@ -48,7 +48,7 @@ const tauriConfig = JSON.parse(
 );
 if (!tauriConfig.bundle?.icon?.includes("icons/ios/AppIcon-512@2x.png")) {
 	console.error(
-		"tauri.conf.json must include the iOS 1024px Agentero app icon",
+		"tauri.conf.json must include the iOS 1024px Library app icon",
 	);
 	process.exit(1);
 }
@@ -60,5 +60,5 @@ if (!/^\d+\.\d+\.\d+/.test(packageJson.version)) {
 }
 
 console.log(
-	`iOS release preflight passed for Agentero ${packageJson.version} (minimum iOS ${minimumVersion}).`,
+	`iOS release preflight passed for Library ${packageJson.version} (minimum iOS ${minimumVersion}).`,
 );

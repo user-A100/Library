@@ -16,7 +16,7 @@
 | 2 | [Apple Developer → Certificates](https://developer.apple.com/account/resources/certificates/list) | **Developer ID Application** 的 `.cer` | 装进钥匙串，用于 **codesign** |
 | 3 | 本机钥匙串 | `.p12` + base64 | 填进 GitHub Secrets，给 CI 签名 |
 | 4 | [App Store Connect → API](https://appstoreconnect.apple.com/access/integrations/api) | Issuer ID、Key ID、`.p8` 私钥 | 给 **notarytool** 公证 |
-| 5 | [GitHub Secrets](https://github.com/poco-ai/Agentero/settings/secrets/actions) | 无下载 | 粘贴上面得到的值 |
+| 5 | [GitHub Secrets](https://github.com/poco-ai/Library/settings/secrets/actions) | 无下载 | 粘贴上面得到的值 |
 | 6（可选） | 本机终端 | 无 | 导出环境变量后 `pnpm tauri build` 验证 |
 
 **不必**在 App Store Connect 里创建 Mac App 记录——那是上架用的；店外公证只用 **API Key + Developer ID**。
@@ -115,7 +115,7 @@ mv ~/Downloads/AuthKey_XXXXXXXXXX.p8 ~/private_keys/
 ## 第五步：填到 GitHub Secrets（无下载，粘贴）
 
 **本仓库地址：**  
-<https://github.com/poco-ai/Agentero/settings/secrets/actions>  
+<https://github.com/poco-ai/Library/settings/secrets/actions>  
 
 路径：**Settings → Secrets and variables → Actions → New repository secret**
 
@@ -156,7 +156,7 @@ pnpm tauri build
 校验产物：
 
 ```bash
-APP=src-tauri/target/release/bundle/macos/Agentero.app
+APP=src-tauri/target/release/bundle/macos/Library.app
 codesign --verify --deep --strict --verbose=2 "$APP"
 xcrun stapler validate "$APP"
 spctl --assess --type execute --verbose=4 "$APP"
@@ -171,7 +171,7 @@ pnpm tauri build -- --skip-stapling
 产物一般在：
 
 ```text
-src-tauri/target/release/bundle/macos/Agentero.app
+src-tauri/target/release/bundle/macos/Library.app
 src-tauri/target/release/bundle/dmg/…
 ```
 
@@ -181,7 +181,7 @@ src-tauri/target/release/bundle/dmg/…
 
 | 项目 | 说明 |
 |------|------|
-| Bundle ID | `com.poco-ai.agentero`（`src-tauri/tauri.conf.json` → `identifier`） |
+| Bundle ID | `workbench.library.app`（`src-tauri/tauri.conf.json` → `identifier`） |
 | Entitlements | `src-tauri/Entitlements.plist`（Hardened Runtime：JIT 等；**无** App Sandbox） |
 | Info.plist | `src-tauri/Info.plist`（`ITSAppUsesNonExemptEncryption=false`） |
 | 最低系统 | macOS 12.0（`bundle.macOS.minimumSystemVersion`） |
@@ -229,7 +229,7 @@ src-tauri/target/release/bundle/dmg/…
 - [ ] `security find-identity` 能看到 `Developer ID Application: …`  
 - [ ] 第三步 `.p12` / base64 已导出  
 - [ ] 第四步 API Key（Issuer / Key ID / `.p8`）已保存  
-- [ ] 第五步 [GitHub Secrets](https://github.com/poco-ai/Agentero/settings/secrets/actions) 六项已填  
+- [ ] 第五步 [GitHub Secrets](https://github.com/poco-ai/Library/settings/secrets/actions) 六项已填  
 - [ ] （可选）第六步本机 `pnpm tauri build` + `codesign` / `spctl` 通过  
 - [ ] 推送 `vX.Y.Z` tag，Release 中 macOS 产物已签名且可直接打开  
 

@@ -438,7 +438,7 @@ export async function runToolLifecycle(
 export type UninstallInfo = {
 	/** Complete `npm uninstall` commands (best-effort), mirroring install. */
 	npmCommands: string[];
-	/** Agentero-managed directories to delete (e.g. dsh launcher, kimi code). */
+	/** Library-managed directories to delete (e.g. dsh launcher, kimi code). */
 	dirs: string[];
 };
 
@@ -709,7 +709,7 @@ export async function listenAgentCollaboration(
 	return listenAgentEvent("agent:collaboration", handler);
 }
 
-const MODEL_PREF_KEY = "agentero-agent-model-pref";
+const MODEL_PREF_KEY = "library-agent-model-pref";
 
 /** Persist last chosen model id per agent. */
 export function loadModelPref(agentId: string | null): string | null {
@@ -724,7 +724,7 @@ export function saveModelPref(agentId: string, modelId: string): void {
 	writeJsonStorage(MODEL_PREF_KEY, map);
 }
 
-const COLLABORATION_PREF_KEY = "agentero-agent-collaboration-pref";
+const COLLABORATION_PREF_KEY = "library-agent-collaboration-pref";
 
 /** Persist last chosen collaboration mode (default / plan) per agent. */
 export function loadCollaborationPref(agentId: string | null): string | null {
@@ -748,7 +748,7 @@ export function saveCollaborationPref(
 	writeJsonStorage(COLLABORATION_PREF_KEY, map);
 }
 
-const MODEL_FAVORITES_KEY = "agentero-agent-model-favorites";
+const MODEL_FAVORITES_KEY = "library-agent-model-favorites";
 
 /** Per-agent ordered list of favorited model ids. */
 export function loadModelFavorites(agentId: string | null): string[] {
@@ -770,7 +770,7 @@ export function saveModelFavorites(agentId: string, ids: string[]): void {
 	writeJsonStorage(MODEL_FAVORITES_KEY, map);
 }
 
-const MODEL_CATALOG_KEY = "agentero-agent-model-catalog";
+const MODEL_CATALOG_KEY = "library-agent-model-catalog";
 
 export type CachedModelCatalog = {
 	configId: string;

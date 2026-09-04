@@ -43,14 +43,14 @@ import {
 	TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { DocView, type DocViewProps } from "@/components/workspace/doc-view";
-import { AgenteroTabGroupChip } from "@/components/workspace/tab-group-chip";
+import { LibraryTabGroupChip } from "@/components/workspace/tab-group-chip";
 import { cn } from "@/lib/core/utils";
 import { isLibraryVirtualPath, isTrashVirtualPath } from "@/lib/paper/api";
 import { moveDocToWindow } from "@/lib/shell/leaf";
 import { TAG_COLOR_IDS, tagSwatchStyle } from "@/lib/ui/tag-colors";
 import { installDockviewDragSelectionGuard } from "@/lib/workspace/dockview-drag-selection";
 import { installDockviewSashFrameLoop } from "@/lib/workspace/dockview-sash";
-import { agenteroDockTheme } from "@/lib/workspace/dockview-theme";
+import { libraryDockTheme } from "@/lib/workspace/dockview-theme";
 import {
 	isSplitDragPayload,
 	readDraggedVaultPaths,
@@ -917,13 +917,13 @@ export const DockWorkspace = memo(
 				<div
 					ref={workspaceRootRef}
 					className={cn(
-						"agentero-dockview agentero-dock-global h-full min-h-0 min-w-0 w-full",
+						"library-dockview library-dock-global h-full min-h-0 min-w-0 w-full",
 						className,
 					)}
 				>
 					<DockviewReact
 						className="h-full w-full"
-						theme={agenteroDockTheme}
+						theme={libraryDockTheme}
 						components={components}
 						tabComponents={tabComponents}
 						defaultTabComponent={WorkspaceTab}
@@ -938,7 +938,7 @@ export const DockWorkspace = memo(
 						keyboardNavigation
 						tabGroupAccent="palette"
 						tabGroupColors={tabGroupColors}
-						tabGroupChipComponent={AgenteroTabGroupChip}
+						tabGroupChipComponent={LibraryTabGroupChip}
 						getTabContextMenuItems={getTabContextMenuItems}
 						getTabGroupChipContextMenuItems={getTabGroupChipContextMenuItems}
 						onReady={onReady}

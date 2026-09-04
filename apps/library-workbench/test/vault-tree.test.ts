@@ -131,7 +131,7 @@ describe("shouldIgnoreTreeName", () => {
 	it("skips VCS, cache, venv, and Host-only dirs", () => {
 		for (const n of [
 			".git",
-			".agentero",
+			".library",
 			".venv",
 			"venv",
 			"node_modules",
@@ -298,7 +298,7 @@ describe("collectTreeRefreshTargets", () => {
 		expect(
 			collectTreeRefreshTargets(refreshTree, "/v", [
 				"/v/papers/x/.git/config",
-				"/v/.agentero/catalog.sqlite",
+				"/v/.library/catalog.sqlite",
 				"/other/vault/file.md",
 			]),
 		).toEqual([]);

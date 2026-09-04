@@ -31,7 +31,7 @@ import {
 type LinkEl = TElement & {
 	url?: string;
 	/** Set on slash/context-menu insert; cleared after the edit popover opens. */
-	agenteroEditId?: string;
+	libraryEditId?: string;
 };
 
 function openIfExternal(url: string) {
@@ -50,7 +50,7 @@ export function ExternalLinkElement(props: PlateElementProps) {
 	const linkElement = useElement<LinkEl>();
 	const readOnly = useReadOnly();
 	const url = (element as LinkEl).url ?? "";
-	const editId = (linkElement as LinkEl).agenteroEditId;
+	const editId = (linkElement as LinkEl).libraryEditId;
 	const [open, setOpen] = useState(false);
 	const [draftLabel, setDraftLabel] = useState("");
 	const [draftUrl, setDraftUrl] = useState(url);
@@ -71,7 +71,7 @@ export function ExternalLinkElement(props: PlateElementProps) {
 		setDraftUrl((linkElement as LinkEl).url ?? "");
 	}, [open, linkElement]);
 
-	// Slash / context-menu insert stamps `agenteroEditId` + editor pending id.
+	// Slash / context-menu insert stamps `libraryEditId` + editor pending id.
 	// Open once when they match. Pending is cleared only when we actually open
 	// (so Strict Mode remount / effect cleanup cannot drop the request early).
 	useEffect(() => {

@@ -11,9 +11,9 @@ use std::time::{Duration, Instant};
 /// The repo + mailto contacts keep Crossref / Semantic Scholar requests in
 /// their polite pools.
 pub const USER_AGENT: &str = concat!(
-    "Agentero/",
+    "Library/",
     env!("CARGO_PKG_VERSION"),
-    " (+https://github.com/poco-ai/agentero; mailto:agentero@users.noreply.github.com)"
+    " (+https://github.com/poco-ai/library; mailto:library@users.noreply.github.com)"
 );
 
 /// Browser-like UA for endpoints that reject non-browser agents with HTTP 403
@@ -232,7 +232,7 @@ pub fn client_builder() -> reqwest::ClientBuilder {
         Some(url) => match reqwest::Proxy::all(&url) {
             Ok(proxy) => builder.proxy(proxy),
             Err(error) => {
-                log::error!(target: "agentero::network", "invalid configured proxy: {error}");
+                log::error!(target: "library::network", "invalid configured proxy: {error}");
                 builder
             }
         },

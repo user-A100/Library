@@ -9,7 +9,7 @@ import {
 } from "@/lib/markdown/external-link-insert";
 
 describe("external link auto-open request", () => {
-	it("stamps agenteroEditId on the node and registers the same pending id", () => {
+	it("stamps libraryEditId on the node and registers the same pending id", () => {
 		const editor = createSlateEditor({
 			plugins: [ParagraphPlugin, LinkPlugin],
 			value: [{ type: "p", children: [{ text: "x" }] }],
@@ -27,9 +27,9 @@ describe("external link auto-open request", () => {
 			editor.children[0] as { children: Array<Record<string, unknown>> }
 		).children;
 		const link = children.find((c) => c.type === KEYS.a) as {
-			agenteroEditId?: string;
+			libraryEditId?: string;
 		};
-		expect(link.agenteroEditId).toBe(result.editId);
+		expect(link.libraryEditId).toBe(result.editId);
 		expect(peekExternalLinkEditId(editor)).toBe(result.editId);
 		// Simulates component opening once
 		clearExternalLinkEditRequest(editor, result.editId!);

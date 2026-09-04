@@ -9,9 +9,9 @@ import { layoutModelLocalUrl } from "@/lib/pdf/layout/model";
  * Created once: loads ONNX Runtime on demand.
  *
  * In Tauri, the ONNX file lives under XDG cache
- * (`$XDG_CACHE_HOME/agentero/models/pp-doclayoutv3.onnx`), prefetched at
+ * (`$XDG_CACHE_HOME/library/models/pp-doclayoutv3.onnx`), prefetched at
  * app startup (ModelScope first, HuggingFace fallback) and served via the
- * `agentero-model` custom protocol. Browser Cache API is disabled so we do
+ * `library-model` custom protocol. Browser Cache API is disabled so we do
  * not double-cache the Host-managed file.
  */
 let runtime: AiRuntime | null = null;

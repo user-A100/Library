@@ -1,6 +1,6 @@
 # Agent & Skills
 
-Agentero uses **BYOA** (Bring Your Own Agent): you install and log in to an ACP-compatible agent on your machine, and Agentero passes the current Vault context to it. You do not need to enter a model API key in Agentero.
+Library uses **BYOA** (Bring Your Own Agent): you install and log in to an ACP-compatible agent on your machine, and Library passes the current Vault context to it. You do not need to enter a model API key in Library.
 
 ## Agent Panel
 
@@ -30,15 +30,15 @@ Edit the corresponding `SKILL.md` directly.
 
 Create a new folder under `.agents/skills/` and add a `SKILL.md` file.
 
-Alternatively, paste the URL of a Skill into the Magic Wand. Agentero downloads and installs it automatically.
+Alternatively, paste the URL of a Skill into the Magic Wand. Library downloads and installs it automatically.
 
 ### Bundled Skills
 
 Bundled Skills include:
 
 - `paper-reader` — deep-read a paper and write `NOTES.md`.
-- `agentero-cli` — run Vault operations through the CLI.
-- `vault-normalizer` — reorganize an existing research directory into the Agentero Vault layout.
+- `library-cli` — run Vault operations through the CLI.
+- `vault-normalizer` — reorganize an existing research directory into the Library Vault layout.
 - `deep-research` — conduct multi-step research with citations.
 - `idea-evaluator` — evaluate research ideas from multiple perspectives.
 

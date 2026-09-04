@@ -136,7 +136,7 @@ export function PlazaSkillsView({ className }: { className?: string }) {
 	return (
 		<div
 			className={cn(
-				"agentero-scroll h-full select-none overflow-y-auto p-4",
+				"library-scroll h-full select-none overflow-y-auto p-4",
 				className,
 			)}
 		>

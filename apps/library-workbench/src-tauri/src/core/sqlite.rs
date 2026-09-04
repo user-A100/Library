@@ -10,7 +10,7 @@ use crate::core::error::AppError;
 use rusqlite::Connection;
 use std::path::Path;
 
-/// Standard PRAGMA batch applied right after every Agentero database open.
+/// Standard PRAGMA batch applied right after every Library database open.
 /// WAL lets readers proceed while the app writes; `busy_timeout` absorbs
 /// short lock contention instead of failing commands immediately.
 pub const STANDARD_PRAGMAS: &str = "PRAGMA journal_mode = WAL;\n\
@@ -111,7 +111,7 @@ mod tests {
     #[test]
     fn open_applies_pragmas_and_keeps_historical_error_wording() {
         let dir = std::env::temp_dir().join(format!(
-            "agentero-core-sqlite-{}-{}",
+            "library-core-sqlite-{}-{}",
             std::process::id(),
             std::time::SystemTime::now()
                 .duration_since(std::time::UNIX_EPOCH)

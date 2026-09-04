@@ -1,13 +1,13 @@
-//! `agentero paper *`
+//! `library paper *`
 
 use crate::error::CliError;
 use crate::output::to_value;
 use crate::resolve::{paper_dir, resolve_paper, resolve_vault, GlobalOpts};
 use crate::style::{format_table, truncate_chars};
-use agentero_lib::features::catalog;
-use agentero_lib::features::catalog::papers::{self, PaperRecord, PaperTag};
-use agentero_lib::features::import::pdf_parse::{self, PaperParseBodyArgs};
-use agentero_lib::features::import::{self, PaperDownloadAssetsArgs};
+use library_lib::features::catalog;
+use library_lib::features::catalog::papers::{self, PaperRecord, PaperTag};
+use library_lib::features::import::pdf_parse::{self, PaperParseBodyArgs};
+use library_lib::features::import::{self, PaperDownloadAssetsArgs};
 use clap::{Subcommand, ValueHint};
 use serde::Serialize;
 use serde_json::{json, Value};
@@ -589,7 +589,7 @@ fn delete(globals: &GlobalOpts, path: &str, files: bool) -> Result<Value, CliErr
         }));
     }
 
-    let result = agentero_lib::features::trash::trash_paths(&vault, std::slice::from_ref(&path))?;
+    let result = library_lib::features::trash::trash_paths(&vault, std::slice::from_ref(&path))?;
     Ok(json!({
         "batchId": result.batch_id,
         "count": result.count,

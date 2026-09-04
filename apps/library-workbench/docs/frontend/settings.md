@@ -7,7 +7,7 @@
 - 开/关：`⌘,`、菜单、齿轮；`Esc` / 标题栏 X 关闭。
 - 不查询或展示本机 hostname / OS 身份。
 - 保存：`settings_set` → 广播 `settings:changed` 跨窗口同步。
-- 落盘：XDG `$XDG_CONFIG_HOME/agentero/settings.json`。
+- 落盘：XDG `$XDG_CONFIG_HOME/library/settings.json`。
 - 加载策略：设置 webview 不加载完整 `App`，也不加载 PDF 引擎与 KaTeX（二者随 `App` 动态 import）。各分区 pane 按 `lazy()` 分 chunk；**当前分区**的 pane 与外壳并行预热（`preloadSettingsPane`），避免窗口刚可交互时才去拉 pane 而卡一下；其余分区首次访问才加载，已访问的保持挂载。
 - 通用页的「网络代理」是 Host 级配置，启用后用于 Host 创建的 HTTP(S)/SOCKS 请求，并同步注入本地与远端 Agent 进程的 `HTTP_PROXY` / `HTTPS_PROXY` / `ALL_PROXY`。旧版 Settings → Agent 的代理配置会在首次启动时迁移。
 
@@ -21,11 +21,11 @@
 | 翻译 | 默认服务选择、商用 API 配置、语言与 Agent 座 |
 | 同步 | S3 兼容云同步配置、顶部常见服务商 logo 打开官方配置指南、自动同步、同步范围逐类开关；标题旁色点显示未连接 / 已连接 / 同步中 / 错误，标题右侧放置连接 / 保存 / 立即同步主操作，底部仅保留解绑 |
 | 知识库诊断 | Vault / Catalog / 双链 / 论文 aliases / 视觉批注格式；本地 Vault 可确认批量修复 |
-| 关于 | 版本信息与应用更新、CLI 安装/卸载（状态行由结构化字段推导并全部走 i18n，不直接展示后端英文 message；安装/卸载失败 Toast 带真实错误原因；安装成功后展示可复制的验证命令 `agentero(-cli) --version`，Windows 额外说明已自动加入用户 PATH、开新终端即可、无需重启）、「打开日志文件夹」（`appLogDir()` + opener，便于报错时上传日志）；标题右侧「Star us on GitHub」打开仓库 |
+| 关于 | 版本信息与应用更新、CLI 安装/卸载（状态行由结构化字段推导并全部走 i18n，不直接展示后端英文 message；安装/卸载失败 Toast 带真实错误原因；安装成功后展示可复制的验证命令 `library(-cli) --version`，Windows 额外说明已自动加入用户 PATH、开新终端即可、无需重启）、「打开日志文件夹」（`appLogDir()` + opener，便于报错时上传日志）；标题右侧「Star us on GitHub」打开仓库 |
 
 知识库诊断页调用 Host 的只读 Doctor 报告。检查项各自作为小标题（带一行检测说明），标题行右侧显示 icon + 问题数；模块间用非通栏次要分隔线。列表过长时（双链 / 别名 / 视觉批注）`max-h` 内滚动。视觉批注一节可将旧版 `agent-trace` mark 一键升级为 `visual` v2。
 
-- **论文别名**：勾选与编辑标题/短 alias，标题行「修复」→ 确认后批量写入 frontmatter（不改 path）。单行「忽略」或「忽略所选」把路径写入 Vault `.agentero/doctor.json`，下次诊断不再报错；列表底部可恢复。
+- **论文别名**：勾选与编辑标题/短 alias，标题行「修复」→ 确认后批量写入 frontmatter（不改 path）。单行「忽略」或「忽略所选」把路径写入 Vault `.library/doctor.json`，下次诊断不再报错；列表底部可恢复。
 - **双链语义**：
   1. 「探测」→ 自动建议（默认勾选）+ 可手改候选项（默认不勾选）；
   2. 每条 git 风格整行 diff：核心变更居中高亮，按设置窗宽度窗口化前后文；
@@ -67,7 +67,7 @@
   - `standard`（默认）：aliases + `# 标题` + 摘要引用块（zh-CN 机翻，失败省略）。
   - `title-only`：aliases + `# 标题`，不写摘要。
   - `blank`：仅 aliases frontmatter。
-  - `custom`：渲染 vault 内 `.agentero/templates/NOTES.md`（变量 `{{title}} {{authors}} {{year}} {{date}} {{abstract}} {{arxiv_id}} {{doi}} {{url}} {{id}}`，`{{abstract}}` 为原文不翻译，未知变量原样保留；模板缺失回退 standard）。选中该项时显示模板路径与「生成起始模板」按钮（`notes_template_seed`，仅当模板不存在时写入）。
+  - `custom`：渲染 vault 内 `.library/templates/NOTES.md`（变量 `{{title}} {{authors}} {{year}} {{date}} {{abstract}} {{arxiv_id}} {{doi}} {{url}} {{id}}`，`{{abstract}}` 为原文不翻译，未知变量原样保留；模板缺失回退 standard）。选中该项时显示模板路径与「生成起始模板」按钮（`notes_template_seed`，仅当模板不存在时写入）。
   - 所有模式产物都保证含 aliases frontmatter；只影响新导入，不改存量笔记。
 
 ## i18n

@@ -66,7 +66,7 @@ export async function migrateHighlightMarks(
 			strokeColor: HIGHLIGHT_HEX[color],
 			opacity: HIGHLIGHT_OPACITY,
 			created: new Date(h.createdAt),
-			custom: { app: "agentero", paletteKey: color, quote: h.quote },
+			custom: { app: "library", paletteKey: color, quote: h.quote },
 		};
 		if (h.comment?.trim()) obj.contents = h.comment.trim();
 		items.push({ annotation: obj });

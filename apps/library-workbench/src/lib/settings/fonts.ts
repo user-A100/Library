@@ -75,13 +75,13 @@ export function resolveFontFamilyCss(
 
 /**
  * CSS custom properties consumed by @theme (see src/index.css).
- * Utilities are inlined as `var(--agentero-font-*)`, so runtime overrides here
+ * Utilities are inlined as `var(--library-font-*)`, so runtime overrides here
  * actually change chrome / mono UI. Do not set --font-sans alone — Tailwind
  * does not re-read that for .font-sans when using @theme inline.
  */
-const CSS_VAR_SANS = "--agentero-font-sans";
-const CSS_VAR_HEADING = "--agentero-font-heading";
-const CSS_VAR_MONO = "--agentero-font-mono";
+const CSS_VAR_SANS = "--library-font-sans";
+const CSS_VAR_HEADING = "--library-font-heading";
+const CSS_VAR_MONO = "--library-font-mono";
 
 /**
  * Apply interface + mono CSS variables on `documentElement`.

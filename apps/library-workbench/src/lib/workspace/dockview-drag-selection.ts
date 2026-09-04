@@ -1,6 +1,6 @@
 import type { DockviewApi } from "dockview-react";
 
-export const DOCKVIEW_DRAGGING_CLASS = "agentero-dockview-dragging";
+export const DOCKVIEW_DRAGGING_CLASS = "library-dockview-dragging";
 
 type DockviewDragApi = Pick<DockviewApi, "onWillDragGroup" | "onWillDragPanel">;
 

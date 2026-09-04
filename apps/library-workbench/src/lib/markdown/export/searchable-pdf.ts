@@ -22,7 +22,7 @@ import {
 	rgb,
 	StandardFonts,
 } from "pdf-lib";
-import agenteroAppIconUrl from "@/assets/agentero-app-icon.svg";
+import libraryAppIconUrl from "@/assets/library-app-icon.svg";
 import type { ExportTextLayer } from "@/lib/markdown/export/text-layer";
 
 /** A4 in PDF points (1/72"). */
@@ -68,7 +68,7 @@ function loadImage(src: string): Promise<HTMLImageElement> {
 
 async function loadWatermarkLogoPng(sizePx = 64): Promise<Uint8Array | null> {
 	try {
-		const logo = await loadImage(agenteroAppIconUrl);
+		const logo = await loadImage(libraryAppIconUrl);
 		const canvas = document.createElement("canvas");
 		canvas.width = sizePx;
 		canvas.height = sizePx;

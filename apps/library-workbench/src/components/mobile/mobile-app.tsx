@@ -1,7 +1,7 @@
 import { ArrowLeft, Search } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import agenteroLogo from "@/assets/agentero-logo.svg";
+import libraryLogo from "@/assets/library-logo.svg";
 import { useBridgeStatus } from "@/components/mobile/hooks/use-bridge-status";
 import { useMobileAgents } from "@/components/mobile/hooks/use-mobile-agents";
 import { useMobilePapers } from "@/components/mobile/hooks/use-mobile-papers";
@@ -232,5 +232,5 @@ export default function MobileApp() {
 }
 
 function MobileBrand() {
-	return <img src={agenteroLogo} alt="Agentero" className="size-8" />;
+	return <img src={libraryLogo} alt="Library" className="size-8" />;
 }

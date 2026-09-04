@@ -1,4 +1,4 @@
-//! Integration tests for agentero CLI MVP (offline; no Translator).
+//! Integration tests for library CLI MVP (offline; no Translator).
 
 use assert_cmd::cargo::cargo_bin_cmd;
 use predicates::prelude::*;
@@ -7,13 +7,13 @@ use std::fs;
 use std::path::Path;
 use tempfile::tempdir;
 
-fn agentero() -> assert_cmd::Command {
-    // Cargo bin name is `agentero-cli` (avoids colliding with the GUI bin).
-    cargo_bin_cmd!("agentero-cli")
+fn library() -> assert_cmd::Command {
+    // Cargo bin name is `library-cli` (avoids colliding with the GUI bin).
+    cargo_bin_cmd!("library-cli")
 }
 
 fn create_vault(dir: &Path) {
-    agentero()
+    library()
         .args(["vault", "create", dir.to_str().unwrap(), "--json"])
         .assert()
         .success()
@@ -78,9 +78,9 @@ fn vault_create_which_info_check() {
     create_vault(&vault);
 
     assert!(vault.join("papers").is_dir());
-    assert!(vault.join(".agentero").join("catalog.sqlite").is_file());
+    assert!(vault.join(".library").join("catalog.sqlite").is_file());
     assert!(vault.join("AGENTS.md").is_file());
-    assert!(vault.join(".agents/skills/agentero-cli/SKILL.md").is_file());
+    assert!(vault.join(".agents/skills/library-cli/SKILL.md").is_file());
     assert!(vault.join(".agents/skills/paper-reader/SKILL.md").is_file());
     assert!(vault
         .join(".agents/skills/idea-evaluator/SKILL.md")
@@ -90,7 +90,7 @@ fn vault_create_which_info_check() {
         .is_file());
     assert!(vault.join(".agents/skills/README.md").is_file());
 
-    let which = agentero()
+    let which = library()
         .args([
             "--vault",
             vault.to_str().unwrap(),
@@ -107,7 +107,7 @@ fn vault_create_which_info_check() {
     assert_eq!(v["ok"], true);
     assert!(v["data"]["path"].as_str().unwrap().contains("v"));
 
-    let info = agentero()
+    let info = library()
         .args([
             "--vault",
             vault.to_str().unwrap(),
@@ -124,7 +124,7 @@ fn vault_create_which_info_check() {
     assert_eq!(v["ok"], true);
     assert_eq!(v["data"]["counts"]["papers"], 0);
 
-    agentero()
+    library()
         .args([
             "--vault",
             vault.to_str().unwrap(),
@@ -142,7 +142,7 @@ fn paper_list_empty_and_set_read_not_found() {
     let vault = tmp.path().join("v");
     create_vault(&vault);
 
-    let out = agentero()
+    let out = library()
         .args([
             "--vault",
             vault.to_str().unwrap(),
@@ -159,7 +159,7 @@ fn paper_list_empty_and_set_read_not_found() {
     assert_eq!(v["ok"], true);
     assert!(v["data"].as_array().unwrap().is_empty());
 
-    agentero()
+    library()
         .args([
             "--vault",
             vault.to_str().unwrap(),
@@ -180,17 +180,17 @@ fn paper_crud_catalog_only() {
     create_vault(&vault);
 
     // Seed a catalog row via service path: write minimal paper folder + use SQL through second create
-    // Insert via agentero is only import (network). Seed with direct SQLite for unit-ish coverage.
+    // Insert via library is only import (network). Seed with direct SQLite for unit-ish coverage.
     let paper = vault.join("papers").join("demo");
     fs::create_dir_all(&paper).unwrap();
     fs::write(paper.join("NOTES.md"), "# Demo\n").unwrap();
 
-    // Use `agentero` only for operations that hit services — seed with rusqlite in-process via
+    // Use `library` only for operations that hit services — seed with rusqlite in-process via
     // creating through vault is enough if we call paper list after manual catalog upsert.
     // Here we shell out to a tiny approach: open catalog and insert like Host would.
     seed_paper(&vault, "papers/demo", "demo", "Demo Paper");
 
-    let list = agentero()
+    let list = library()
         .args([
             "--vault",
             vault.to_str().unwrap(),
@@ -207,7 +207,7 @@ fn paper_crud_catalog_only() {
     assert_eq!(v["data"].as_array().unwrap().len(), 1);
     assert_eq!(v["data"][0]["id"], "demo");
 
-    let get = agentero()
+    let get = library()
         .args([
             "--vault",
             vault.to_str().unwrap(),
@@ -238,7 +238,7 @@ fn paper_crud_catalog_only() {
     )
     .unwrap();
 
-    let get_marks = agentero()
+    let get_marks = library()
         .args([
             "--vault",
             vault.to_str().unwrap(),
@@ -259,7 +259,7 @@ fn paper_crud_catalog_only() {
         .iter()
         .any(|r| r.as_str() == Some("papers/demo/marks")));
 
-    let paths = agentero()
+    let paths = library()
         .args([
             "--vault",
             vault.to_str().unwrap(),
@@ -282,7 +282,7 @@ fn paper_crud_catalog_only() {
         .iter()
         .any(|p| p.as_str() == Some("papers/demo/marks")));
 
-    agentero()
+    library()
         .args([
             "--vault",
             vault.to_str().unwrap(),
@@ -294,7 +294,7 @@ fn paper_crud_catalog_only() {
         .assert()
         .success();
 
-    let get2 = agentero()
+    let get2 = library()
         .args([
             "--vault",
             vault.to_str().unwrap(),
@@ -312,7 +312,7 @@ fn paper_crud_catalog_only() {
     assert_eq!(v["data"]["paper"]["is_read"], true);
 
     // Tags: replace → list filter → add → rm → tag list inventory
-    agentero()
+    library()
         .args([
             "--vault",
             vault.to_str().unwrap(),
@@ -327,7 +327,7 @@ fn paper_crud_catalog_only() {
         .assert()
         .success();
 
-    let tagged = agentero()
+    let tagged = library()
         .args([
             "--vault",
             vault.to_str().unwrap(),
@@ -348,7 +348,7 @@ fn paper_crud_catalog_only() {
     assert_eq!(v["data"][0]["tags"][0], "nlp");
     assert_eq!(v["data"][0]["tags"][1], "survey");
 
-    let no_tag = agentero()
+    let no_tag = library()
         .args([
             "--vault",
             vault.to_str().unwrap(),
@@ -366,7 +366,7 @@ fn paper_crud_catalog_only() {
     let v: Value = serde_json::from_slice(&no_tag).unwrap();
     assert!(v["data"].as_array().unwrap().is_empty());
 
-    agentero()
+    library()
         .args([
             "--vault",
             vault.to_str().unwrap(),
@@ -379,7 +379,7 @@ fn paper_crud_catalog_only() {
         ])
         .assert()
         .success();
-    agentero()
+    library()
         .args([
             "--vault",
             vault.to_str().unwrap(),
@@ -393,7 +393,7 @@ fn paper_crud_catalog_only() {
         .assert()
         .success();
 
-    let get_tags = agentero()
+    let get_tags = library()
         .args([
             "--vault",
             vault.to_str().unwrap(),
@@ -413,7 +413,7 @@ fn paper_crud_catalog_only() {
     assert!(tags.iter().any(|t| t.as_str() == Some("draft")));
     assert!(!tags.iter().any(|t| t.as_str() == Some("survey")));
 
-    agentero()
+    library()
         .args([
             "--vault",
             vault.to_str().unwrap(),
@@ -427,7 +427,7 @@ fn paper_crud_catalog_only() {
         ])
         .assert()
         .success();
-    let colored = agentero()
+    let colored = library()
         .args([
             "--vault",
             vault.to_str().unwrap(),
@@ -454,7 +454,7 @@ fn paper_crud_catalog_only() {
         "papers/demo",
         r#"["nlp","draft",{"name":"@zotero:imported"},{"name":"Computer Science - Machine Learning"}]"#,
     );
-    let hidden = agentero()
+    let hidden = library()
         .args([
             "--vault",
             vault.to_str().unwrap(),
@@ -472,7 +472,7 @@ fn paper_crud_catalog_only() {
     let hidden: Value = serde_json::from_slice(&hidden).unwrap();
     assert!(hidden["data"].as_array().unwrap().is_empty());
 
-    let all = agentero()
+    let all = library()
         .args([
             "--vault",
             vault.to_str().unwrap(),
@@ -491,7 +491,7 @@ fn paper_crud_catalog_only() {
     let all: Value = serde_json::from_slice(&all).unwrap();
     assert_eq!(all["data"].as_array().unwrap().len(), 1);
 
-    let arxiv_hidden = agentero()
+    let arxiv_hidden = library()
         .args([
             "--vault",
             vault.to_str().unwrap(),
@@ -509,7 +509,7 @@ fn paper_crud_catalog_only() {
     let arxiv_hidden: Value = serde_json::from_slice(&arxiv_hidden).unwrap();
     assert!(arxiv_hidden["data"].as_array().unwrap().is_empty());
 
-    let arxiv_all = agentero()
+    let arxiv_all = library()
         .args([
             "--vault",
             vault.to_str().unwrap(),
@@ -528,7 +528,7 @@ fn paper_crud_catalog_only() {
     let arxiv_all: Value = serde_json::from_slice(&arxiv_all).unwrap();
     assert_eq!(arxiv_all["data"].as_array().unwrap().len(), 1);
 
-    let tags_idx = agentero()
+    let tags_idx = library()
         .args([
             "--vault",
             vault.to_str().unwrap(),
@@ -558,7 +558,7 @@ fn paper_crud_catalog_only() {
         .any(|it| it["tag"].as_str() == Some("@zotero:imported")));
 
     // clear requires --clear (empty args alone is a usage error)
-    agentero()
+    library()
         .args([
             "--vault",
             vault.to_str().unwrap(),
@@ -570,7 +570,7 @@ fn paper_crud_catalog_only() {
         ])
         .assert()
         .failure();
-    agentero()
+    library()
         .args([
             "--vault",
             vault.to_str().unwrap(),
@@ -584,7 +584,7 @@ fn paper_crud_catalog_only() {
         .assert()
         .success();
 
-    let delete = agentero()
+    let delete = library()
         .args([
             "--vault",
             vault.to_str().unwrap(),
@@ -599,7 +599,7 @@ fn paper_crud_catalog_only() {
     let delete: Value = serde_json::from_slice(&delete.get_output().stdout).unwrap();
     let batch_id = delete["data"]["batchId"].as_str().unwrap();
 
-    let trash = agentero()
+    let trash = library()
         .args([
             "--vault",
             vault.to_str().unwrap(),
@@ -614,7 +614,7 @@ fn paper_crud_catalog_only() {
         .clone();
     let trash: Value = serde_json::from_slice(&trash).unwrap();
     let stored = trash["data"]["items"][0]["stored"].as_str().unwrap();
-    agentero()
+    library()
         .args([
             "--vault",
             vault.to_str().unwrap(),
@@ -628,7 +628,7 @@ fn paper_crud_catalog_only() {
         .success();
     assert!(paper.join("NOTES.md").is_file());
 
-    let list2 = agentero()
+    let list2 = library()
         .args([
             "--vault",
             vault.to_str().unwrap(),
@@ -644,7 +644,7 @@ fn paper_crud_catalog_only() {
     let v: Value = serde_json::from_slice(&list2).unwrap();
     assert_eq!(v["data"].as_array().unwrap().len(), 1);
 
-    agentero()
+    library()
         .args([
             "--vault",
             vault.to_str().unwrap(),
@@ -655,7 +655,7 @@ fn paper_crud_catalog_only() {
         ])
         .assert()
         .success();
-    agentero()
+    library()
         .args([
             "--vault",
             vault.to_str().unwrap(),
@@ -677,7 +677,7 @@ fn paper_list_json_slim_by_default_fields_and_full() {
     seed_paper(&vault, "papers/demo", "demo", "Demo Paper");
 
     // Default: only id/path/title, compact single line (token-cheap for agents).
-    let out = agentero()
+    let out = library()
         .args([
             "--vault",
             vault.to_str().unwrap(),
@@ -703,7 +703,7 @@ fn paper_list_json_slim_by_default_fields_and_full() {
     assert_eq!(keys, ["id", "path", "title"]);
 
     // --fields adds requested keys on top of id/path/title.
-    let out = agentero()
+    let out = library()
         .args([
             "--vault",
             vault.to_str().unwrap(),
@@ -724,7 +724,7 @@ fn paper_list_json_slim_by_default_fields_and_full() {
     assert_eq!(row["is_read"], false);
 
     // --full restores the whole PaperRecord.
-    let out = agentero()
+    let out = library()
         .args([
             "--vault",
             vault.to_str().unwrap(),
@@ -742,7 +742,7 @@ fn paper_list_json_slim_by_default_fields_and_full() {
     assert!(v["data"][0]["added_at"].as_str().is_some());
 
     // Unknown field → usage error.
-    agentero()
+    library()
         .args([
             "--vault",
             vault.to_str().unwrap(),
@@ -757,7 +757,7 @@ fn paper_list_json_slim_by_default_fields_and_full() {
         .stdout(predicate::str::contains("unknown field"));
 
     // --pretty opts back into indented JSON.
-    agentero()
+    library()
         .args([
             "--vault",
             vault.to_str().unwrap(),
@@ -778,14 +778,14 @@ fn tree_and_vault_resolve_from_cwd() {
     create_vault(&vault);
     fs::write(vault.join("notes").join("a.md"), "hi").unwrap();
 
-    agentero()
+    library()
         .current_dir(&vault)
         .args(["tree", "--json"])
         .assert()
         .success()
         .stdout(predicate::str::contains("notes"));
 
-    agentero()
+    library()
         .current_dir(&vault)
         .args(["vault", "which", "--json"])
         .assert()
@@ -802,7 +802,7 @@ fn paper_move_updates_filesystem_and_catalog() {
     fs::create_dir_all(vault.join("papers/archive")).unwrap();
     seed_paper(&vault, "papers/inbox/demo", "demo", "Demo");
 
-    agentero()
+    library()
         .args([
             "--vault",
             vault.to_str().unwrap(),
@@ -817,7 +817,7 @@ fn paper_move_updates_filesystem_and_catalog() {
 
     assert!(!vault.join("papers/inbox/demo").exists());
     assert!(vault.join("papers/archive/demo").is_dir());
-    let listed = agentero()
+    let listed = library()
         .args([
             "--vault",
             vault.to_str().unwrap(),
@@ -844,7 +844,7 @@ fn paper_move_creates_parent_rejects_conflict_and_escape() {
     seed_paper(&vault, "papers/inbox/demo", "demo", "Demo");
 
     // Missing dest parent is created.
-    agentero()
+    library()
         .args([
             "--vault",
             vault.to_str().unwrap(),
@@ -858,7 +858,7 @@ fn paper_move_creates_parent_rejects_conflict_and_escape() {
         .success();
     assert!(vault.join("papers/new-shelf/demo").is_dir());
     assert!(vault.join("papers/new-shelf").is_dir());
-    let listed = agentero()
+    let listed = library()
         .args([
             "--vault",
             vault.to_str().unwrap(),
@@ -877,7 +877,7 @@ fn paper_move_creates_parent_rejects_conflict_and_escape() {
     // Conflict: destination already occupied.
     fs::create_dir_all(vault.join("papers/other/demo")).unwrap();
     seed_paper(&vault, "papers/other/demo", "other", "Other");
-    agentero()
+    library()
         .args([
             "--vault",
             vault.to_str().unwrap(),
@@ -892,7 +892,7 @@ fn paper_move_creates_parent_rejects_conflict_and_escape() {
         .stdout(predicate::str::contains("already exists"));
 
     // Escape: destination must stay under papers/.
-    agentero()
+    library()
         .args([
             "--vault",
             vault.to_str().unwrap(),
@@ -913,8 +913,8 @@ fn open_path_shorthand_and_explicit_dry_run() {
     let dir = tmp.path().join("research");
     fs::create_dir_all(&dir).unwrap();
 
-    let out = agentero()
-        .env("AGENTERO_OPEN_DRY_RUN", "1")
+    let out = library()
+        .env("LIBRARY_OPEN_DRY_RUN", "1")
         .args(["open", dir.to_str().unwrap(), "--json"])
         .assert()
         .success()
@@ -927,11 +927,11 @@ fn open_path_shorthand_and_explicit_dry_run() {
     assert!(v["data"]["url"]
         .as_str()
         .unwrap()
-        .starts_with("agentero://open?path="));
+        .starts_with("library://open?path="));
 
     // Shorthand rewrite: bare directory path → open
-    let out2 = agentero()
-        .env("AGENTERO_OPEN_DRY_RUN", "1")
+    let out2 = library()
+        .env("LIBRARY_OPEN_DRY_RUN", "1")
         .args([dir.to_str().unwrap(), "--json"])
         .assert()
         .success()
@@ -942,9 +942,9 @@ fn open_path_shorthand_and_explicit_dry_run() {
     assert_eq!(v2["ok"], true);
     assert_eq!(v2["data"]["dryRun"], true);
 
-    agentero()
-        .env("AGENTERO_OPEN_DRY_RUN", "1")
-        .args(["open", "/no/such/agentero/path", "--json"])
+    library()
+        .env("LIBRARY_OPEN_DRY_RUN", "1")
+        .args(["open", "/no/such/library/path", "--json"])
         .assert()
         .failure()
         .stdout(predicate::str::contains("does not exist"));
@@ -970,7 +970,7 @@ fn wiki_check_reports_semantic_issues_and_honors_file_scope() {
     )
     .unwrap();
 
-    let clean = agentero()
+    let clean = library()
         .args([
             "--vault",
             vault.to_str().unwrap(),
@@ -990,7 +990,7 @@ fn wiki_check_reports_semantic_issues_and_honors_file_scope() {
     assert_eq!(clean["data"]["counts"]["resolved"], 1);
     assert!(clean["data"]["issues"].as_array().unwrap().is_empty());
 
-    let broken = agentero()
+    let broken = library()
         .args([
             "--vault",
             vault.to_str().unwrap(),
@@ -1024,7 +1024,7 @@ fn wiki_check_reports_semantic_issues_and_honors_file_scope() {
         broken_source
     );
 
-    let paper = agentero()
+    let paper = library()
         .args([
             "--vault",
             vault.to_str().unwrap(),
@@ -1052,7 +1052,7 @@ fn delete_files_requires_yes() {
     fs::create_dir_all(&paper).unwrap();
     seed_paper(&vault, "papers/x", "x", "X");
 
-    agentero()
+    library()
         .args([
             "--vault",
             vault.to_str().unwrap(),
@@ -1066,7 +1066,7 @@ fn delete_files_requires_yes() {
         .failure()
         .stdout(predicate::str::contains("needs_confirmation"));
 
-    agentero()
+    library()
         .args([
             "--vault",
             vault.to_str().unwrap(),
@@ -1111,7 +1111,7 @@ fn doctor_alias_fix_is_confirmed_preserves_content_and_is_idempotent() {
     seed_paper(&vault, "papers/zh", "zh", "一种新的研究方法");
     set_paper_authors_and_year(&vault, "papers/zh", r#"["张三"]"#, 2024);
 
-    let check = agentero()
+    let check = library()
         .args(["--vault", vault.to_str().unwrap(), "doctor", "--json"])
         .assert()
         .failure()
@@ -1142,7 +1142,7 @@ fn doctor_alias_fix_is_confirmed_preserves_content_and_is_idempotent() {
         chinese_original
     );
 
-    let confirmation = agentero()
+    let confirmation = library()
         .args([
             "--vault",
             vault.to_str().unwrap(),
@@ -1160,7 +1160,7 @@ fn doctor_alias_fix_is_confirmed_preserves_content_and_is_idempotent() {
     assert_eq!(confirmation["error"]["code"], "needs_confirmation");
     assert_eq!(fs::read_to_string(&notes_path).unwrap(), original);
 
-    let repaired = agentero()
+    let repaired = library()
         .args([
             "--vault",
             vault.to_str().unwrap(),
@@ -1199,13 +1199,13 @@ fn doctor_alias_fix_is_confirmed_preserves_content_and_is_idempotent() {
     assert!(chinese_updated.contains("  - \"张三 2024\"\n"));
     assert!(chinese_updated.ends_with(chinese_original));
 
-    agentero()
+    library()
         .args(["--vault", vault.to_str().unwrap(), "doctor", "--json"])
         .assert()
         .success()
         .stdout(predicate::str::contains("\"ok\":true"));
 
-    let rerun = agentero()
+    let rerun = library()
         .args([
             "--vault",
             vault.to_str().unwrap(),
@@ -1232,17 +1232,17 @@ fn doctor_alias_fix_is_confirmed_preserves_content_and_is_idempotent() {
 /// Minimal catalog seed without Translator (mirrors papers table columns used by list/get).
 fn seed_paper(vault: &Path, path: &str, id: &str, title: &str) {
     use std::process::Command;
-    // Prefer embedding via agentero_lib in a helper binary — for tests, call sqlite3 if present,
+    // Prefer embedding via library_lib in a helper binary — for tests, call sqlite3 if present,
     // else use a tiny Rust approach: write through the same ensure_catalog by invoking a one-off.
-    // We use the `agentero` crate isn't linked in tests, so open with rusqlite via shell to the CLI's
+    // We use the `library` crate isn't linked in tests, so open with rusqlite via shell to the CLI's
     // dependency is awkward. Use `sqlite3` CLI if available; otherwise write SQL with a small rustc —
     // simplest: use the fact that catalog is created and insert with `rusqlite` as a build-dep.
     //
-    // assert_cmd tests cannot depend on agentero_lib easily without [dev-dependencies] path.
+    // assert_cmd tests cannot depend on library_lib easily without [dev-dependencies] path.
     // Add rusqlite as dev-dep... already only assert_cmd. Use std::process + python?
-    // Fastest robust approach: add agentero_lib as dev-dependency — already transitive.
+    // Fastest robust approach: add library_lib as dev-dependency — already transitive.
     // We'll use raw SQL via the `sqlite3` binary, with fallback to writing a metadata-only approach.
-    let db = vault.join(".agentero").join("catalog.sqlite");
+    let db = vault.join(".library").join("catalog.sqlite");
     let now = "2020-01-01T00:00:00.000Z";
     let sql = format!(
         "INSERT INTO papers (path, id, type, title, authors_json, tags_json, status, added_at, updated_at, is_read)
@@ -1264,7 +1264,7 @@ fn seed_paper(vault: &Path, path: &str, id: &str, title: &str) {
 
 fn set_tags_json(vault: &Path, path: &str, tags_json: &str) {
     use std::process::Command;
-    let db = vault.join(".agentero").join("catalog.sqlite");
+    let db = vault.join(".library").join("catalog.sqlite");
     let sql = format!(
         "UPDATE papers SET tags_json = '{tags_json}' WHERE path = '{path}';",
         tags_json = tags_json.replace('\'', "''"),
@@ -1286,7 +1286,7 @@ fn set_tags_json(vault: &Path, path: &str, tags_json: &str) {
 
 fn set_paper_authors_and_year(vault: &Path, path: &str, authors_json: &str, year: i32) {
     use std::process::Command;
-    let db = vault.join(".agentero").join("catalog.sqlite");
+    let db = vault.join(".library").join("catalog.sqlite");
     let sql = format!(
         "UPDATE papers SET authors_json = '{authors_json}', year = {year} WHERE path = '{path}';",
         authors_json = authors_json.replace('\'', "''"),
@@ -1329,7 +1329,7 @@ fn layout_list_and_mark_add_region() {
     seed_paper(&vault, "papers/demo", "demo", "Demo Paper");
 
     // Missing index → structured error
-    let missing = agentero()
+    let missing = library()
         .args([
             "--vault",
             vault.to_str().unwrap(),
@@ -1399,7 +1399,7 @@ fn layout_list_and_mark_add_region() {
     )
     .unwrap();
 
-    let listed = agentero()
+    let listed = library()
         .args([
             "--vault",
             vault.to_str().unwrap(),
@@ -1422,7 +1422,7 @@ fn layout_list_and_mark_add_region() {
     assert_eq!(items[0]["id"], "figure-3");
     assert_eq!(items[0]["page"], 2);
 
-    let formulas = agentero()
+    let formulas = library()
         .args([
             "--vault",
             vault.to_str().unwrap(),
@@ -1441,7 +1441,7 @@ fn layout_list_and_mark_add_region() {
     let formulas: Value = serde_json::from_slice(&formulas).unwrap();
     assert_eq!(formulas["data"]["items"].as_array().unwrap().len(), 1);
 
-    let got = agentero()
+    let got = library()
         .args([
             "--vault",
             vault.to_str().unwrap(),
@@ -1459,7 +1459,7 @@ fn layout_list_and_mark_add_region() {
     let got: Value = serde_json::from_slice(&got).unwrap();
     assert_eq!(got["data"]["item"]["title"], "Figure 3: Heads");
 
-    let added = agentero()
+    let added = library()
         .args([
             "--vault",
             vault.to_str().unwrap(),
@@ -1508,7 +1508,7 @@ fn layout_list_and_mark_add_region() {
     assert!((seg["origin"]["y"].as_f64().unwrap() - 20.0).abs() < 0.5);
     assert!((seg["size"]["width"].as_f64().unwrap() - 100.0).abs() < 0.5);
 
-    let marks = agentero()
+    let marks = library()
         .args([
             "--vault",
             vault.to_str().unwrap(),
@@ -1525,7 +1525,7 @@ fn layout_list_and_mark_add_region() {
     let marks: Value = serde_json::from_slice(&marks).unwrap();
     assert_eq!(marks["data"]["count"], 1);
 
-    agentero()
+    library()
         .args([
             "--vault",
             vault.to_str().unwrap(),
@@ -1561,7 +1561,7 @@ fn mark_add_quote_locates_text_and_writes_annotation() {
     .unwrap();
     seed_paper(&vault, "papers/attn", "attn", "Attention");
 
-    let added = agentero()
+    let added = library()
         .args([
             "--vault",
             vault.to_str().unwrap(),
@@ -1602,7 +1602,7 @@ fn mark_add_quote_locates_text_and_writes_annotation() {
     assert!(y > 10.0 && y < 50.0, "y {y}");
 
     // A quote that is not in the PDF must fail loudly and write nothing.
-    let missing = agentero()
+    let missing = library()
         .args([
             "--vault",
             vault.to_str().unwrap(),
@@ -1623,7 +1623,7 @@ fn mark_add_quote_locates_text_and_writes_annotation() {
     assert_eq!(missing["error"]["code"], "mark_locate_failed");
 
     // Comment updates land on the annotation, not a sibling file.
-    agentero()
+    library()
         .args([
             "--vault",
             vault.to_str().unwrap(),
@@ -1661,7 +1661,7 @@ fn mark_id_starting_with_hyphen_is_not_parsed_as_a_flag() {
     fs::write(paper.join("NOTES.md"), "# Demo\n").unwrap();
     seed_paper(&vault, "papers/demo", "demo", "Demo Paper");
 
-    let out = agentero()
+    let out = library()
         .args([
             "--vault",
             vault.to_str().unwrap(),

@@ -1,6 +1,6 @@
 # 导入和管理论文
 
-Agentero 提供多种入库入口。选择哪一种取决于你手上的资料，而不是论文来源。
+Library 提供多种入库入口。选择哪一种取决于你手上的资料，而不是论文来源。
 
 | 手上的资料 | 推荐入口 |
 |---|---|
@@ -21,7 +21,7 @@ Agentero 提供多种入库入口。选择哪一种取决于你手上的资料�
 
 导入进行中仍可再次打开魔棒并提交新的标识符；新的导入会进入任务队列，按顺序处理。
 
-导入成功后，Agentero 会创建论文目录、写入 catalog，并尽量下载 PDF。对 arXiv 论文还会尝试把 e-print LaTeX 解压到 `source/`。随后会刷新文件树、展开并打开新论文。
+导入成功后，Library 会创建论文目录、写入 catalog，并尽量下载 PDF。对 arXiv 论文还会尝试把 e-print LaTeX 解压到 `source/`。随后会刷新文件树、展开并打开新论文。
 
 ### 同时导入 Skill
 
@@ -32,7 +32,7 @@ https://github.com/mattpocock/skills
 npx skills add https://github.com/anthropics/skills --skill pptx
 ```
 
-1. 粘贴 Skill 来源后，Agentero 会解析仓库并列出候选 Skill。
+1. 粘贴 Skill 来源后，Library 会解析仓库并列出候选 Skill。
 2. 弹出的选择窗口会显示名称与已安装状态；勾选需要的项。
 3. 确认后仅安装选中 Skill 到 `.agents/skills/<name>/`；已存在的 Skill 不会覆盖。
 4. 取消或关闭窗口会清理本次解析的临时包，不会修改 Vault。
@@ -57,7 +57,7 @@ papers/<paper-id>/
 
 ```text
 Research/
-├── agentero-vault/
+├── library-vault/
 │   └── papers/latent/2604.13349/
 │       ├── NOTES.md
 │       ├── source/
@@ -66,7 +66,7 @@ Research/
     └── 2604.13349.pdf
 ```
 
-这仍然保留了 Agentero 需要的论文单元：`NOTES.md`、`source/`、`marks/` 和论文元数据在
+这仍然保留了 Library 需要的论文单元：`NOTES.md`、`source/`、`marks/` 和论文元数据在
 Vault 内，PDF 二进制则由 `pdf-library/` 管理。论文目录下的 PDF 软链接会被识别为本地
 PDF，论文行不会显示「下载」按钮，打开论文时也会读取软链接指向的文件。建议使用相对
 软链接，并让 Vault 与外部 PDF 目录保持稳定的相对位置，这样在另一台设备上更容易恢复。
@@ -77,33 +77,33 @@ macOS / Linux：
 
 ```bash
 ln -s /path/to/pdf-library/2604.13349.pdf \
-  /path/to/agentero-vault/papers/latent/2604.13349/2604.13349.pdf
+  /path/to/library-vault/papers/latent/2604.13349/2604.13349.pdf
 ```
 
 Windows（PowerShell 或命令提示符）：
 
 ```powershell
-mklink "C:\path\to\agentero-vault\papers\latent\2604.13349\2604.13349.pdf" `
+mklink "C:\path\to\library-vault\papers\latent\2604.13349\2604.13349.pdf" `
        "D:\path\to\pdf-library\2604.13349.pdf"
 ```
 
-Windows 创建软链接可能需要开发者模式或管理员权限。创建后在 Agentero 中执行刷新，
+Windows 创建软链接可能需要开发者模式或管理员权限。创建后在 Library 中执行刷新，
 或重新打开 Vault。也可以在文件管理器中直接打开外部目录里的原始 PDF。
 
 ### 同步与备份注意事项
 
-- Agentero 的 S3 同步只同步 Vault 内的普通文件，不跟随软链接；外部 PDF 目录需要单独
+- Library 的 S3 同步只同步 Vault 内的普通文件，不跟随软链接；外部 PDF 目录需要单独
   用 iCloud、坚果云、Dropbox 等同步。同步前应确认两台设备都能访问同一份外部 PDF。
 - Git 通常只记录软链接本身及其目标路径文本，不会把目标 PDF 提交进仓库。这样适合让
   Git 管理 Markdown、TeX、JSON 和标注，但不能单靠 `git clone` 恢复 PDF。
 - 绝对软链接换电脑后通常会断。优先使用相对软链接，或在每台设备上运行一次维护脚本
-  重新建立链接。外部 PDF 被移动、删除或同步尚未完成时，Agentero 会重新显示资源缺失
+  重新建立链接。外部 PDF 被移动、删除或同步尚未完成时，Library 会重新显示资源缺失
   的下载提示。
 - 软链接应放在论文目录根部，例如 `papers/<id>/<id>.pdf`；不要把主 PDF 软链接放进
-  `attachments/`，也不要把外部目录本身作为软链接目录让 Agentero 递归扫描。
+  `attachments/`，也不要把外部目录本身作为软链接目录让 Library 递归扫描。
 
 这种方式是“外置 PDF + Vault 内索引/笔记”的管理方式，不是把论文单元完全移出 Vault。
-如果希望 Agentero 的 S3 同步也负责保存 PDF，请继续使用 Vault 内的真实 PDF 文件，并在
+如果希望 Library 的 S3 同步也负责保存 PDF，请继续使用 Vault 内的真实 PDF 文件，并在
 同步设置中保留 PDF 类别。
 
 ### 识别失败时
@@ -151,7 +151,7 @@ Windows 创建软链接可能需要开发者模式或管理员权限。创建后
 4. 按需选择：复制本地 PDF、按 collection 建子文件夹、迁移笔记与高亮等。
 5. 开始迁移并等待进度完成。
 
-迁移不会把 Zotero 数据库当作 Agentero 运行时库；文件写入当前 Vault，元数据写入当前 catalog。
+迁移不会把 Zotero 数据库当作 Library 运行时库；文件写入当前 Vault，元数据写入当前 catalog。
 
 ## 管理论文
 

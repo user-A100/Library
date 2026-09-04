@@ -173,7 +173,7 @@ mod tests {
 
     fn temp_vault() -> PathBuf {
         let root =
-            std::env::temp_dir().join(format!("agentero-rename-orchestrator-{}", Uuid::new_v4()));
+            std::env::temp_dir().join(format!("library-rename-orchestrator-{}", Uuid::new_v4()));
         fs::create_dir_all(&root).expect("create vault");
         root
     }

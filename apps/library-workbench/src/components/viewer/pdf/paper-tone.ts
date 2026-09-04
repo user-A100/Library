@@ -10,8 +10,8 @@
 import { readJsonStorage, writeJsonStorage } from "@/lib/core/storage";
 import { isPdfPaperTone, type PdfPaperTone } from "@/lib/pdf/page-theme";
 
-const PDF_COLOR_SCHEME_STORAGE_KEY = "agentero-pdf-color-scheme";
-export const PDF_PAPER_TONE_EVENT = "agentero:pdf-color-scheme";
+const PDF_COLOR_SCHEME_STORAGE_KEY = "library-pdf-color-scheme";
+export const PDF_PAPER_TONE_EVENT = "library:pdf-color-scheme";
 
 function getDocumentTone(): PdfPaperTone {
 	if (typeof document === "undefined") return "white";

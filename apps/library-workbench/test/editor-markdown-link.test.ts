@@ -122,23 +122,23 @@ describe("Markdown link input rule", () => {
 
 	it("converts long GitHub issue URLs character by character", () => {
 		const editor = typeLink(
-			"[issue](https://github.com/poco-ai/Agentero/issues)",
+			"[issue](https://github.com/poco-ai/Library/issues)",
 		);
 
 		expect(findLink(editor)).toMatchObject({
 			type: KEYS.a,
-			url: "https://github.com/poco-ai/Agentero/issues",
+			url: "https://github.com/poco-ai/Library/issues",
 			children: [{ text: "issue" }],
 		});
 	});
 
 	it("converts fullwidth closing parenthesis", () => {
 		const editor = createLinkEditor(
-			"[issue](https://github.com/poco-ai/Agentero/issues",
+			"[issue](https://github.com/poco-ai/Library/issues",
 		);
 		editor.tf.insertText("）");
 		expect(findLink(editor)).toMatchObject({
-			url: "https://github.com/poco-ai/Agentero/issues",
+			url: "https://github.com/poco-ai/Library/issues",
 			children: [{ text: "issue" }],
 		});
 	});
@@ -146,13 +146,13 @@ describe("Markdown link input rule", () => {
 	it("converts when ) was already inserted as plain text", () => {
 		// Simulates a path that inserted `)` without running the input rule.
 		const editor = createLinkEditor(
-			"[issue](https://github.com/poco-ai/Agentero/issues)",
+			"[issue](https://github.com/poco-ai/Library/issues)",
 		);
 		// Caret already after complete link — force complete-at-caret path.
 		const ok = convertCompleteMarkdownLinkAtCaret(editor);
 		expect(ok).toBe(true);
 		expect(findLink(editor)).toMatchObject({
-			url: "https://github.com/poco-ai/Agentero/issues",
+			url: "https://github.com/poco-ai/Library/issues",
 		});
 	});
 
@@ -170,13 +170,13 @@ describe("Markdown link input rule", () => {
 							children: [{ text: "a" }],
 						},
 						{
-							text: " then [issue](https://github.com/poco-ai/Agentero/issues",
+							text: " then [issue](https://github.com/poco-ai/Library/issues",
 						},
 					],
 				},
 			],
 		});
-		const tail = " then [issue](https://github.com/poco-ai/Agentero/issues"
+		const tail = " then [issue](https://github.com/poco-ai/Library/issues"
 			.length;
 		editor.tf.select({
 			anchor: { path: [0, 2], offset: tail },
@@ -189,7 +189,7 @@ describe("Markdown link input rule", () => {
 		).children.filter((c) => c.type === KEYS.a);
 		expect(links).toHaveLength(2);
 		expect(links[1]).toMatchObject({
-			url: "https://github.com/poco-ai/Agentero/issues",
+			url: "https://github.com/poco-ai/Library/issues",
 			children: [{ text: "issue" }],
 		});
 	});
@@ -283,11 +283,11 @@ describe("Markdown link input rule", () => {
 		});
 		expect(editor.getType(KEYS.a)).toBe(KEYS.a);
 
-		for (const c of "[issue](https://github.com/poco-ai/Agentero/issues)") {
+		for (const c of "[issue](https://github.com/poco-ai/Library/issues)") {
 			editor.tf.insertText(c);
 		}
 		const flat = JSON.stringify(editor.children);
-		expect(flat).toContain("github.com/poco-ai/Agentero/issues");
+		expect(flat).toContain("github.com/poco-ai/Library/issues");
 		expect(flat).toContain(`"type":"${KEYS.a}"`);
 	});
 });

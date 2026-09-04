@@ -4,7 +4,7 @@
 //! By default this only verifies the committed file matches the Rust
 //! signatures without overwriting it, so `cargo test` does not dirty the
 //! working tree. To regenerate, run:
-//! `AGENTERO_UPDATE_BINDINGS=1 cargo test -p agentero export_typescript_bindings`
+//! `LIBRARY_UPDATE_BINDINGS=1 cargo test -p library export_typescript_bindings`
 
 use std::path::Path;
 
@@ -32,7 +32,7 @@ fn export_typescript_bindings() {
         .typ::<crate::core::jobs::JobChangedPayload>();
 
     let out_path = Path::new("../src/lib/core/bindings.ts");
-    let update = std::env::var("AGENTERO_UPDATE_BINDINGS").is_ok();
+    let update = std::env::var("LIBRARY_UPDATE_BINDINGS").is_ok();
 
     if update {
         builder
@@ -41,7 +41,7 @@ fn export_typescript_bindings() {
         return;
     }
 
-    let temp_dir = std::env::temp_dir().join(format!("agentero-bindings-{}", std::process::id()));
+    let temp_dir = std::env::temp_dir().join(format!("library-bindings-{}", std::process::id()));
     std::fs::create_dir_all(&temp_dir).expect("create temp dir");
     let temp_path = temp_dir.join("bindings.ts");
     builder
@@ -62,6 +62,6 @@ fn export_typescript_bindings() {
     assert_eq!(
         normalize(&expected),
         normalize(&actual),
-        "bindings.ts is out of sync with Rust command signatures; rerun with AGENTERO_UPDATE_BINDINGS=1"
+        "bindings.ts is out of sync with Rust command signatures; rerun with LIBRARY_UPDATE_BINDINGS=1"
     );
 }

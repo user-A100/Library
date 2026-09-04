@@ -113,7 +113,7 @@ export function VaultWelcome({
 	return (
 		<div
 			className={cn(
-				"agentero-scroll flex min-h-0 flex-1 select-none flex-col items-center justify-center bg-muted/20 p-8",
+				"library-scroll flex min-h-0 flex-1 select-none flex-col items-center justify-center bg-muted/20 p-8",
 				className,
 			)}
 		>

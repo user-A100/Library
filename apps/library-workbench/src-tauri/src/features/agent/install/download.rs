@@ -1,7 +1,7 @@
 //! Download same-version headless CLI archives from GitHub Releases.
 //!
 //! Asset naming matches `.github/workflows/release.yml` / `docs/test/release.md`:
-//! `agentero-cli-{version}-{rust-host}.{tar.gz|zip}` plus sibling `.sha256`.
+//! `library-cli-{version}-{rust-host}.{tar.gz|zip}` plus sibling `.sha256`.
 
 use crate::core::error::AppError;
 use crate::core::http;
@@ -14,7 +14,7 @@ use std::time::Duration;
 use tar::Archive;
 
 /// GitHub org/repo that publishes CLI archives (stable public CDN URLs).
-pub const RELEASE_REPO: &str = "poco-ai/Agentero";
+pub const RELEASE_REPO: &str = "poco-ai/Library";
 
 const DOWNLOAD_TIMEOUT: Duration = Duration::from_secs(180);
 
@@ -68,9 +68,9 @@ pub fn archive_ext_for_triple(triple: &str) -> &'static str {
 /// User-facing binary name inside the release archive.
 pub fn archive_inner_name() -> &'static str {
     if cfg!(windows) {
-        "agentero.exe"
+        "library.exe"
     } else {
-        "agentero"
+        "library"
     }
 }
 
@@ -82,7 +82,7 @@ pub fn managed_binary_name() -> &'static str {
 pub fn archive_file_name(version: &str, triple: &str) -> String {
     let ver = normalize_version(version);
     let ext = archive_ext_for_triple(triple);
-    format!("agentero-cli-{ver}-{triple}.{ext}")
+    format!("library-cli-{ver}-{triple}.{ext}")
 }
 
 pub fn release_download_url(version: &str, triple: &str) -> String {
@@ -248,7 +248,7 @@ pub async fn download_and_extract(version: &str, dest_bin: &Path) -> Result<(), 
     let client = http::client_builder()
         .timeout(DOWNLOAD_TIMEOUT)
         .user_agent(format!(
-            "agentero/{ver} (+https://github.com/{RELEASE_REPO})"
+            "library/{ver} (+https://github.com/{RELEASE_REPO})"
         ))
         .build()
         .map_err(|e| AppError::message(format!("http client error: {e}")))?;
@@ -326,11 +326,11 @@ mod tests {
         let url = release_download_url("v0.5.3", "aarch64-apple-darwin");
         assert_eq!(
             url,
-            "https://github.com/poco-ai/Agentero/releases/download/v0.5.3/agentero-cli-0.5.3-aarch64-apple-darwin.tar.gz"
+            "https://github.com/poco-ai/Library/releases/download/v0.5.3/library-cli-0.5.3-aarch64-apple-darwin.tar.gz"
         );
         assert_eq!(
             release_sha256_url("0.5.3", "x86_64-pc-windows-msvc"),
-            "https://github.com/poco-ai/Agentero/releases/download/v0.5.3/agentero-cli-0.5.3-x86_64-pc-windows-msvc.zip.sha256"
+            "https://github.com/poco-ai/Library/releases/download/v0.5.3/library-cli-0.5.3-x86_64-pc-windows-msvc.zip.sha256"
         );
         assert_eq!(archive_ext_for_triple("x86_64-pc-windows-msvc"), "zip");
         assert_eq!(archive_ext_for_triple("x86_64-unknown-linux-gnu"), "tar.gz");
@@ -338,7 +338,7 @@ mod tests {
 
     #[test]
     fn parses_sha256sum_line() {
-        let text = "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef  agentero-cli-0.5.3-aarch64-apple-darwin.tar.gz\n";
+        let text = "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef  library-cli-0.5.3-aarch64-apple-darwin.tar.gz\n";
         assert_eq!(
             parse_sha256_file(text).unwrap(),
             "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
@@ -354,7 +354,7 @@ mod tests {
     #[test]
     fn extract_tar_gz_roundtrip() {
         let dir = std::env::temp_dir().join(format!(
-            "agentero-cli-dl-tar-{}-{}",
+            "library-cli-dl-tar-{}-{}",
             std::process::id(),
             std::time::SystemTime::now()
                 .duration_since(std::time::UNIX_EPOCH)
@@ -362,9 +362,9 @@ mod tests {
                 .as_nanos()
         ));
         fs::create_dir_all(&dir).unwrap();
-        let dest = dir.join("agentero");
+        let dest = dir.join("library");
 
-        // Build a minimal tar.gz with a single `agentero` member.
+        // Build a minimal tar.gz with a single `library` member.
         let mut tar_buf = Vec::new();
         {
             let mut builder = tar::Builder::new(&mut tar_buf);
@@ -374,7 +374,7 @@ mod tests {
             header.set_mode(0o755);
             header.set_cksum();
             builder
-                .append_data(&mut header, "agentero", data.as_slice())
+                .append_data(&mut header, "library", data.as_slice())
                 .unwrap();
             builder.finish().unwrap();
         }
@@ -382,7 +382,7 @@ mod tests {
         enc.write_all(&tar_buf).unwrap();
         let gz = enc.finish().unwrap();
 
-        extract_cli_binary(&gz, "agentero-cli-0.0.0-test.tar.gz", &dest).unwrap();
+        extract_cli_binary(&gz, "library-cli-0.0.0-test.tar.gz", &dest).unwrap();
         assert_eq!(fs::read(&dest).unwrap(), b"#!/bin/sh\necho ok\n");
         let _ = fs::remove_dir_all(&dir);
     }

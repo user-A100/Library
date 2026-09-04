@@ -1,21 +1,21 @@
 [package]
-name = "agentero-cli"
+name = "library-cli"
 version = "0.9.4"
 edition = "2021"
-description = "Headless Agentero CLI for Vault / Catalog (no BYOA)"
+description = "Headless Library CLI for Vault / Catalog (no BYOA)"
 authors = ["you"]
 license = "MIT"
 publish = false
 
-# Binary file is `agentero-cli` so it does not collide with the desktop GUI
-# binary (`agentero` from the `agentero` package) in the shared target dir.
-# User-facing PATH install still exposes the command as `agentero` via shim.
+# Binary file is `library-cli` so it does not collide with the desktop GUI
+# binary (`library` from the `library` package) in the shared target dir.
+# User-facing PATH install still exposes the command as `library` via shim.
 [[bin]]
-name = "agentero-cli"
+name = "library-cli"
 path = "src/main.rs"
 
 [dependencies]
-agentero_lib = { path = "../src-tauri", package = "agentero", default-features = false }
+library_lib = { path = "../src-tauri", package = "library", default-features = false }
 clap = { version = "4", features = ["derive", "env"] }
 clap_complete = "4"
 serde = { version = "1", features = ["derive"] }

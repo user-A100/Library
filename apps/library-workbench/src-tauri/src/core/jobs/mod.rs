@@ -1280,7 +1280,7 @@ mod tests {
     use super::*;
 
     fn vault(name: &str) -> PathBuf {
-        PathBuf::from(format!("/tmp/agentero-job-center-{name}"))
+        PathBuf::from(format!("/tmp/library-job-center-{name}"))
     }
 
     #[tokio::test]

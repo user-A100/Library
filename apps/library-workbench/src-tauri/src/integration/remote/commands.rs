@@ -46,7 +46,7 @@ pub async fn remote_connect(
             // Bind Zotero Connector save target on Host (do not rely only on frontend).
             connector.set_vault(Some(info.vault_handle.clone()));
             log::info!(
-                target: "agentero::op",
+                target: "library::op",
                 "connector vault bound to {}",
                 trunc(&info.vault_handle, 80)
             );

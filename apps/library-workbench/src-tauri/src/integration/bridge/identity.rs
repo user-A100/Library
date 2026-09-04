@@ -14,7 +14,7 @@ const DEVICES_FILE: &str = "devices.json";
 const CLIENT_IDENTITY_FILE: &str = "client-identity.json";
 const CLIENT_PROFILE_FILE: &str = "client-profile.json";
 #[cfg(target_os = "ios")]
-const IOS_KEYCHAIN_SERVICE: &str = "com.poco-ai.agentero.bridge";
+const IOS_KEYCHAIN_SERVICE: &str = "workbench.library.app.bridge";
 #[cfg(target_os = "ios")]
 const IOS_KEYCHAIN_ACCOUNT: &str = "client-identity-v2";
 
@@ -429,7 +429,7 @@ mod tests {
     use super::*;
 
     fn test_dir() -> PathBuf {
-        std::env::temp_dir().join(format!("agentero-bridge-test-{}", uuid::Uuid::new_v4()))
+        std::env::temp_dir().join(format!("library-bridge-test-{}", uuid::Uuid::new_v4()))
     }
 
     #[test]
@@ -524,7 +524,7 @@ mod tests {
         let store = BridgeClientProfileStore::at_path(dir.clone());
         store
             .save(&BridgeClientProfile {
-                offer_url: "agentero://pair#offer=example".to_string(),
+                offer_url: "library://pair#offer=example".to_string(),
                 device_name: "iPhone".to_string(),
                 paired: false,
             })
