@@ -89,7 +89,7 @@ function saveOpts(o: SavedOpts) {
 
 /** "View import tutorial" target. Replace with your hosted tutorial/docs URL. */
 const IMPORT_TUTORIAL_URL =
-	"https://github.com/poco-ai/motif/blob/main/docs/backend/identifier-lookup.md";
+	"https://github.com/user-A100/Library/blob/main/docs/backend/identifier-lookup.md";
 function openTutorial() {
 	void openUrl(IMPORT_TUTORIAL_URL).catch(() => {
 		window.open(IMPORT_TUTORIAL_URL, "_blank");

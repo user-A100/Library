@@ -14,7 +14,7 @@ use std::time::Duration;
 use tar::Archive;
 
 /// GitHub org/repo that publishes CLI archives (stable public CDN URLs).
-pub const RELEASE_REPO: &str = "poco-ai/Library";
+pub const RELEASE_REPO: &str = "user-A100/Library";
 
 const DOWNLOAD_TIMEOUT: Duration = Duration::from_secs(180);
 
@@ -326,11 +326,11 @@ mod tests {
         let url = release_download_url("v0.5.3", "aarch64-apple-darwin");
         assert_eq!(
             url,
-            "https://github.com/poco-ai/Library/releases/download/v0.5.3/library-cli-0.5.3-aarch64-apple-darwin.tar.gz"
+            "https://github.com/user-A100/Library/releases/download/v0.5.3/library-cli-0.5.3-aarch64-apple-darwin.tar.gz"
         );
         assert_eq!(
             release_sha256_url("0.5.3", "x86_64-pc-windows-msvc"),
-            "https://github.com/poco-ai/Library/releases/download/v0.5.3/library-cli-0.5.3-x86_64-pc-windows-msvc.zip.sha256"
+            "https://github.com/user-A100/Library/releases/download/v0.5.3/library-cli-0.5.3-x86_64-pc-windows-msvc.zip.sha256"
         );
         assert_eq!(archive_ext_for_triple("x86_64-pc-windows-msvc"), "zip");
         assert_eq!(archive_ext_for_triple("x86_64-unknown-linux-gnu"), "tar.gz");

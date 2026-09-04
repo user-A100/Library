@@ -43,9 +43,9 @@ import {
 
 /** Same as README / homebrew-library Formula (headless CLI, not the desktop cask). */
 const CLI_BREW_INSTALL_COMMAND =
-	"brew tap poco-ai/library\nbrew install library";
+	"brew tap user-A100/Library\nbrew install library";
 
-const GITHUB_REPO_URL = "https://github.com/poco-ai/Library";
+const GITHUB_REPO_URL = "https://github.com/user-A100/Library";
 
 export function AboutPane() {
 	const { t } = useTranslation("settings");

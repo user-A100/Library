@@ -5,7 +5,7 @@
 
 import { execFileSync } from "node:child_process";
 
-const REPO = "poco-ai/Library";
+const REPO = "user-A100/Library";
 const showAssets = process.argv.includes("--assets");
 
 const releases = JSON.parse(

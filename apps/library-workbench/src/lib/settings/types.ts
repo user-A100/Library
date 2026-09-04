@@ -108,7 +108,7 @@ export type AppSettings = {
 	// General
 	/**
 	 * Translator Runtime base URL for magic-wand / identifier import.
-	 * Default: hosted poco-ai service.
+	 * Default: hosted service.
 	 */
 	translatorBaseUrl: string;
 	/** EasyScholar key for journal ranking and impact-factor lookups. */

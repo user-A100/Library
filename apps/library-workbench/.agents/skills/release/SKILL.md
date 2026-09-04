@@ -59,7 +59,7 @@ For each candidate change:
   credited in the notes. **Resolve GitHub usernames** — the git commit author
   name (e.g. `QiyuanChen`) is not necessarily the GitHub handle (e.g.
   `qychen2001`). For PRs, use the PR `author.login` field directly. For
-  uncovered commits, run `gh api repos/poco-ai/Library/commits/<sha>` and
+  uncovered commits, run `gh api repos/user-A100/Library/commits/<sha>` and
   extract the `author.login` field. Fall back to the commit `author.name` only
   when the GitHub API returns null (e.g. unauthenticated local commits).
 - Report uncertainty or conflicting evidence instead of inventing behavior.
@@ -150,7 +150,7 @@ After drafting the notes, write them directly to the Draft GitHub Release.
 
    ```bash
    gh release edit "<tag>" \
-     --repo poco-ai/Library \
+     --repo user-A100/Library \
      --verify-tag \
      --notes-file "<temporary-file>"
    ```

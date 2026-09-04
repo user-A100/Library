@@ -15,7 +15,7 @@
 use crate::features::site_proxy::SiteProxy;
 
 const ORIGIN: &str = "https://modelscope.cn";
-const USER_AGENT: &str = "library/0.6 (+https://github.com/poco-ai/library)";
+const USER_AGENT: &str = "library/0.6 (+https://github.com/user-A100/Library)";
 
 /// Hides the site chrome, reports navigations, hands off everything that leaves
 /// the paper feed, and adds an `[入库]` action to every paper.

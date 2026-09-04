@@ -13,7 +13,7 @@ use std::time::{Duration, Instant};
 pub const USER_AGENT: &str = concat!(
     "Library/",
     env!("CARGO_PKG_VERSION"),
-    " (+https://github.com/poco-ai/library; mailto:library@users.noreply.github.com)"
+    " (+https://github.com/user-A100/Library; mailto:library@users.noreply.github.com)"
 );
 
 /// Browser-like UA for endpoints that reject non-browser agents with HTTP 403

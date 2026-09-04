@@ -576,6 +576,16 @@ LibraryAIViewHost = class LibraryAIViewHost {
 	// assistant 节点已挂在会话树上（新提问/重试/编辑共用）。
 	async runGeneration(window, conversation, assistant, question) {
 		this.abortController = new window.AbortController(); this.renderAll();
+		// 心跳：即使模型长时间无 delta（等待首包/推理阶段），状态栏也每秒跳动，
+		// 用户可据此区分"正在思考"与"卡死"；超过 60s 提示可停止
+		let startedAt = Date.now();
+		let heartbeat = window.setInterval(() => {
+			if (!this.abortController) return;
+			let seconds = Math.round((Date.now() - startedAt) / 1000);
+			this.setStatus(window, seconds >= 60
+				? `仍在生成… ${seconds}s；若长时间无变化可点击 ■ 停止`
+				: `正在生成… ${seconds}s`);
+		}, 1000);
 		let setActivity = (phase, label) => {
 			assistant.activity = { phase, label };
 			this.renderAll();
@@ -655,6 +665,7 @@ LibraryAIViewHost = class LibraryAIViewHost {
 			Zotero.debug(`Library AI send: ${error.stack || error}`);
 			assistant.state = error.name === "AbortError" ? "stopped" : "error"; assistant.error = error.name === "AbortError" ? "已停止生成" : (error.message || String(error));
 		} finally {
+			window.clearInterval(heartbeat);
 			try {
 				assistant.citationAudit ||= this.auditAnswerCitations(assistant.content, artifactContext.citations);
 				assistant.artifact = await LibraryAIArtifacts.buildBundle({

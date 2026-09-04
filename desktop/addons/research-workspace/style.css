@@ -636,3 +636,27 @@
 .library-ai-noteedit-actions .library-ai-noteedit-accept { border:0; background:color-mix(in srgb,#22a06b 88%,var(--library-ai-accent)); color:#fff; }
 .library-ai-noteedit-actions button:disabled { opacity:.55; cursor:progress; }
 .library-ai-noteedit-actions button:not(:disabled):hover { transform:translateY(-1px); }
+
+/* ---- AI 回答主题化 Markdown 渲染（aidea 式排版） ---- */
+.library-ai-bubble .library-ai-message-body { line-height:1.75; font-size:13px; }
+.library-ai-message-body h1, .library-ai-message-body h2, .library-ai-message-body h3,
+.library-ai-message-body h4, .library-ai-message-body h5 { margin:14px 0 6px; padding:0; font-weight:700; line-height:1.4; color:var(--fill-primary); }
+.library-ai-message-body h1 { font-size:17px; padding-bottom:4px; border-bottom:1px solid color-mix(in srgb,var(--library-ai-border) 70%,transparent); }
+.library-ai-message-body h2 { font-size:15px; padding-bottom:3px; border-bottom:1px solid color-mix(in srgb,var(--library-ai-border) 50%,transparent); }
+.library-ai-message-body h3 { font-size:14px; }
+.library-ai-message-body h4, .library-ai-message-body h5 { font-size:13px; }
+.library-ai-message-body p { margin:6px 0; }
+.library-ai-message-body strong { font-weight:700; color:var(--fill-primary); }
+.library-ai-message-body ul, .library-ai-message-body ol { margin:6px 0; padding-inline-start:22px; }
+.library-ai-message-body li { margin:3px 0; }
+.library-ai-message-body li::marker { color:var(--library-ai-accent); }
+.library-ai-message-body blockquote { margin:8px 0; padding:4px 12px; border-inline-start:3px solid var(--library-ai-accent); background:color-mix(in srgb,var(--library-ai-accent) 6%,transparent); border-radius:0 8px 8px 0; color:var(--fill-secondary); }
+.library-ai-message-body code { padding:1px 5px; border-radius:5px; background:color-mix(in srgb,var(--fill-tertiary) 55%,transparent); border:1px solid color-mix(in srgb,var(--library-ai-border) 60%,transparent); font-size:12px; font-family:ui-monospace,Menlo,Consolas,monospace; }
+.library-ai-message-body pre { margin:8px 0; padding:10px 12px; border-radius:10px; background:color-mix(in srgb,var(--fill-tertiary) 40%,transparent); border:1px solid var(--library-ai-border); overflow-x:auto; }
+.library-ai-message-body pre code { padding:0; background:none; border:0; font-size:12px; line-height:1.6; }
+.library-ai-message-body table { margin:8px 0; border-collapse:collapse; width:100%; font-size:12px; }
+.library-ai-message-body th, .library-ai-message-body td { border:1px solid var(--library-ai-border); padding:5px 8px; text-align:start; }
+.library-ai-message-body th { background:color-mix(in srgb,var(--fill-tertiary) 45%,transparent); font-weight:650; }
+.library-ai-message-body tr:nth-child(even) td { background:color-mix(in srgb,var(--fill-tertiary) 22%,transparent); }
+.library-ai-message-body hr { border:0; height:1px; background:var(--library-ai-border); margin:12px 0; }
+.library-ai-message-body a { color:var(--library-ai-accent); }
