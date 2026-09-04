@@ -66,8 +66,10 @@ export default defineConfig(async () => ({
 				}
 			: undefined,
 		watch: {
-			// 3. tell Vite to ignore watching `src-tauri`
-			ignored: ["**/src-tauri/**"],
+			// 3. tell Vite to ignore watching `src-tauri` and the Rust `target/`
+			// dir (workspace root): cargo holds locks on build artifacts there
+			// and chokidar aborts with EBUSY on Windows.
+			ignored: ["**/src-tauri/**", "**/target/**"],
 		},
 	},
 }));
