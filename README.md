@@ -29,7 +29,7 @@
 </p>
 
 > [!IMPORTANT]
-> 本项目是腾讯犀牛鸟开源实践任务的个人 / 活动作品，不是腾讯、Zotero 或 Zen Browser 的官方产品。当前仓库已接通桌面 Hy3 对话主链路，并为每次运行持久化 `library.trace/v1` 研究制品、候选主张、证据定位与哈希校验；候选主张已支持接受、驳回、修改、证据重绑及追加式决策记录。主张语义支持 Judge 和 TRACE-Eval 正式评测仍在实现中。
+> 本项目是腾讯犀牛鸟开源实践任务的个人 / 活动作品，不是腾讯的官方产品。当前仓库已接通桌面 Hy3 对话主链路，并为每次运行持久化 `library.trace/v1` 研究制品、候选主张、证据定位与哈希校验；候选主张已支持接受、驳回、修改、证据重绑及追加式决策记录。主张语义支持 Judge 和 TRACE-Eval 正式评测仍在实现中。
 
 ## <img src="docs/assets/readme/icons/sparkles.svg" width="22" alt="" /> 为什么是 Library
 
