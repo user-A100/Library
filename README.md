@@ -1,8 +1,8 @@
 <div align="center">
   <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="docs/assets/readme/banner-dark.svg" />
-    <source media="(prefers-color-scheme: light)" srcset="docs/assets/readme/banner-light.svg" />
-    <img alt="Library — 可追溯的论文阅读与引用核验工作台" src="docs/assets/readme/banner-light.svg" width="900" />
+    <source media="(prefers-color-scheme: dark)" srcset="docs/assets/readme/banner-anim.svg" />
+    <source media="(prefers-color-scheme: light)" srcset="docs/assets/readme/banner-anim.svg" />
+    <img alt="Library — 可追溯的论文阅读与引用核验工作台" src="docs/assets/readme/banner-anim.svg" width="900" />
   </picture>
 </div>
 
