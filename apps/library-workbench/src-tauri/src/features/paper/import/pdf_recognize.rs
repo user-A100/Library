@@ -229,7 +229,7 @@ pub(crate) async fn recognize_pdf(
         .user_agent(concat!(
             "Library/",
             env!("CARGO_PKG_VERSION"),
-            " (paper metadata recognition; +https://github.com/poco-ai/library)"
+            " (paper metadata recognition; +https://github.com/user-A100/Library)"
         ))
         .build()
         .map_err(|e| AppError::message(format!("recognizer http client: {e}")))?;

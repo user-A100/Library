@@ -23,7 +23,7 @@ pub const LONG_TIMEOUT: Duration = Duration::from_secs(60);
 pub const USER_AGENT: &str = concat!(
     "Library/",
     env!("CARGO_PKG_VERSION"),
-    " (+https://github.com/poco-ai/library; mailto:library@users.noreply.github.com)"
+    " (+https://github.com/user-A100/Library; mailto:library@users.noreply.github.com)"
 );
 
 /// Global concurrency limit across all `scholar_api` HTTP calls. Keeps polite

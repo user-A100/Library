@@ -32,7 +32,7 @@
 const DEFAULT_BASE = "https://translator.philfan.cn";
 /** Same class of UA as Host `translator_fetch`. */
 const APP_UA =
-	"library-lookup/0.1 (+https://github.com/poco-ai/library; probe)";
+	"library-lookup/0.1 (+https://github.com/user-A100/Library; probe)";
 
 const args = process.argv.slice(2);
 

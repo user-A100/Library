@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" role="img" aria-label="Library">
+  <title>Library</title>
+  <rect x="24" y="24" width="464" height="464" rx="128" fill="#23865f"/>
+  <polygon points="154,112 230,112 230,332 380,332 380,400 154,400" fill="#ffffff"/>
+</svg>

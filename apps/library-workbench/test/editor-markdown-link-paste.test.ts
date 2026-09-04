@@ -48,7 +48,7 @@ describe("paste URL into unfinished markdown link", () => {
 
 		// Simulate MarkdownPastePlugin plain-text path for unfinished context.
 		expect(isUnfinishedMarkdownLinkContext(editor)).toBe(true);
-		editor.tf.insertText("https://github.com/poco-ai/Library/issues");
+		editor.tf.insertText("https://github.com/user-A100/Library/issues");
 		expect(JSON.stringify(editor.children)).not.toContain('"type":"a"');
 
 		editor.tf.insertText(")");
@@ -56,7 +56,7 @@ describe("paste URL into unfinished markdown link", () => {
 		expect(links).toHaveLength(1);
 		expect(links[0]).toMatchObject({
 			type: KEYS.a,
-			url: "https://github.com/poco-ai/Library/issues",
+			url: "https://github.com/user-A100/Library/issues",
 			children: [{ text: "xx" }],
 		});
 	});
@@ -69,7 +69,7 @@ describe("paste URL into unfinished markdown link", () => {
 			.getApi(MarkdownPlugin)
 			.markdown.deserialize(
 				prepareMarkdownForDeserialize(
-					"https://github.com/poco-ai/Library/issues",
+					"https://github.com/user-A100/Library/issues",
 				),
 			);
 		editor.tf.insertFragment(fragment);
@@ -84,7 +84,7 @@ describe("paste URL into unfinished markdown link", () => {
 		const links = findOuterLinks(editor);
 		expect(links).toHaveLength(1);
 		expect(links[0]).toMatchObject({
-			url: "https://github.com/poco-ai/Library/issues",
+			url: "https://github.com/user-A100/Library/issues",
 			children: [{ text: "xx" }],
 		});
 		expect(JSON.stringify(editor.children)).not.toContain("[xx](");
@@ -98,7 +98,7 @@ describe("paste URL into unfinished markdown link", () => {
 			.getApi(MarkdownPlugin)
 			.markdown.deserialize(
 				prepareMarkdownForDeserialize(
-					"https://github.com/poco-ai/Library/issues",
+					"https://github.com/user-A100/Library/issues",
 				),
 			);
 		editor.tf.insertFragment(fragment);
@@ -107,7 +107,7 @@ describe("paste URL into unfinished markdown link", () => {
 		const links = findOuterLinks(editor);
 		expect(links).toHaveLength(1);
 		expect(links[0]).toMatchObject({
-			url: "https://github.com/poco-ai/Library/issues",
+			url: "https://github.com/user-A100/Library/issues",
 			children: [{ text: "issue" }],
 		});
 	});

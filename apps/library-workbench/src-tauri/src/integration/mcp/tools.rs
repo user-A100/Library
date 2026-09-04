@@ -361,7 +361,7 @@ impl ServerHandler for LibraryMcp {
         .with_server_info(
             Implementation::new("library", env!("CARGO_PKG_VERSION"))
                 .with_title("Library")
-                .with_website_url("https://library.poco-ai.com")
+                .with_website_url("https://https://github.com/user-A100/Library")
                 .with_icons(icons::server_icons()),
         )
     }
