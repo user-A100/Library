@@ -189,7 +189,7 @@
 			"removeCategory": "移除 {{category}}"
 		},
 		"feeds": {
-			"label": "订阅",
+			"label": "Feeds",
 			"add": "添加订阅",
 			"urlPlaceholder": "Feed URL",
 			"all": "全部",
@@ -232,7 +232,7 @@
 			}
 		},
 		"skills": {
-			"title": "Skill 推荐",
+			"title": "Skill Store",
 			"openGithub": "在 GitHub 打开",
 			"import": "导入 {{name}} 的 Skill",
 			"themes": {

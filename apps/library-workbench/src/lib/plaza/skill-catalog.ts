@@ -1,5 +1,5 @@
 /**
- * Curated research Skill repos for the 广场 → Skill 推荐 panel.
+ * Curated research Skill repos for the Plaza → Skill Store panel.
  *
  * Stars are a snapshot (2026-08-14) for display only. Clicking a card feeds
  * the GitHub URL into the existing 魔棒 Skill import (`lookupSubmit`).

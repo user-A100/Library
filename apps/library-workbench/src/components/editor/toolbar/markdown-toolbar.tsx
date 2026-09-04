@@ -26,6 +26,7 @@ import {
 	Quote,
 	Search,
 	Share,
+	Snowflake,
 	Strikethrough,
 	Underline,
 } from "lucide-react";
@@ -38,9 +39,7 @@ import {
 } from "platejs/react";
 import { type ReactNode, useCallback, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-
 import { useMarkdownDoc } from "@/components/editor/context/markdown-doc-context";
-import { CoolPapersIcon } from "@/components/icons/cool-papers-icon";
 
 import {
 	Popover,
@@ -196,7 +195,7 @@ function FetchKimiNotesButton() {
 			onClick={onClick}
 			className="gap-1 px-2"
 		>
-			{busy ? <Loader2 className="animate-spin" /> : <CoolPapersIcon />}
+			{busy ? <Loader2 className="animate-spin" /> : <Snowflake />}
 			<span className="text-xs font-medium">
 				{t("toolbar.fetchKimiNotesShort")}
 			</span>

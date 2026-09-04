@@ -19,9 +19,9 @@ export const PLAZA_VIRTUAL_PATH = "library:plaza";
  * (`components/plaza/source-icons.ts`).
  */
 export type PlazaSourceIcon =
-	| "coolPapers"
-	| "modelScope"
-	| "sparkles"
+	| "snowflake"
+	| "boxes"
+	| "store"
 	| "rss"
 	| "telescope";
 
@@ -68,7 +68,7 @@ export const PLAZA_SOURCES: readonly PlazaSource[] = [
 		label: "Cool Papers",
 		url: "https://papers.cool/",
 		embedOrigin: () => schemeOrigin("library-coolpapers"),
-		icon: "coolPapers",
+		icon: "snowflake",
 	},
 	{
 		id: "modelscope",
@@ -76,16 +76,16 @@ export const PLAZA_SOURCES: readonly PlazaSource[] = [
 		label: "ModelScope Papers",
 		url: "https://modelscope.cn/papers",
 		embedOrigin: () => schemeOrigin("library-modelscope"),
-		icon: "modelScope",
+		icon: "boxes",
 	},
 	{
 		id: "skills",
 		path: sourcePath("skills"),
-		label: "Skill picks",
+		label: "Skill Store",
 		url: null,
 		embedOrigin: null,
 		panel: "skills",
-		icon: "sparkles",
+		icon: "store",
 	},
 	{
 		id: "feeds",

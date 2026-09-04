@@ -232,7 +232,7 @@
 			}
 		},
 		"skills": {
-			"title": "Skill picks",
+			"title": "Skill Store",
 			"openGithub": "Open on GitHub",
 			"import": "Import skills from {{name}}",
 			"themes": {
