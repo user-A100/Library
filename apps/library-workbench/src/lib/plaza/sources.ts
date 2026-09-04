@@ -73,7 +73,7 @@ export const PLAZA_SOURCES: readonly PlazaSource[] = [
 	{
 		id: "modelscope",
 		path: sourcePath("modelscope"),
-		label: "ModelScope Papers",
+		label: "ModelScope",
 		url: "https://modelscope.cn/papers",
 		embedOrigin: () => schemeOrigin("library-modelscope"),
 		icon: "boxes",

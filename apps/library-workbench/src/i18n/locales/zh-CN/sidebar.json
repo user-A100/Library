@@ -167,7 +167,7 @@
 		"reload": "重新载入",
 		"openInSystemBrowser": "在系统浏览器打开",
 		"comingSoonFor": "{{label}} 即将推出。",
-		"modelscope": "ModelScope 论文",
+		"modelscope": "ModelScope",
 		"arxivRec": {
 			"label": "arXiv Daily",
 			"read": "阅读",
