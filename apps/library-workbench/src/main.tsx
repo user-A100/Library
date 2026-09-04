@@ -17,7 +17,7 @@ import {
 	subscribeSettings,
 } from "@/lib/settings";
 import { initSettingsStore } from "@/lib/settings/react-store";
-import { applyUiTheme } from "@/lib/ui/theme";
+import { applyUiTheme, parseCustomConfig } from "@/lib/ui/theme";
 import { checkForUpdate, installAvailableUpdate } from "@/lib/update";
 import { initVaultStore } from "@/lib/vault/store";
 import { initWorkspaceStore } from "@/lib/workspace/store";
@@ -56,12 +56,15 @@ async function boot() {
 		interfaceFontFamily: initialSettings.interfaceFontFamily,
 		monoFontFamily: initialSettings.monoFontFamily,
 	});
-	await applyUiTheme(initialSettings.uiTheme).catch((e) => {
+	await applyUiTheme(
+		initialSettings.uiTheme,
+		parseCustomConfig(initialSettings.gradientConfig),
+	).catch((e) => {
 		console.warn("[theme] failed to apply initial UI theme", e);
 	});
 	bootStage("theme");
 	subscribeSettings((s) => {
-		void applyUiTheme(s.uiTheme);
+		void applyUiTheme(s.uiTheme, parseCustomConfig(s.gradientConfig));
 		applyDocumentChrome({
 			uiScale: s.uiScale,
 			interfaceFontFamily: s.interfaceFontFamily,

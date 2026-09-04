@@ -1,8 +1,8 @@
-import { Check, LoaderCircle } from "lucide-react";
 import { useTheme } from "next-themes";
 import { memo, useEffect, useId, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { FontFamilyPicker } from "@/components/settings/font-family-picker";
+import { GradientThemePicker } from "@/components/settings/gradient-theme-picker";
 import {
 	PageTitle,
 	SettingsGroup,
@@ -28,15 +28,15 @@ import {
 } from "@/lib/settings";
 import {
 	applyUiTheme,
-	DEFAULT_UI_THEME,
-	loadUiThemes,
-	UI_THEMES,
-	type UiThemeDef,
+	GRADIENT_PRESETS,
+	type GradientThemeConfig,
+	parseCustomConfig,
 } from "@/lib/ui/theme";
 
 export type AppearancePaneProps = {
 	theme: ThemePreference;
 	uiTheme: string;
+	gradientConfig: string;
 	locale: LocalePreference;
 	uiScale: number;
 	editorFontSize: number;
@@ -51,6 +51,7 @@ export type AppearancePaneProps = {
 function AppearancePaneInner({
 	theme,
 	uiTheme,
+	gradientConfig,
 	locale,
 	uiScale,
 	editorFontSize,
@@ -69,7 +70,6 @@ function AppearancePaneInner({
 	const monoFontId = useId();
 	const lineHeightId = useId();
 	const uiScaleId = useId();
-	const [themeDefs, setThemeDefs] = useState<UiThemeDef[]>([]);
 
 	const [fontSize, setFontSize] = useState(editorFontSize);
 	useEffect(() => {
@@ -110,51 +110,23 @@ function AppearancePaneInner({
 		return () => clearTimeout(id);
 	}, [scale, uiScale, patch]);
 
-	useEffect(() => {
-		let active = true;
-		void loadUiThemes()
-			.then((themes) => {
-				if (active) setThemeDefs(themes);
-			})
-			.catch(() => {
-				// Manifest names remain usable if preview data fails to load.
-			});
-		return () => {
-			active = false;
-		};
-	}, []);
-
 	const setThemePref = (next: ThemePreference) => {
 		patch({ theme: next });
 		setTheme(next);
 	};
 
 	const isDark = resolvedTheme === "dark";
-	const defaultPreview = {
-		background: isDark ? "oklch(0.145 0 0)" : "oklch(1 0 0)",
-		card: isDark ? "oklch(0.205 0 0)" : "oklch(1 0 0)",
-		primary: isDark ? "oklch(0.922 0 0)" : "oklch(0.205 0 0)",
-		secondary: isDark ? "oklch(0.269 0 0)" : "oklch(0.97 0 0)",
-		accent: isDark ? "oklch(0.269 0 0)" : "oklch(0.97 0 0)",
-		foreground: isDark ? "oklch(0.985 0 0)" : "oklch(0.145 0 0)",
-		border: isDark ? "oklch(1 0 0 / 10%)" : "oklch(0.922 0 0)",
+
+	const setGradientTheme = (
+		name: string,
+		config: GradientThemeConfig | null,
+	) => {
+		patch({
+			uiTheme: name,
+			gradientConfig: config ? JSON.stringify(config) : "",
+		});
+		void applyUiTheme(name, config);
 	};
-	const previewThemes = [
-		{
-			name: DEFAULT_UI_THEME,
-			title: t("appearance.uiTheme.default"),
-			light: defaultPreview,
-			dark: defaultPreview,
-		},
-		...UI_THEMES.map(
-			(meta) =>
-				themeDefs.find((theme) => theme.name === meta.name) ?? {
-					...meta,
-					light: defaultPreview,
-					dark: defaultPreview,
-				},
-		),
-	];
 
 	return (
 		<>
@@ -185,78 +157,18 @@ function AppearancePaneInner({
 							{t("appearance.uiThemeLabel")}
 						</span>
 						<span className="truncate text-muted-foreground text-xs">
-							{previewThemes.find((item) => item.name === uiTheme)?.title ??
-								uiTheme}
+							{uiTheme === "custom"
+								? t("appearance.uiTheme.custom", { defaultValue: "Custom" })
+								: (GRADIENT_PRESETS.find((item) => item.name === uiTheme)
+										?.title ?? uiTheme)}
 						</span>
 					</div>
-					<div className="library-scroll grid max-h-[15rem] grid-cols-2 auto-rows-[7.25rem] gap-2 overflow-y-auto pr-1 sm:grid-cols-3">
-						{previewThemes.map((item) => {
-							const colors = isDark ? item.dark : item.light;
-							const selected = item.name === uiTheme;
-							return (
-								<button
-									key={item.name}
-									type="button"
-									aria-label={t("appearance.uiTheme.select", {
-										name: item.title,
-									})}
-									aria-pressed={selected}
-									onClick={() => {
-										patch({ uiTheme: item.name });
-										void applyUiTheme(item.name);
-									}}
-									className="group h-[7.25rem] min-w-0 rounded-lg border border-border/70 p-1 text-left outline-none transition-colors hover:border-primary/60 focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/50"
-								>
-									<div
-										className="overflow-hidden rounded-md border border-black/10 p-1.5 dark:border-white/10"
-										style={{ backgroundColor: colors.background }}
-									>
-										<div className="mb-1 flex items-center gap-1">
-											<span
-												className="h-1.5 w-1/3 rounded-full"
-												style={{ backgroundColor: colors.primary }}
-											/>
-											<span
-												className="h-1.5 flex-1 rounded-full opacity-60"
-												style={{ backgroundColor: colors.foreground }}
-											/>
-										</div>
-										<div
-											className="rounded border p-1.5"
-											style={{
-												backgroundColor: colors.card,
-												borderColor: colors.border,
-											}}
-										>
-											<div
-												className="mb-1 h-1 w-2/3 rounded-full bg-current opacity-50"
-												style={{ color: colors.foreground }}
-											/>
-											<div className="flex gap-1">
-												<span
-													className="h-2.5 flex-1 rounded-sm"
-													style={{ backgroundColor: colors.secondary }}
-												/>
-												<span
-													className="h-2.5 w-1/3 rounded-sm"
-													style={{ backgroundColor: colors.accent }}
-												/>
-											</div>
-										</div>
-									</div>
-									<div className="flex min-w-0 items-center gap-1.5 px-1 py-1">
-										<span className="truncate text-xs">{item.title}</span>
-										{selected ? (
-											<Check className="ml-auto size-3.5 shrink-0 text-primary" />
-										) : null}
-									</div>
-								</button>
-							);
-						})}
-					</div>
-					{themeDefs.length === 0 ? (
-						<LoaderCircle className="mx-auto mt-2 size-3.5 animate-spin text-muted-foreground" />
-					) : null}
+					<GradientThemePicker
+						value={uiTheme}
+						customConfig={parseCustomConfig(gradientConfig)}
+						dark={isDark}
+						onChange={setGradientTheme}
+					/>
 				</div>
 				<SettingsRow label={t("appearance.languageLabel")}>
 					<Select

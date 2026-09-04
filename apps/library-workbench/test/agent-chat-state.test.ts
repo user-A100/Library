@@ -562,9 +562,9 @@ describe("ensureModelsInclude", () => {
 
 describe("isBackgroundWorkflowHistoryTitle", () => {
 	it("hides paper-reader workflow titles", () => {
-		expect(
-			isBackgroundWorkflowHistoryTitle("library paper-reader notes"),
-		).toBe(true);
+		expect(isBackgroundWorkflowHistoryTitle("library paper-reader notes")).toBe(
+			true,
+		);
 		expect(isBackgroundWorkflowHistoryTitle("Summarize this paper")).toBe(
 			false,
 		);

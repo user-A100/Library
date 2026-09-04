@@ -72,6 +72,7 @@ export const DEFAULT_SETTINGS: AppSettings = {
 	featureTourDone: false,
 	theme: "system",
 	uiTheme: DEFAULT_UI_THEME,
+	gradientConfig: "",
 	locale: "system",
 	editorFontSize: 14,
 	interfaceFontFamily: "",

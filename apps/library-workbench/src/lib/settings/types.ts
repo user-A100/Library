@@ -209,10 +209,14 @@ export type AppSettings = {
 	// Appearance
 	theme: ThemePreference;
 	/**
-	 * Bundled tweakcn color theme name; `"default"` keeps the built-in look.
+	 * Gradient theme preset name, or `"custom"` to use `gradientConfig`.
 	 * See src/lib/ui/theme.ts.
 	 */
 	uiTheme: string;
+	/**
+	 * JSON GradientThemeConfig used when `uiTheme === "custom"`; empty = none.
+	 */
+	gradientConfig: string;
 	locale: LocalePreference;
 	editorFontSize: number;
 	/**

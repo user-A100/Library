@@ -47,9 +47,7 @@ const tauriConfig = JSON.parse(
 	readFileSync("src-tauri/tauri.conf.json", "utf8"),
 );
 if (!tauriConfig.bundle?.icon?.includes("icons/ios/AppIcon-512@2x.png")) {
-	console.error(
-		"tauri.conf.json must include the iOS 1024px Library app icon",
-	);
+	console.error("tauri.conf.json must include the iOS 1024px Library app icon");
 	process.exit(1);
 }
 

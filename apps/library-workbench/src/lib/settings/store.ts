@@ -408,6 +408,9 @@ function normalizePartial(
 	if (!isKnownUiTheme(merged.uiTheme)) {
 		merged.uiTheme = DEFAULT_SETTINGS.uiTheme;
 	}
+	if (typeof merged.gradientConfig !== "string") {
+		merged.gradientConfig = "";
+	}
 	if (!Number.isFinite(merged.uiScale)) {
 		// Migrate the old per-icon-size setting (12–22 px, default 14) to a global
 		// scale ratio. 14 px was 100%; snap to the closest preset.

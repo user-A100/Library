@@ -96,6 +96,9 @@ pub struct AppSettings {
     pub theme: String,
     #[serde(default = "default_ui_theme")]
     pub ui_theme: String,
+    /// JSON GradientThemeConfig for the "custom" gradient theme; empty = none.
+    #[serde(default)]
+    pub gradient_config: String,
     #[serde(default = "default_locale")]
     pub locale: String,
     #[serde(default = "default_editor_font_size")]
@@ -298,6 +301,7 @@ impl Default for AppSettings {
             batch_import_concurrency: default_batch_import_concurrency(),
             theme: default_theme(),
             ui_theme: default_ui_theme(),
+            gradient_config: String::new(),
             locale: default_locale(),
             editor_font_size: default_editor_font_size(),
             interface_font_family: String::new(),
@@ -360,10 +364,10 @@ fn default_library_columns() -> Vec<LibraryColumnPref> {
 fn default_theme() -> String {
     "system".into()
 }
-/// tweakcn preset name; the theme list lives in the frontend bundle, so the
+/// Gradient preset name; the theme list lives in the frontend bundle, so the
 /// Host only guarantees a non-empty value.
 fn default_ui_theme() -> String {
-    "default".into()
+    "zen-mint".into()
 }
 fn default_locale() -> String {
     "system".into()
@@ -876,6 +880,7 @@ fn normalize(s: &mut AppSettings) {
     if s.ui_theme.is_empty() {
         s.ui_theme = default_ui_theme();
     }
+    s.gradient_config = s.gradient_config.trim().to_string();
     const LOCALES: &[&str] = &["system", "en", "zh-CN"];
     if !LOCALES.contains(&s.locale.as_str()) {
         s.locale = default_locale();

@@ -173,7 +173,20 @@
 		"uiThemeLabel": "Color theme",
 		"uiTheme": {
 			"default": "Default",
-			"select": "Use {{name}} theme"
+			"custom": "Custom",
+			"select": "Use {{name}} theme",
+			"points": "Color points",
+			"pointColor": "Point color",
+			"pointX": "X",
+			"pointY": "Y",
+			"primary": "Primary",
+			"addPoint": "Add",
+			"removePoint": "Remove point",
+			"opacity": "Color",
+			"texture": "Grain",
+			"algorithm": "Layout",
+			"algorithmFree": "Free",
+			"algorithmFlow": "Flow"
 		},
 		"languageLabel": "Language",
 		"language": {

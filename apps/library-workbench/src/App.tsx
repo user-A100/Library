@@ -371,7 +371,10 @@ export default function App() {
 
 	return (
 		<WikiNavProvider>
-			<div className="flex h-dvh max-h-dvh flex-col overflow-hidden bg-background text-foreground">
+			<div
+				className="flex h-dvh max-h-dvh flex-col overflow-hidden bg-background text-foreground"
+				style={{ backgroundImage: "var(--library-gradient, none)" }}
+			>
 				{/*
 				  macOS title bar (traffic lights row): Tauri Overlay + hiddenTitle.
 				  Height must match trafficLightPosition math in tao (≈32px → h-8).

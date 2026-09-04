@@ -363,6 +363,7 @@ export function SettingsContent({
 								<AppearancePane
 									theme={settings.theme}
 									uiTheme={settings.uiTheme}
+									gradientConfig={settings.gradientConfig}
 									locale={settings.locale}
 									uiScale={settings.uiScale}
 									editorFontSize={settings.editorFontSize}

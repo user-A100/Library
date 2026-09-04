@@ -173,7 +173,20 @@
 		"uiThemeLabel": "配色主题",
 		"uiTheme": {
 			"default": "默认",
-			"select": "使用 {{name}} 主题"
+			"custom": "自定义",
+			"select": "使用 {{name}} 主题",
+			"points": "色点",
+			"pointColor": "色点颜色",
+			"pointX": "X",
+			"pointY": "Y",
+			"primary": "主色",
+			"addPoint": "添加",
+			"removePoint": "移除色点",
+			"opacity": "色彩",
+			"texture": "质感",
+			"algorithm": "排布",
+			"algorithmFree": "自由",
+			"algorithmFlow": "流动"
 		},
 		"languageLabel": "语言",
 		"language": {

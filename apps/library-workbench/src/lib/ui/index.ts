@@ -18,8 +18,7 @@ export {
 export {
 	applyUiTheme,
 	DEFAULT_UI_THEME,
+	type GradientThemeConfig,
 	isKnownUiTheme,
-	loadUiThemes,
 	UI_THEMES,
-	type UiThemeDef,
 } from "@/lib/ui/theme";
