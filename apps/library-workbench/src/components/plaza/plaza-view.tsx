@@ -43,6 +43,8 @@ export function PlazaView({
 				homeUrl={source.url}
 				embedOrigin={source.embedOrigin?.() ?? null}
 				title={plazaSourceLabel(source)}
+				sourceId={source.id}
+				sourceLabel={plazaSourceLabel(source)}
 				className={className}
 			/>
 		);

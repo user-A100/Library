@@ -14,6 +14,7 @@
 import { ArrowLeft, ArrowRight, ExternalLink, RotateCw } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { PlazaAssistant } from "@/components/plaza/assistant/plaza-assistant";
 import { Button } from "@/components/ui/button";
 import {
 	Tooltip,
@@ -22,6 +23,7 @@ import {
 } from "@/components/ui/tooltip";
 import { openExternalUrl } from "@/lib/core/open-external";
 import { cn } from "@/lib/core/utils";
+import { requestFrameListings } from "@/lib/plaza/assistant/listings";
 import { importPlazaPaper, type PlazaImportRequest } from "@/lib/plaza/import";
 
 /** No `allow-popups`: every link must resolve inside this frame. */
@@ -58,6 +60,8 @@ export function PlazaWebFrame({
 	homeUrl,
 	embedOrigin,
 	title,
+	sourceId,
+	sourceLabel,
 	className,
 }: {
 	/** Canonical public URL, used for "open in browser". */
@@ -65,6 +69,10 @@ export function PlazaWebFrame({
 	/** Proxy scheme origin, or null to embed `homeUrl` directly. */
 	embedOrigin: string | null;
 	title: string;
+	/** Plaza source id backing this frame; keys the assistant's ask session. */
+	sourceId: string;
+	/** Human label the assistant quotes in its prompt. */
+	sourceLabel: string;
 	className?: string;
 }) {
 	const { t } = useTranslation("sidebar");
@@ -234,6 +242,13 @@ export function PlazaWebFrame({
 					</TooltipContent>
 				</Tooltip>
 			</div>
+			{embedOrigin ? (
+				<PlazaAssistant
+					sourceId={sourceId}
+					sourceLabel={sourceLabel}
+					collect={() => requestFrameListings(frameRef.current, embedOrigin)}
+				/>
+			) : null}
 			<div className="relative min-h-0 flex-1">
 				<iframe
 					// Keyed on the epoch alone: only Back / Forward / Reload remount.

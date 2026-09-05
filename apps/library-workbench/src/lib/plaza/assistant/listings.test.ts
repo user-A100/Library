@@ -7,6 +7,7 @@ import {
 	listingsFromRecommendItems,
 	listingsFromSkillRepos,
 	PLAZA_LISTING_CAP,
+	requestFrameListings,
 } from "./listings";
 
 const repo: SkillRepo = {
@@ -91,5 +92,120 @@ describe("listingsFromRecommendItems", () => {
 			id: "2607.24653",
 			kind: "paper",
 		});
+	});
+});
+
+describe("requestFrameListings", () => {
+	const ORIGIN = "http://library-modelscope.localhost";
+
+	/** A frame whose contentWindow answers requestListings via the bridge. */
+	function fakeFrame(reply: (requestId: string) => unknown) {
+		let handler: ((e: MessageEvent) => void) | null = null;
+		const frame = {
+			contentWindow: {
+				postMessage: (msg: unknown) => {
+					const requestId = (msg as { requestId?: string }).requestId;
+					if (typeof requestId === "string") {
+						setTimeout(
+							() =>
+								handler?.({
+									origin: ORIGIN,
+									data: reply(requestId),
+								} as MessageEvent),
+							0,
+						);
+					}
+				},
+			},
+		} as unknown as HTMLIFrameElement;
+		const subscribe = (h: (e: MessageEvent) => void) => {
+			handler = h;
+			return () => {
+				handler = null;
+			};
+		};
+		return { frame, subscribe };
+	}
+
+	it("round-trips listings through the bridge", async () => {
+		const { frame, subscribe } = fakeFrame((requestId) => ({
+			source: "library-plaza",
+			type: "listings",
+			requestId,
+			items: [
+				{
+					id: "2405.01234",
+					title: "A Paper",
+					url: "https://arxiv.org/abs/2405.01234",
+					summary: "s",
+				},
+			],
+		}));
+		const out = await requestFrameListings(frame, ORIGIN, 1000, subscribe);
+		expect(out[0]).toMatchObject({
+			sourceId: "frame",
+			id: "2405.01234",
+			title: "A Paper",
+			kind: "paper",
+			importPayload: {
+				id: "2405.01234",
+				branch: "arxiv",
+				url: "https://arxiv.org/abs/2405.01234",
+				title: "A Paper",
+			},
+		});
+	});
+
+	it("ignores replies with a foreign origin, source or requestId", async () => {
+		let handler: ((e: MessageEvent) => void) | null = null;
+		const frame = {
+			contentWindow: {
+				postMessage: (msg: unknown) => {
+					const requestId = (msg as { requestId?: string }).requestId;
+					setTimeout(() => {
+						handler?.({
+							origin: "http://evil.localhost",
+							data: {
+								source: "library-plaza",
+								type: "listings",
+								requestId,
+								items: [{ id: "x", title: "x" }],
+							},
+						} as MessageEvent);
+						handler?.({
+							origin: ORIGIN,
+							data: {
+								source: "somewhere-else",
+								type: "listings",
+								requestId,
+								items: [{ id: "x", title: "x" }],
+							},
+						} as MessageEvent);
+					}, 0);
+				},
+			},
+		} as unknown as HTMLIFrameElement;
+		const subscribe = (h: (e: MessageEvent) => void) => {
+			handler = h;
+			return () => {
+				handler = null;
+			};
+		};
+		await expect(
+			requestFrameListings(frame, ORIGIN, 50, subscribe),
+		).resolves.toEqual([]);
+	});
+
+	it("resolves [] on timeout", async () => {
+		const frame = {
+			contentWindow: { postMessage: () => {} },
+		} as unknown as HTMLIFrameElement;
+		await expect(
+			requestFrameListings(frame, "http://x.localhost", 20, () => () => {}),
+		).resolves.toEqual([]);
+	});
+
+	it("resolves [] without a frame", async () => {
+		await expect(requestFrameListings(null, ORIGIN, 20)).resolves.toEqual([]);
 	});
 });
