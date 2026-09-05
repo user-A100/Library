@@ -11,14 +11,27 @@ import {
 	TooltipContent,
 	TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { PlazaAssistant } from "@/components/plaza/assistant/plaza-assistant";
 import { openExternalUrl } from "@/lib/core/open-external";
 import { cn } from "@/lib/core/utils";
+import { listingsFromSkillRepos } from "@/lib/plaza/assistant/listings";
 import { importPlazaSkillRepo } from "@/lib/plaza/import";
 import {
 	SKILL_THEMES,
 	type SkillRepo,
 	type SkillThemeId,
 } from "@/lib/plaza/skill-catalog";
+
+/**
+ * The skills view has no filter state, so "currently visible" is all themes'
+ * repos. Each theme's collector caps at 50; cap the union to the same budget.
+ */
+function allSkillListings() {
+	const listings = SKILL_THEMES.flatMap((theme) =>
+		listingsFromSkillRepos(theme.repos, theme.id),
+	);
+	return listings.slice(0, 50);
+}
 
 function formatStars(n: number): string {
 	if (n >= 1000) {
@@ -134,26 +147,28 @@ function RepoCard({ repo }: { repo: SkillRepo }) {
 export function PlazaSkillsView({ className }: { className?: string }) {
 	const { t } = useTranslation("sidebar");
 	return (
-		<div
-			className={cn(
-				"library-scroll h-full select-none overflow-y-auto p-4",
-				className,
-			)}
-		>
-			<h1 className="font-medium text-sm">{t("plaza.skills.title")}</h1>
-			<div className="mt-4 space-y-6">
-				{SKILL_THEMES.map((theme) => (
-					<section key={theme.id}>
-						<h2 className="mb-2 font-medium text-muted-foreground text-xs">
-							{t(`plaza.skills.themes.${theme.id as SkillThemeId}`)}
-						</h2>
-						<div className="grid grid-cols-3 items-start gap-2">
-							{theme.repos.map((repo) => (
-								<RepoCard key={repo.url} repo={repo} />
-							))}
-						</div>
-					</section>
-				))}
+		<div className={cn("flex h-full min-h-0 select-none flex-col", className)}>
+			<PlazaAssistant
+				sourceId="skills"
+				sourceLabel={t("plaza.skills.title")}
+				collect={async () => allSkillListings()}
+			/>
+			<div className="library-scroll min-h-0 flex-1 overflow-y-auto p-4">
+				<h1 className="font-medium text-sm">{t("plaza.skills.title")}</h1>
+				<div className="mt-4 space-y-6">
+					{SKILL_THEMES.map((theme) => (
+						<section key={theme.id}>
+							<h2 className="mb-2 font-medium text-muted-foreground text-xs">
+								{t(`plaza.skills.themes.${theme.id as SkillThemeId}`)}
+							</h2>
+							<div className="grid grid-cols-3 items-start gap-2">
+								{theme.repos.map((repo) => (
+									<RepoCard key={repo.url} repo={repo} />
+								))}
+							</div>
+						</section>
+					))}
+				</div>
 			</div>
 		</div>
 	);

@@ -9,6 +9,7 @@ import type { TFunction } from "i18next";
 import { EllipsisVertical, Pin, Plus, RefreshCw } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { PlazaAssistant } from "@/components/plaza/assistant/plaza-assistant";
 import {
 	PlazaFeedItemDetail,
 	PlazaFeedItemRow,
@@ -32,6 +33,7 @@ import { copyTextToClipboard } from "@/lib/core/clipboard";
 import { errorText } from "@/lib/core/error";
 import { notifyError } from "@/lib/core/notify";
 import { cn } from "@/lib/core/utils";
+import { listingsFromFeedItems } from "@/lib/plaza/assistant/listings";
 import {
 	ARXIV_FEED_CHIPS,
 	arxivFeedUrl,
@@ -584,6 +586,11 @@ export function PlazaFeedsView({ className }: { className?: string }) {
 						</div>
 					</nav>
 					<div className="flex min-h-0 min-w-0 flex-1 flex-col">
+						<PlazaAssistant
+							sourceId="feeds"
+							sourceLabel={t("plaza.feeds.label")}
+							collect={async () => listingsFromFeedItems(items)}
+						/>
 						{openItem ? (
 							<PlazaFeedItemDetail
 								item={openItem}

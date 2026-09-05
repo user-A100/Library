@@ -24,6 +24,7 @@ import {
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { PlazaAssistant } from "@/components/plaza/assistant/plaza-assistant";
 import { Button } from "@/components/ui/button";
 import {
 	Command,
@@ -48,6 +49,7 @@ import { notifyError } from "@/lib/core/notify";
 import { openExternalUrl } from "@/lib/core/open-external";
 import { cn } from "@/lib/core/utils";
 import { lookupSubmit } from "@/lib/paper/import-actions";
+import { listingsFromRecommendItems } from "@/lib/plaza/assistant/listings";
 import { ARXIV_ALL_CATEGORIES, ARXIV_FEED_CHIPS } from "@/lib/plaza/feeds";
 import {
 	isEmptyCorpusError,
@@ -396,6 +398,12 @@ export function PlazaArxivRecView({ className }: { className?: string }) {
 					</Tooltip>
 				</span>
 			</div>
+
+			<PlazaAssistant
+				sourceId="arxiv-rec"
+				sourceLabel={t("plaza.arxivRec.label")}
+				collect={async () => listingsFromRecommendItems(items)}
+			/>
 
 			<div className="library-scroll min-h-0 flex-1 overflow-y-auto p-2.5">
 				{showEmpty ? (
