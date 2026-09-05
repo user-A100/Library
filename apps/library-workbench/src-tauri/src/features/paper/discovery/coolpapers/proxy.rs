@@ -170,9 +170,47 @@ const NAV_BRIDGE: &str = r##"<style>
       });
     });
 
+    // ---- AI listing export ----------------------------------------------
+    // The panel's assistant asks the frame for the rows currently in view.
+    // Titles live at `#title-<panelId>`; the summary is the rest of the panel's
+    // text. The URL is the panel's upstream landing anchor — the same one [入库]
+    // hands the importer — falling back to the branch page on papers.cool.
+    var collectListings = function () {
+      var items = [];
+      var nodes = document.querySelectorAll('[id^="title-"]');
+      for (var i = 0; i < nodes.length && items.length < 50; i++) {
+        var el = nodes[i];
+        var id = el.id.slice("title-".length);
+        if (!id) continue;
+        var title = (el.textContent || "").replace(/\s+/g, " ").trim();
+        if (!title) continue;
+        var panel = el.closest(".panel.paper");
+        var summary = panel
+          ? (panel.textContent || "").replace(/\s+/g, " ").trim()
+          : "";
+        if (summary.indexOf(title) === 0) summary = summary.slice(title.length).trim();
+        var url = panel ? upstreamUrl(panel) : null;
+        items.push({
+          id: id,
+          title: title,
+          url: url || "https://papers.cool/arxiv/" + id,
+          summary: summary.slice(0, 300)
+        });
+      }
+      return items;
+    };
+
     window.addEventListener("message", function (event) {
       var data = event.data;
       if (!data || data.source !== "library-plaza-host") return;
+      if (data.type === "requestListings") {
+        post({
+          type: "listings",
+          requestId: data.requestId,
+          items: collectListings()
+        });
+        return;
+      }
       if (typeof data.importedId !== "string") return;
       var panel = document.getElementById(data.importedId);
       var button = panel ? panel.querySelector(".title-import") : null;
@@ -230,7 +268,9 @@ mod tests {
     fn rewrites_absolute_self_links_to_stay_on_the_proxy() {
         let out = rewrite_html("<a href=\"https://papers.cool/arxiv/2608.13558\">x</a>");
         assert!(out.contains("href=\"/arxiv/2608.13558\""));
-        assert!(!out.contains("https://papers.cool/"));
+        // The bridge's own source mentions the origin (its listing-export
+        // fallback), so check the rewritten attribute form.
+        assert!(!out.contains("href=\"https://papers.cool/"));
     }
 
     #[test]
@@ -281,5 +321,13 @@ mod tests {
         // Feeds and same-origin handoffs reopen upstream, not on our scheme.
         assert!(NAV_BRIDGE.contains("isFeed"));
         assert!(NAV_BRIDGE.contains("externalPath"));
+    }
+
+    /// The panel's AI assistant asks the frame for its visible rows.
+    #[test]
+    fn exports_visible_listings_on_request() {
+        assert!(NAV_BRIDGE.contains("requestListings"));
+        assert!(NAV_BRIDGE.contains("collectListings"));
+        assert!(NAV_BRIDGE.contains("type: \"listings\""));
     }
 }
