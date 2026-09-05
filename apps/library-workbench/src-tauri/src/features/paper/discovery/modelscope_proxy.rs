@@ -316,9 +316,51 @@ html body { overflow-y: visible !important; }
       return null;
     };
 
+    // ---- AI listing export ----------------------------------------------
+    // The panel's assistant asks the frame for the cards currently in view.
+    // Same single-segment id rule and title-node heuristic as [入库], so the
+    // snapshot matches what the user can actually import.
+    var collectListings = function () {
+      var seen = {};
+      var items = [];
+      var anchors = document.querySelectorAll('a[href^="/papers/"]');
+      for (var i = 0; i < anchors.length && items.length < 50; i++) {
+        var path = null;
+        try {
+          path = new URL(anchors[i].href, location.href).pathname;
+        } catch (e) {}
+        if (!path) continue;
+        var id = paperId(path);
+        if (!id || seen[id]) continue;
+        var titleNode = titleOf(anchors[i]);
+        var title = titleNode
+          ? (titleNode.textContent || "").replace(/\s+/g, " ").trim()
+          : "";
+        if (!title) continue;
+        seen[id] = true;
+        var summary = (anchors[i].textContent || "").replace(/\s+/g, " ").trim();
+        if (summary.indexOf(title) === 0) summary = summary.slice(title.length).trim();
+        items.push({
+          id: id,
+          title: title,
+          url: "https://modelscope.cn/papers/" + id,
+          summary: summary.slice(0, 300)
+        });
+      }
+      return items;
+    };
+
     window.addEventListener("message", function (event) {
       var data = event.data;
       if (!data || data.source !== "library-plaza-host") return;
+      if (data.type === "requestListings") {
+        post({
+          type: "listings",
+          requestId: data.requestId,
+          items: collectListings()
+        });
+        return;
+      }
       if (typeof data.importedId !== "string") return;
       // arXiv ids contain dots, so id-based DOM lookups are out.
       var buttons = document.querySelectorAll(".library-import");
@@ -530,5 +572,13 @@ mod tests {
     fn defers_decoration_until_the_dom_exists() {
         assert!(NAV_BRIDGE.contains("DOMContentLoaded"));
         assert!(NAV_BRIDGE.contains("MutationObserver"));
+    }
+
+    /// The panel's AI assistant asks the frame for its visible cards.
+    #[test]
+    fn exports_visible_listings_on_request() {
+        assert!(NAV_BRIDGE.contains("requestListings"));
+        assert!(NAV_BRIDGE.contains("collectListings"));
+        assert!(NAV_BRIDGE.contains("type: \"listings\""));
     }
 }
