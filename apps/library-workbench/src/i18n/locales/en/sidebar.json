@@ -231,6 +231,21 @@
 				"body": "Could not read the feed body."
 			}
 		},
+		"assistant": {
+			"askPlaceholder": "Ask AI to search this list…",
+			"ask": "Ask AI",
+			"stop": "Stop",
+			"collecting": "Collecting visible items…",
+			"thinking": "Thinking…",
+			"emptyListings": "No visible items to search. Open a listing first.",
+			"noCards": "No matching items in the current list.",
+			"parseFailed": "Could not parse recommendations; showing the raw answer.",
+			"import": "Import",
+			"showRaw": "Show raw answer",
+			"hideRaw": "Hide raw answer",
+			"agentError": "AI run failed.",
+			"openSettings": "Open Agent settings"
+		},
 		"skills": {
 			"title": "Skill Store",
 			"openGithub": "Open on GitHub",

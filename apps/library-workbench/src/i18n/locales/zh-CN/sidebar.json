@@ -231,6 +231,21 @@
 				"body": "无法读取 Feed 内容。"
 			}
 		},
+		"assistant": {
+			"askPlaceholder": "让 AI 在当前列表里帮你找…",
+			"ask": "问 AI",
+			"stop": "停止",
+			"collecting": "正在收集当前列表…",
+			"thinking": "思考中…",
+			"emptyListings": "当前没有可检索的条目，请先打开一个列表。",
+			"noCards": "当前列表中没有匹配项。",
+			"parseFailed": "无法解析推荐结果，显示原始回答。",
+			"import": "入库",
+			"showRaw": "显示原始回答",
+			"hideRaw": "收起原始回答",
+			"agentError": "AI 运行失败。",
+			"openSettings": "打开 Agent 设置"
+		},
 		"skills": {
 			"title": "Skill Store",
 			"openGithub": "在 GitHub 打开",
