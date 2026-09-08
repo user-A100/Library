@@ -27,7 +27,7 @@ jobs:
           node-version: 24
       - uses: pnpm/action-setup@v4
         with:
-          version: 9
+          version: 11
       - uses: dtolnay/rust-toolchain@stable
         with:
           targets: aarch64-apple-darwin
@@ -79,22 +79,23 @@ jobs:
         run: cargo build --release --target ${{ matrix.target }}
       - name: Package (tar.gz)
         if: matrix.ext == 'tar.gz'
+        working-directory: apps/library-workbench/target/${{ matrix.target }}/release
         run: |
-          cd target/${{ matrix.target }}/release
           tar czf library-cli-${{ github.ref_name }}-${{ matrix.target }}.tar.gz library-cli
           sha256sum library-cli-${{ github.ref_name }}-${{ matrix.target }}.tar.gz > library-cli-${{ github.ref_name }}-${{ matrix.target }}.tar.gz.sha256
       - name: Package (zip)
         if: matrix.ext == 'zip'
+        working-directory: apps/library-workbench/target/${{ matrix.target }}/release
         shell: pwsh
         run: |
-          cd target/${{ matrix.target }}/release
           Compress-Archive -Path library-cli.exe -Destination library-cli-${{ github.ref_name }}-${{ matrix.target }}.zip
           (Get-FileHash library-cli-${{ github.ref_name }}-${{ matrix.target }}.zip -Algorithm SHA256).Hash.ToLower() + "  library-cli-${{ github.ref_name }}-${{ matrix.target }}.zip" | Out-File -Encoding ascii library-cli-${{ github.ref_name }}-${{ matrix.target }}.zip.sha256
       - name: Locate archives
         id: loc
         shell: bash
         run: |
-          ROOT=$( [ -d target/${{ matrix.target }}/release ] && echo target/${{ matrix.target }}/release || echo apps/library-workbench/cli/target/${{ matrix.target }}/release )
+          ROOT=apps/library-workbench/target/${{ matrix.target }}/release
+          [ -d "$ROOT" ] || ROOT=apps/library-workbench/cli/target/${{ matrix.target }}/release
           echo "dir=$ROOT" >> "$GITHUB_OUTPUT"
       - name: Upload CLI archives
         uses: softprops/action-gh-release@v2
