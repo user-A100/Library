@@ -159,6 +159,10 @@ export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), "");
   return {
     plugins: [react(), localAiProxy(env)],
+    optimizeDeps: {
+      // 仅扫描应用入口，避免爬入 desktop/zotero 等子模块内的 HTML
+      entries: ["index.html"],
+    },
     server: {
       watch: {
         ignored: ["**/work/**", "**/tmp/**", "**/.*.tmpdir/**"],
