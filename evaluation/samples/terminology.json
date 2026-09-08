@@ -1,0 +1,26 @@
+{
+  "meta": {
+    "description": "D4 术语正确性 · 术语表（从各论文 LaTeX 源码/标准中文译名抽取）。check-terms 用：回答中出现 variants（漂移译法）即记 1 错；canonical 为论文语境下的正确中文术语。",
+    "source": "各论文 LaTeX 源码关键词 + arXiv 中文社区通行译名"
+  },
+  "terms": [
+    {"paper": "1706.03762", "canonical": "自注意力", "en": "self-attention", "variants": ["自关注", "自我注意力", "自注意机制"]},
+    {"paper": "1706.03762", "canonical": "多头注意力", "en": "multi-head attention", "variants": ["多首注意力", "多头部注意力"]},
+    {"paper": "1706.03762", "canonical": "位置编码", "en": "positional encoding", "variants": ["位置嵌入", "位置向量编码"]},
+    {"paper": "1706.03762", "canonical": "编码器-解码器", "en": "encoder-decoder", "variants": ["编解码器", "编码解码器"]},
+    {"paper": "2006.11239", "canonical": "去噪扩散概率模型", "en": "DDPM", "variants": ["去噪扩散几率模型", "扩散概率去噪模型"]},
+    {"paper": "2006.11239", "canonical": "方差调度", "en": "variance schedule", "variants": ["方差时间表", "方差进度表"]},
+    {"paper": "2006.11239", "canonical": "反向过程", "en": "reverse process", "variants": ["逆过程", "反向传播过程"]},
+    {"paper": "2103.00020", "canonical": "对比学习", "en": "contrastive learning", "variants": ["对照学习", "对比性学习"]},
+    {"paper": "2103.00020", "canonical": "零样本", "en": "zero-shot", "variants": ["零示例", "零次学习"]},
+    {"paper": "2201.11903", "canonical": "思维链", "en": "chain-of-thought", "variants": ["思考链", "思路链", "推理链提示"]},
+    {"paper": "2201.11903", "canonical": "涌现能力", "en": "emergent abilities", "variants": ["突现能力", "涌现性技能"]},
+    {"paper": "2210.03629", "canonical": "推理与行动协同", "en": "ReAct", "variants": ["反应式提示", "ReAct框架推理法"]},
+    {"paper": "2005.14165", "canonical": "上下文学习", "en": "in-context learning", "variants": ["语境学习", "上下文中学习", "文内学习"]},
+    {"paper": "2510.16046", "canonical": "哈密顿量", "en": "Hamiltonian", "variants": ["哈密顿函数", "汉密尔顿量"]},
+    {"paper": "2510.16046", "canonical": "信息几何", "en": "information geometry", "variants": ["资讯几何", "信息几何学方法"]},
+    {"paper": "2510.16046", "canonical": "拓扑数据分析", "en": "topological data analysis", "variants": ["拓扑学数据分析", "拓朴数据分析"]},
+    {"paper": "2609.05256", "canonical": "皮肤电反应", "en": "galvanic skin response", "variants": ["皮电反应", "皮肤电阻反应"]},
+    {"paper": "2601.03888", "canonical": "零样本情感复制", "en": "zero-shot emotion cloning", "variants": ["零示例情感克隆", "零次情感复制"]}
+  ]
+}

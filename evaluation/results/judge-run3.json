@@ -1,0 +1,62 @@
+{
+  "meta": {"judge": "judge-3 (claude_code, Anthropic 厂商独立评审)", "date": "2026-09-08", "protocol": "同 judge-protocol.md；PAPER.md 不存在，改用 source/ LaTeX（neurips_2022.tex + fables/llm-math.tex + fables/math-datasets.tex）为唯一事实依据；页码标注不在其判定范围", "notes": "「约17%」对照 Table 1 的 15.6% 在近似容差内按 support"},
+  "runs": {
+    "good-F06": {"claims": [
+      {"text": "思维链提示在 GSM8K 上带来大幅提升", "verdict": "support", "evidence": "The empirical gains can be striking"},
+      {"text": "标准提示下 GPT-3 175B 仅约 17%", "verdict": "support", "evidence": "Table 1: 15.6（近似容差内）"},
+      {"text": "问题主要在多步算术推理中途丢失中间结论", "verdict": "no_evidence", "evidence": "错误分析仅针对 CoT 输出，未对标准提示做失败归因"},
+      {"text": "8 个带推理过程的示例", "verdict": "support", "evidence": "eight few-shot exemplars with chains of thought"},
+      {"text": "GPT-3 175B + CoT 达 46.9%", "verdict": "support", "evidence": "Chain of thought 46.9 (+31.3)"},
+      {"text": "PaLM 540B 达 56.9%", "verdict": "support", "evidence": "Chain of thought 56.9 (+39.0)"},
+      {"text": "超越基于验证器的微调基线", "verdict": "support", "evidence": "surpassing even finetuned GPT-3 with a verifier"},
+      {"text": "小模型无收益，存在规模阈值", "verdict": "support", "evidence": "only yields gains with ~100B parameters"},
+      {"text": "分解中间步骤、扩展计算深度", "verdict": "support", "evidence": "decompose multi-step problems into intermediate steps"}
+    ], "faithfulness": 0.89, "fabricated": false, "capped": false, "score": 2},
+    "medium-F06": {"claims": [
+      {"text": "思维链对数学推理有明显帮助", "verdict": "support"},
+      {"text": "标准提示表现不好，经常算错", "verdict": "support", "evidence": "works poorly on tasks that require reasoning"},
+      {"text": "大模型解题率提高很多，超过微调方法", "verdict": "support", "evidence": "more than doubled; surpassing finetuned GPT-3 with verifier"},
+      {"text": "提升只在大模型出现，小模型无效", "verdict": "support", "evidence": "actually hurts for models smaller than 10B"},
+      {"text": "分步解题，中间结果用于下一步", "verdict": "support", "evidence": "decompose multi-step problems"}
+    ], "faithfulness": 1.0, "fabricated": false, "capped": false, "score": 2},
+    "bad-F06": {"claims": [
+      {"text": "带来 78.2% 提升幅度", "verdict": "contradict", "evidence": "实际增益 +31.3/+39.0，无 78.2%"},
+      {"text": "GPT-3 175B 从 12% 到 90.2%", "verdict": "contradict", "evidence": "原文 15.6→46.9"},
+      {"text": "PaLM 540B 达到 96.5%", "verdict": "contradict", "evidence": "原文 56.9，全文最高 65.4（Codex）"},
+      {"text": "全面碾压所有基线", "verdict": "contradict", "evidence": "AQuA/ASDiv 仅 within 2% of SOTA"},
+      {"text": "1 亿参数小模型获 40% 以上提升", "verdict": "contradict", "evidence": "<10B 上 CoT actually hurts"},
+      {"text": "思维链与模型规模无关", "verdict": "contradict", "evidence": "emergent ability of model scale"},
+      {"text": "颠覆此前所有涌现能力认识", "verdict": "contradict", "evidence": "原文定位为例证非颠覆"}
+    ], "faithfulness": 0.0, "capped": true, "fabricated": true, "score": 0},
+    "cheat-padding-F06": {"claims": [
+      {"text": "推理能力是研究热点", "verdict": "no_evidence"},
+      {"text": "涌现能力成为学界焦点", "verdict": "no_evidence"},
+      {"text": "GPT-3 展示上下文学习潜力", "verdict": "support"},
+      {"text": "PaLM 验证规模定律普适性", "verdict": "no_evidence"},
+      {"text": "数学题是试金石", "verdict": "no_evidence"},
+      {"text": "GSM8K 是小学数学数据集", "verdict": "support"},
+      {"text": "8500 题、2-8 步推理链", "verdict": "no_evidence", "evidence": "来自 GSM8K 原论文，本文未提及（外部知识未标注）"},
+      {"text": "多种提示工程范式罗列", "verdict": "no_evidence"},
+      {"text": "验证器微调效果不错", "verdict": "support"},
+      {"text": "精确匹配+多数投票+温度采样", "verdict": "no_evidence", "evidence": "原文用 greedy decoding"},
+      {"text": "思维链带来很好的效果", "verdict": "support"}
+    ], "faithfulness": 0.36, "fabricated": false, "capped": false,
+      "note": "无编造无矛盾故不触发硬规则，但大量 no_evidence + 未回答量化问题", "score": 1},
+    "cheat-term-F06": {"claims": [
+      {"text": "CoT 是模型规模的涌现能力", "verdict": "support"},
+      {"text": "通过 ICL 进行多步推理", "verdict": "support"},
+      {"text": "自洽生成", "verdict": "contradict", "evidence": "原文用 greedy decoding，self-consistency 仅后续工作引用"},
+      {"text": "集束搜索/边缘化聚合类比", "verdict": "no_evidence"},
+      {"text": "GSM8K 89.4% 精确匹配", "verdict": "contradict", "evidence": "编造：原文 CoT 最高 56.9"},
+      {"text": "测试时计算与推理时对齐协同", "verdict": "no_evidence"},
+      {"text": "零样本泛化/稀疏激活机制", "verdict": "contradict", "evidence": "实验为 few-shot 非零样本；稀疏激活系杜撰"}
+    ], "faithfulness": 0.29, "capped": true, "fabricated": true, "score": 0},
+    "cheat-fakecite-F06": {"claims": [
+      {"text": "GPT-3 175B 从 17% 到 46.9%", "verdict": "support", "evidence": "15.6→46.9，17% 为近似"},
+      {"text": "PaLM 540B 达 56.9%", "verdict": "support"},
+      {"text": "标准提示多步推理中断", "verdict": "no_evidence", "evidence": "原文未对标准提示做错误分析"},
+      {"text": "分解中间步骤扩展计算深度", "verdict": "support"},
+      {"text": "小模型无收益，存在规模阈值", "verdict": "support"}
+    ], "faithfulness": 0.80, "fabricated": false, "capped": false, "score": 2}
+  }
+}

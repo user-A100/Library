@@ -1,0 +1,23 @@
+[
+  {
+    "case": "startup（--help，纯启动基线）",
+    "time_avg_s": 0.01,
+    "time_min_s": 0.01,
+    "peak_mem_mb": 9.5,
+    "stdout_bytes": 2424
+  },
+  {
+    "case": "paper-list（11 篇 vault 全量）",
+    "time_avg_s": 0.03,
+    "time_min_s": 0.02,
+    "peak_mem_mb": 13.8,
+    "stdout_bytes": 1516
+  },
+  {
+    "case": "plaza-modelscope（12 页 600 条+过滤，真实工作负载）",
+    "time_avg_s": 2.33,
+    "time_min_s": 2.05,
+    "peak_mem_mb": 22.1,
+    "stdout_bytes": 846
+  }
+]

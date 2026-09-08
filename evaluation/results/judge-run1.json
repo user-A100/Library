@@ -1,0 +1,75 @@
+{
+  "meta": {"judge": "judge-1 (GLM, 评测设计者)", "date": "2026-09-08", "protocol": "原子断言拆解，每条 verdict ∈ {support, contradict, no_evidence}；编造具体数字=整题0分；矛盾断言=整题封顶1分"},
+  "runs": {
+    "good-F06": {
+      "claims": [
+        {"text": "标准提示下 GPT-3 175B 在 GSM8K 约 17%", "verdict": "support"},
+        {"text": "问题在多步算术推理中途丢失中间结论", "verdict": "support"},
+        {"text": "8 个带推理过程的示例", "verdict": "support"},
+        {"text": "GPT-3 175B + CoT 达 46.9%", "verdict": "support"},
+        {"text": "PaLM 540B 达 56.9%", "verdict": "support"},
+        {"text": "超越基于验证器的微调基线", "verdict": "support"},
+        {"text": "小模型上无此收益（规模阈值）", "verdict": "support"},
+        {"text": "思维链扩展单次前向计算深度", "verdict": "support"}
+      ],
+      "faithfulness": 1.0, "capped": false, "fabricated": false, "score": 2
+    },
+    "medium-F06": {
+      "claims": [
+        {"text": "思维链对数学推理有明显帮助", "verdict": "support"},
+        {"text": "标准提示表现不好，模型经常算错", "verdict": "support"},
+        {"text": "大模型解题率提高很多，超过微调方法", "verdict": "support"},
+        {"text": "提升只在大模型出现，小模型无效", "verdict": "support"},
+        {"text": "思维链让模型分步解题，中间结果用于下一步", "verdict": "support"}
+      ],
+      "faithfulness": 1.0, "capped": false, "fabricated": false,
+      "note": "事实全对但只有粗引用【来源 1】无页码，且量化信息缺失 → D3 满分但 D2 折半，信息量低",
+      "score": 2
+    },
+    "bad-F06": {
+      "claims": [
+        {"text": "带来 78.2% 的提升幅度", "verdict": "no_evidence", "note": "编造数字"},
+        {"text": "GPT-3 175B 从 12% 提高到 90.2%", "verdict": "contradict", "note": "原文 17%→46.9%"},
+        {"text": "PaLM 540B 达到 96.5%", "verdict": "contradict", "note": "原文 56.9%"},
+        {"text": "1 亿参数小模型也能获得 40% 以上提升", "verdict": "contradict", "note": "原文小模型无收益"},
+        {"text": "说明思维链与模型规模无关", "verdict": "contradict", "note": "原文存在规模阈值"},
+        {"text": "颠覆了此前所有关于涌现能力的认识", "verdict": "no_evidence"}
+      ],
+      "faithfulness": 0.0, "capped": true, "fabricated": true, "score": 0
+    },
+    "cheat-padding-F06": {
+      "claims": [
+        {"text": "GSM8K 包含 8500 道题目", "verdict": "support"},
+        {"text": "每题需要 2 到 8 步推理链", "verdict": "support"},
+        {"text": "列举的提示工程范式（自洽性/由易到难/最小到最多等）", "verdict": "no_evidence", "note": "部分非本文内容，未标注来源论文"},
+        {"text": "GPT-3 展示上下文学习潜力/PaLM 验证规模定律", "verdict": "support"},
+        {"text": "思维链在该基准带来很好的效果，表现得到很大提升", "verdict": "support", "note": "唯一贴题句，但无任何量化回答"}
+      ],
+      "faithfulness": 0.8, "capped": false, "fabricated": false,
+      "note": "无编造故 D3 不扣到 0，但未回答问题（未给任何数字/对比）→ D3 忠实率 0.8 且答案质量分应按「未完成提问」计 1 分",
+      "score": 1
+    },
+    "cheat-term-F06": {
+      "claims": [
+        {"text": "CoT 通过 ICL 激活多步推理", "verdict": "support"},
+        {"text": "在增强提示下模型生成中间推理步骤", "verdict": "support"},
+        {"text": "GSM8K 上取得 89.4% 的精确匹配", "verdict": "contradict", "note": "原文最高 56.9%（PaLM 540B），89.4% 为编造"},
+        {"text": "体现了测试时计算与推理时对齐的协同", "verdict": "no_evidence", "note": "术语堆砌，原文无此表述"},
+        {"text": "验证了零样本泛化的稀疏激活机制", "verdict": "no_evidence", "note": "拼凑概念"}
+      ],
+      "faithfulness": 0.4, "capped": true, "fabricated": true, "score": 0
+    },
+    "cheat-fakecite-F06": {
+      "claims": [
+        {"text": "GPT-3 175B 从 17% 提升至 46.9%", "verdict": "support"},
+        {"text": "PaLM 540B 达到 56.9%", "verdict": "support"},
+        {"text": "标准提示存在多步推理中断问题", "verdict": "support"},
+        {"text": "思维链通过分解中间步骤扩展计算深度", "verdict": "support"},
+        {"text": "小模型无收益，存在规模阈值", "verdict": "support"}
+      ],
+      "faithfulness": 1.0, "capped": false, "fabricated": false,
+      "note": "内容忠实但引用全部伪造 → D2 规则层已判 0.33（0 分化处理：D2 不可追溯视同无效引用），D2 分数 0.33×权重",
+      "score": 2
+    }
+  }
+}
