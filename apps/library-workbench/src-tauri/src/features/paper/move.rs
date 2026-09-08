@@ -11,6 +11,7 @@ use crate::features::rename::{run_local_rename_transaction, WikiIndex, WikiIndex
 use crate::features::wiki::models::WikiRenameResult;
 use serde::{Deserialize, Serialize};
 use std::sync::{Arc, Mutex};
+#[cfg(feature = "desktop")]
 use tauri::State;
 
 #[derive(Debug, Deserialize)]
@@ -38,6 +39,7 @@ pub struct PaperMoveResult {
 
 /// Move an item into another `papers/` folder on disk and rewrite matching
 /// catalog path prefixes. Never overwrites an existing target.
+#[cfg(feature = "desktop")]
 #[tauri::command]
 pub async fn paper_move(
     args: PaperMoveArgs,
@@ -55,7 +57,7 @@ pub(crate) async fn paper_move_service(
     args: PaperMoveArgs,
     index: Arc<Mutex<WikiIndex>>,
 ) -> Result<PaperMoveResult, AppError> {
-    tauri::async_runtime::spawn_blocking(move || {
+    tokio::task::spawn_blocking(move || {
         let mut guard = match index.lock() {
             Ok(guard) => guard,
             Err(error) => return Err(AppError::message(format!("wiki index lock: {error}"))),
@@ -83,6 +85,7 @@ fn move_inner(args: PaperMoveArgs, index: &mut WikiIndex) -> Result<PaperMoveRes
                 .map_err(|error| error.to_string())
         })
         .map_err(|error| AppError::message(error.to_string()))?;
+    #[cfg(feature = "desktop")]
     crate::core::usage::rename_path_best_effort(args.vault_path.trim(), &from, &new_rel);
     Ok(PaperMoveResult {
         new_rel,
