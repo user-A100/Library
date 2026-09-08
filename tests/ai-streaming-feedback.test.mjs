@@ -4,13 +4,15 @@ import { beforeAll, describe, expect, it, vi } from "vitest";
 
 let ViewHost;
 let ProviderAdapter;
+let context;
 
 beforeAll(async () => {
-  const context = {
+  context = {
     Services: { prefs: { getBoolPref: () => false } },
     TextDecoder,
   };
   vm.createContext(context);
+  vm.runInContext(await readFile("desktop/addons/research-workspace/ai-chat.js", "utf8"), context, { filename: "ai-chat.js" });
   vm.runInContext(await readFile("desktop/addons/research-workspace/ai-view.js", "utf8"), context, { filename: "ai-view.js" });
   vm.runInContext(await readFile("desktop/addons/research-workspace/ai-provider.js", "utf8"), context, { filename: "ai-provider.js" });
   ViewHost = context.LibraryAIViewHost;
@@ -18,8 +20,9 @@ beforeAll(async () => {
 });
 
 class FakeElement {
-  constructor(name) {
+  constructor(name, ownerDocument = null) {
     this.localName = name;
+    this.ownerDocument = ownerDocument;
     this.children = [];
     this.childNodes = this.children;
     this.dataset = {};
@@ -37,12 +40,13 @@ class FakeDOMParser {
 }
 
 function fakeDocument() {
-  return {
+  const doc = {
     defaultView: { DOMParser: FakeDOMParser },
-    createElement: name => new FakeElement(name),
-    createElementNS: (_namespace, name) => new FakeElement(name),
     importNode: node => node,
   };
+  doc.createElement = name => new FakeElement(name, doc);
+  doc.createElementNS = (_namespace, name) => new FakeElement(name, doc);
+  return doc;
 }
 
 function findByClass(node, className) {
@@ -77,8 +81,10 @@ describe("Library AI streaming feedback", () => {
 
   it("renders a readable activity state before the first answer token", () => {
     const host = Object.create(ViewHost.prototype);
-    host.renderMarkdown = () => "";
-    const article = host.messageNode(fakeDocument(), {
+    const renderer = Object.create(context.LibraryAIChatRenderer.prototype);
+    renderer.host = host;
+    renderer.renderMarkdown = () => "";
+    const article = renderer.messageNode(fakeDocument(), {
       id: "assistant-1",
       role: "assistant",
       content: "",
@@ -87,10 +93,10 @@ describe("Library AI streaming feedback", () => {
       activity: { phase: "waiting", label: "正在等待 GLM-4.5-Flash 响应…" },
     });
 
-    const progress = findByClass(article, "library-ai-progress");
-    expect(progress).not.toBeNull();
-    expect(progress.attributes).toMatchObject({ role: "status", "aria-live": "polite" });
-    expect(progress.children.at(-1).textContent).toBe("正在等待 GLM-4.5-Flash 响应…");
+    const skeleton = findByClass(article, "library-ai-streaming-skeleton");
+    expect(skeleton).not.toBeNull();
+    expect(skeleton.className).toContain("phase-waiting");
+    expect(skeleton.attributes).toMatchObject({ role: "status", "aria-label": "正在等待 GLM-4.5-Flash 响应…" });
     expect(findByClass(article, "library-ai-cursor")).toBeNull();
   });
 

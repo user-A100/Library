@@ -38,10 +38,13 @@ describe("Library UI entry regressions", () => {
 
 	it("does not replay message entrance animation on every streaming token", async () => {
 		const view = await readFile("desktop/addons/research-workspace/ai-view.js", "utf8");
+		const chat = await readFile("desktop/addons/research-workspace/ai-chat.js", "utf8");
 		const style = await readFile("desktop/addons/research-workspace/style.css", "utf8");
 
+		// 流式增量渲染走节流（ViewHost.scheduleRenderAll），入场动画只在消息首次出现时挂一次
 		expect(view).toContain("scheduleRenderAll(delay = 40)");
-		expect(view).toContain('node.className += " is-new"');
+		expect(chat).toContain('node.classList.add("is-new")');
+		expect(chat).toContain("state.seenMessageIDs.has(message.id)");
 		expect(style).toContain(".library-ai-message.is-new");
 		expect(style).not.toContain(".library-ai-message { display:grid; gap:5px; margin:0 0 16px; animation:");
 	});

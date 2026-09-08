@@ -20,6 +20,7 @@ beforeAll(async () => {
     },
   };
   vm.createContext(context);
+  vm.runInContext(await readFile("desktop/addons/research-workspace/ai-chat.js", "utf8"), context, { filename: "ai-chat.js" });
   vm.runInContext(await readFile("desktop/addons/research-workspace/ai-view.js", "utf8"), context, { filename: "ai-view.js" });
   vm.runInContext(await readFile("desktop/addons/research-workspace/research-workspace.js", "utf8"), context, { filename: "research-workspace.js" });
   ViewHost = context.LibraryAIViewHost;
@@ -33,7 +34,9 @@ beforeEach(() => {
 describe("Library AI citation navigation", () => {
   it("binds rendered citation controls directly to their owning message", () => {
     const host = Object.create(ViewHost.prototype);
-    const markup = host.renderMarkdown("结论 [[S1-C1]]", {
+    const renderer = Object.create(context.LibraryAIChatRenderer.prototype);
+    renderer.host = host;
+    const markup = renderer.renderMarkdown("结论 [[S1-C1]]", {
       "S1-C1": { title: "测试论文", page: 7, text: "原文" },
     }, "assistant-42");
 
