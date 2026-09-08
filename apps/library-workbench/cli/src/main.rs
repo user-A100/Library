@@ -254,6 +254,11 @@ enum Commands {
         #[command(subcommand)]
         cmd: commands::feed::FeedCmd,
     },
+    /// 广场 paper feeds: ModelScope latest papers / arXiv search.
+    Plaza {
+        #[command(subcommand)]
+        cmd: commands::plaza::PlazaCmd,
+    },
     /// Open a local directory as a Vault in the desktop App.
     ///
     /// Shorthand: bare `library <PATH>` rewrites to this when `<PATH>` looks like
@@ -444,6 +449,7 @@ fn command_label(cmd: &Commands) -> &'static str {
         Commands::Translate { .. } => "cli.translate",
         Commands::Usage { .. } => "cli.usage",
         Commands::Feed { .. } => "cli.feed",
+        Commands::Plaza { .. } => "cli.plaza",
         Commands::Open { .. } => "cli.open",
         Commands::Completion { .. } => "cli.completion",
     }
@@ -487,6 +493,7 @@ async fn run(command: Commands, globals: &GlobalOpts) -> Result<serde_json::Valu
         } => commands::translate::run(&text, &to, &from, provider.as_deref(), globals).await,
         Commands::Usage { cmd } => commands::usage::run(cmd, globals),
         Commands::Feed { cmd } => commands::feed::run(cmd, globals).await,
+        Commands::Plaza { cmd } => commands::plaza::run(cmd, globals).await,
         Commands::Open { path } => commands::open::run(&path, globals),
         Commands::Completion { .. } => unreachable!("handled before async runtime"),
     }

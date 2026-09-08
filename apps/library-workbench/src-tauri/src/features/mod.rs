@@ -58,6 +58,7 @@ pub use paper::discovery::arxiv_proxy;
 #[cfg(feature = "desktop")]
 pub use paper::discovery::coolpapers;
 pub use paper::discovery::feeds;
+pub use paper::discovery::modelscope;
 #[cfg(feature = "desktop")]
 pub use paper::discovery::modelscope_proxy;
 #[cfg(feature = "desktop")]

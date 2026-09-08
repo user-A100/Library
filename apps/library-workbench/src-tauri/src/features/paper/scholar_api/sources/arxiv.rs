@@ -58,6 +58,35 @@ async fn search_by_title(title: &str, limit: usize) -> Result<Vec<ApiPaper>, Api
     Ok(parse_entries(&xml, limit))
 }
 
+/// Raw arXiv search for plaza discovery. `query` is passed through as a
+/// `search_query` expression (e.g. `abs:"affective computing"`, `cat:cs.AI`,
+/// or `abs:"emotion" AND cat:cs.CL`), newest first. Unlike [`ApiQuery::Title`]
+/// this imposes no field or relevance mode of its own.
+pub async fn search_raw(query: &str, max_results: usize) -> Result<Vec<ApiPaper>, ApiError> {
+    let url = format!(
+        "{API_BASE}?search_query={}&start=0&max_results={}&sortBy=submittedDate&sortOrder=descending",
+        urlencoding::encode(query.trim()),
+        max_results
+    );
+    let xml = client::get_text(&url).await?;
+    Ok(parse_entries(&xml, max_results))
+}
+
+/// Keep papers whose `published` date is within the last `days` days.
+/// Papers without a parseable date are dropped.
+pub fn within_days(papers: Vec<ApiPaper>, days: i64) -> Vec<ApiPaper> {
+    let cutoff = chrono::Utc::now() - chrono::Duration::days(days);
+    papers
+        .into_iter()
+        .filter(|p| {
+            p.date
+                .as_deref()
+                .and_then(|d| chrono::DateTime::parse_from_rfc3339(d).ok())
+                .is_some_and(|published| published.with_timezone(&chrono::Utc) > cutoff)
+        })
+        .collect()
+}
+
 fn parse_entries(xml: &str, limit: usize) -> Vec<ApiPaper> {
     let mut out = Vec::new();
     for entry in xml.split("<entry>").skip(1) {
@@ -181,5 +210,46 @@ mod tests {
         );
         assert_eq!(p.authors.len(), 2);
         assert!(p.urls.pdf.as_deref().unwrap().contains("/pdf/1706.03762"));
+    }
+
+    #[test]
+    fn within_days_keeps_recent_and_drops_old_or_undated() {
+        let fresh = ApiPaper {
+            identifiers: PaperIdentifiers {
+                doi: None,
+                arxiv_id: Some("2609.00001".into()),
+                isbn: None,
+                pmid: None,
+            },
+            title: "fresh".into(),
+            authors: vec![],
+            year: Some(2026),
+            date: Some(chrono::Utc::now().to_rfc3339()),
+            venue: None,
+            volume: None,
+            issue: None,
+            pages: None,
+            publisher: None,
+            abstract_text: None,
+            urls: PaperUrls {
+                pdf: None,
+                html: None,
+                landing: None,
+            },
+            citation_count: None,
+            language: None,
+            source: SOURCE,
+        };
+        let old = ApiPaper {
+            date: Some("2020-01-01T00:00:00Z".into()),
+            ..fresh.clone()
+        };
+        let undated = ApiPaper {
+            date: None,
+            ..fresh.clone()
+        };
+        let out = within_days(vec![fresh, old, undated], 7);
+        assert_eq!(out.len(), 1);
+        assert_eq!(out[0].title, "fresh");
     }
 }

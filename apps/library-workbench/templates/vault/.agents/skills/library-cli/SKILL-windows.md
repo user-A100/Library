@@ -1,11 +1,12 @@
 ---
 name: library-cli
-version: 8
+version: 9
 description: >-
   Use the Library CLI (bin `library-cli` on Windows) to create, discover, and
   inspect a local research vault and catalog—list/get papers, import by id/URL,
   check wikilinks, layout regions (figures/tables/formulas), region-anchored
-  marks, download assets, parse PAPER.md, export bib—without BYOA. Prefer --json.
+  marks, download assets, parse PAPER.md, export bib, browse the Plaza paper
+  feeds (ModelScope latest / arXiv search)—without BYOA. Prefer --json.
   Use when managing a vault headless, scripting Motif/Library, or exploring
   papers via machine APIs ($library-cli / /library-cli).
 ---
@@ -136,9 +137,31 @@ Cite Vault-relative paths in your answer; end with `## Sources` when substantial
 ## Command discovery
 
 Command groups: `vault`, `tree`, `paper`, `import`, `export`, `trash`, `wiki`,
-`layout`, `mark`, `translate`, `doctor`, `config`, `usage`, `feed`, `open`.
+`layout`, `mark`, `translate`, `doctor`, `config`, `usage`, `feed`, `plaza`,
+`open`.
 Run **`library-cli <group> --help`** for exact flags — it is the source of truth.
 There is **no** `library-cli graph` command; never invent subcommands.
+
+## Plaza paper discovery (ModelScope / arXiv)
+
+When asked to find papers from the built-in 广场 sources (ModelScope, arXiv),
+use the `plaza` group — **never** scrape the websites:
+
+```powershell
+# ModelScope 论文广场: latest feed, keywords matched locally (AND, cn+en fields)
+library-cli plaza modelscope --query 情感计算 --json
+# arXiv: real search_query search, newest first, optional day window
+library-cli plaza arxiv 'abs:"affective computing"' --max 10 --days 7 --json
+```
+
+- ModelScope has no server-side search: it fetches ~12 recent pages (600 papers,
+  ingest-ordered) then filters locally —
+  `totalFetched` vs `matched` shows the funnel. Judge 热门 by `star` /
+  `viewCount` fields in the JSON.
+- arXiv `query` is passed through as an arXiv `search_query` expression
+  (`abs:"…"`, `cat:cs.CL`, combinable with AND/OR).
+- Results carry `arxivId` + landing/pdf URLs; feed a chosen id into
+  `library-cli import id arxiv <id> --json` to bring it into the vault.
 
 ## JSON contract
 

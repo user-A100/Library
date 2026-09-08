@@ -17,7 +17,7 @@ This file is the L0 map for agents working in this Library research vault.
 - `notes/` — free-form concept notes and ideas. Supports `[[wikilinks]]`, `![[embeds]]`, Mermaid diagrams, and Obsidian `> [!callout]` blocks.
 - `.agents/` — vault-local agent assets (e.g. `skills/<id>/SKILL.md` for Composer `$` skills).
 - `.library/catalog.sqlite` — paper **catalog** (collection + metadata). There is usually **no** root `PAPERS.md` or `library.bib` unless the user exports them.
-- Headless tooling: optional **`library` CLI** (discover / list / import). Prefer skill **`library-cli`** (`$library-cli` / `/library-cli`) with `--json`. CLI does **not** run agents or paper-reader.
+- Headless tooling: optional **`library` CLI** (discover / list / import / plaza feeds). Prefer skill **`library-cli`** (`$library-cli` / `/library-cli`) with `--json`. CLI does **not** run agents or paper-reader. Plaza queries (ModelScope / arXiv papers) go through `library plaza …`, never website scraping.
 
 ## Paper reading order
 
