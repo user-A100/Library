@@ -158,6 +158,35 @@ export function PlazaWebFrame({
 		});
 	}, []);
 
+	/**
+	 * Open an assistant recommendation inside this frame: a same-origin listing
+	 * becomes a new nav-stack entry (so Back returns to the feed), anything else
+	 * falls back to the system browser.
+	 */
+	const openListing = useCallback(
+		(listing: { url?: string | null }) => {
+			if (!listing.url) return;
+			if (embedOrigin) {
+				try {
+					const url = new URL(listing.url);
+					if (url.origin === new URL(homeUrl).origin) {
+						const path = `${url.pathname}${url.search}`;
+						setNav((prev) => {
+							const stack = [...prev.stack.slice(0, prev.index + 1), path];
+							return { stack, index: stack.length - 1 };
+						});
+						setFrame((f) => ({ path, epoch: f.epoch + 1 }));
+						return;
+					}
+				} catch {
+					// Unparseable URL — open it externally below.
+				}
+			}
+			openExternalUrl(listing.url);
+		},
+		[embedOrigin, homeUrl],
+	);
+
 	const canGoBack = nav.index > 0;
 	const canGoForward = nav.index < nav.stack.length - 1;
 	const currentPath = nav.stack[nav.index] ?? homePath;
@@ -247,6 +276,7 @@ export function PlazaWebFrame({
 					sourceId={sourceId}
 					sourceLabel={sourceLabel}
 					collect={() => requestFrameListings(frameRef.current, embedOrigin)}
+					onOpenListing={openListing}
 				/>
 			) : null}
 			<div className="relative min-h-0 flex-1">

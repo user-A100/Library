@@ -25,9 +25,12 @@ import { openSettingsWindow } from "@/lib/shell/settings-window";
 function ListingCard({
 	listing,
 	reason,
+	onOpen,
 }: {
 	listing: PlazaListing;
 	reason: string;
+	/** Opens the listing in the panel's frame when the host supports it. */
+	onOpen?: (listing: PlazaListing) => void;
 }) {
 	const { t } = useTranslation("sidebar");
 	const [busy, setBusy] = useState(false);
@@ -51,7 +54,11 @@ function ListingCard({
 			<button
 				type="button"
 				disabled={!listing.url}
-				onClick={() => listing.url && openExternalUrl(listing.url)}
+				onClick={() => {
+					if (!listing.url) return;
+					if (onOpen) onOpen(listing);
+					else openExternalUrl(listing.url);
+				}}
 				className="text-left font-medium text-sm hover:underline disabled:no-underline"
 			>
 				{listing.title}
@@ -83,10 +90,13 @@ export function PlazaAssistant({
 	sourceId,
 	sourceLabel,
 	collect,
+	onOpenListing,
 }: {
 	sourceId: string;
 	sourceLabel: string;
 	collect: () => Promise<PlazaListing[]>;
+	/** Opens a recommended listing in the host panel (in-frame when possible). */
+	onOpenListing?: (listing: PlazaListing) => void;
 }) {
 	const { t } = useTranslation("sidebar");
 	const session = usePlazaAssistantSession(sourceId);
@@ -197,6 +207,7 @@ export function PlazaAssistant({
 							key={card.listing.id}
 							listing={card.listing}
 							reason={card.reason}
+							onOpen={onOpenListing}
 						/>
 					))}
 					{session.answer ? (
