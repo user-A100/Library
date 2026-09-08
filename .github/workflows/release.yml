@@ -31,6 +31,12 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
         with:
           targets: aarch64-apple-darwin
+      - name: Cargo cache
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: apps/library-workbench
+          cache-all-crates: true
+          prefix-key: desktop
       - name: Install Linux dependencies
         if: matrix.os == 'ubuntu-22.04'
         run: |
@@ -74,6 +80,12 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
         with:
           targets: ${{ matrix.target }}
+      - name: Cargo cache
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: apps/library-workbench
+          cache-all-crates: true
+          prefix-key: cli
       - name: Build CLI
         working-directory: apps/library-workbench/cli
         run: cargo build --release --target ${{ matrix.target }}
