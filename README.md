@@ -56,10 +56,11 @@
 | 模块 | 能力 | 当前状态 |
 | --- | --- | --- |
 | <img src="docs/assets/readme/icons/library-big.svg" width="18" alt="" /> Evidence Library | 本地文库、集合、条目、附件、标签与 SQLite 数据层 | <img src="https://img.shields.io/badge/-已具备-23865f?style=flat-square" alt="已具备" /> |
-| <img src="docs/assets/readme/icons/book-open-text.svg" width="18" alt="" /> Grounded Reader | PDF 阅读、选区提问、Markdown 回答与研究笔记 | <img src="https://img.shields.io/badge/-原型已具备-2f9e76?style=flat-square" alt="原型已具备" /> |
-| <img src="docs/assets/readme/icons/bot.svg" width="18" alt="" /> Hy3 Research Copilot | OpenAI-compatible 流式调用、来源限定、混合检索、引用审计与 `/` 命令 | <img src="https://img.shields.io/badge/-主链路已接通-23865f?style=flat-square" alt="主链路已接通" /> |
+| <img src="docs/assets/readme/icons/book-open-text.svg" width="18" alt="" /> Grounded Reader | PDF 阅读、选区提问、Markdown 回答与研究笔记 | <img src="https://img.shields.io/badge/-已具备-23865f?style=flat-square" alt="已具备" /> |
+| <img src="docs/assets/readme/icons/bot.svg" width="18" alt="" /> Hy3 Research Copilot | OpenAI-compatible 流式调用、来源限定、混合检索、引用审计与 `/` 命令 | <img src="https://img.shields.io/badge/-已具备-23865f?style=flat-square" alt="已具备" /> |
+| <img src="docs/assets/readme/icons/panels-top-left.svg" width="18" alt="" /> Plaza 论文发现 | ModelScope / Cool Papers / arXiv Daily 内嵌面板、面板内 AI 助手、推荐卡片一键跳转与 `library-cli plaza` 命令（开箱即用） | <img src="https://img.shields.io/badge/-已具备-23865f?style=flat-square" alt="已具备" /> |
 | <img src="docs/assets/readme/icons/link.svg" width="18" alt="" /> Claim-level Evidence | 证据定位契约、逐条回页，以及接受 / 驳回 / 修改 / 重绑的人工复核闭环 | <img src="https://img.shields.io/badge/-人工复核_v1-0284c7?style=flat-square" alt="人工复核 v1" /> |
-| <img src="docs/assets/readme/icons/flask-conical.svg" width="18" alt="" /> TRACE-Eval | 制品结构、引用白名单和哈希一致性预检；8 维语义评测待实现 | <img src="https://img.shields.io/badge/-规则预检_v0-d97706?style=flat-square" alt="规则预检 v0" /> |
+| <img src="docs/assets/readme/icons/flask-conical.svg" width="18" alt="" /> TRACE-Eval | 制品结构、引用白名单和哈希一致性预检；大赛 7 维评测与有效性验证已交付 | <img src="https://img.shields.io/badge/-评测已交付-23865f?style=flat-square" alt="评测已交付" /> |
 | <img src="docs/assets/readme/icons/palette.svg" width="18" alt="" /> Focus Workspace | 侧栏优先、分屏研究、浅色/深色与动态主题 | <img src="https://img.shields.io/badge/-已具备-23865f?style=flat-square" alt="已具备" /> |
 | <img src="docs/assets/readme/icons/blocks.svg" width="18" alt="" /> Zotero Plugin Host | AddonManager、ItemPane、Reader 与标准 XPI 生命周期 | <img src="https://img.shields.io/badge/-已具备-23865f?style=flat-square" alt="已具备" /> |
 
@@ -232,10 +233,10 @@ Library/
 | 阶段 | 日期 | 交付 | 状态 |
 | --- | --- | --- | --- |
 | M0 方案冻结 | 8/27 | 场景、架构、rubric、数据规范 | <img src="https://img.shields.io/badge/-已冻结-64748b?style=flat-square" alt="已冻结" /> |
-| M1–M2 产品闭环 | 8/28–9/5 | Hy3 结构化生成、证据锚点、回页与纠错 | <img src="https://img.shields.io/badge/-已具备-23865f?style=flat-square" alt="已具备" /> |
-| M3–M4 评测与数据 | 9/6–9/15 | 7 维 rubric、31 用例样本集、规则层 + judge 评测脚本 | <img src="https://img.shields.io/badge/-已交付-23865f?style=flat-square" alt="已交付" /> |
-| M5 有效性实验 | 9/16–9/19 | 判别力、跨厂商一致性、对抗性实验全部通过 | <img src="https://img.shields.io/badge/-已交付-23865f?style=flat-square" alt="已交付" /> |
-| M6–M7 发布 | 9/20–9/23 | 结果报告、README、90 秒 demo、复现验收 | <img src="https://img.shields.io/badge/-进行中-d97706?style=flat-square" alt="进行中" /> |
+| M1–M2 产品闭环 | 8/28–9/5 | Hy3 结构化生成、证据锚点、回页与纠错、广场论文发现与面板 AI 助手 | <img src="https://img.shields.io/badge/-已交付-23865f?style=flat-square" alt="已交付" /> |
+| M3–M4 评测与数据 | 9/6–9/8 | 7 维 rubric、31 用例样本集、规则层 + 双厂商 judge 评测脚本 | <img src="https://img.shields.io/badge/-已交付-23865f?style=flat-square" alt="已交付" /> |
+| M5 有效性实验 | 9/8 | 判别力（好>中>差）、跨厂商一致性（6/6 极差 0）、对抗性（3 作弊样本全抓住） | <img src="https://img.shields.io/badge/-已交付-23865f?style=flat-square" alt="已交付" /> |
+| M6–M7 发布 | 9/8–9/23 | 结果报告 ✅、README ✅、90 秒 demo ✅、复现验收与最终提交通道 | <img src="https://img.shields.io/badge/-进行中-d97706?style=flat-square" alt="进行中" /> |
 
 ## <img src="docs/assets/readme/icons/book-open.svg" width="22" alt="" /> 文档
 
