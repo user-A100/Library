@@ -605,6 +605,12 @@
 		"title": "Keyboard"
 	},
 	"about": {
+		"engineMode": {
+			"label": "PDF rendering engine",
+			"worker": "Worker (rendering off the main thread)",
+			"direct": "Main thread (fell back — restart the app if it stays sluggish)",
+			"pending": "Initializing…"
+		},
 		"title": "About",
 		"starGithub": "Star us on GitHub",
 		"version": "Version {{version}}",

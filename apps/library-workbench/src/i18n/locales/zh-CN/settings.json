@@ -605,6 +605,12 @@
 		"title": "快捷键"
 	},
 	"about": {
+		"engineMode": {
+			"label": "PDF 渲染引擎",
+			"worker": "Worker（渲染不阻塞界面）",
+			"direct": "主线程（已回退——如持续卡顿请重启应用）",
+			"pending": "初始化中…"
+		},
 		"title": "关于",
 		"starGithub": "Star us on GitHub",
 		"version": "版本 {{version}}",

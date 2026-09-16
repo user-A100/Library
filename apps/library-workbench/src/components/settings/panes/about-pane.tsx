@@ -14,6 +14,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import libraryAppIcon from "@/assets/library-app-icon.svg";
 import { CompactCodeBlock } from "@/components/ai-elements/code-block";
+import { PdfEngineStatusRow } from "@/components/settings/panes/pdf-engine-status-row";
 import {
 	PageTitle,
 	SettingsGroup,
@@ -468,6 +469,9 @@ export function AboutPane() {
 					</SettingsRow>
 				</SettingsGroup>
 			) : null}
+			<SettingsGroup>
+				<PdfEngineStatusRow />
+			</SettingsGroup>
 		</>
 	);
 }

@@ -43,6 +43,15 @@ const WORKER_READY_TIMEOUT_MS = 8000;
  */
 let workerEngineUsable: boolean | null = null;
 
+export type PdfEngineMode = "worker" | "direct";
+
+let lastPdfEngineMode: PdfEngineMode | null = null;
+
+/** Diagnostics: which engine the app actually settled on (About pane). */
+export function getPdfEngineMode(): PdfEngineMode | null {
+	return lastPdfEngineMode;
+}
+
 function disposePdfEngine(engine: PdfEngine): void {
 	const destroy = () => {
 		engine.destroy?.().wait(ignore, ignore);
@@ -114,6 +123,7 @@ async function initPdfEngine(): Promise<ProbedPdfEngine> {
 				}),
 			]);
 			workerEngineUsable = true;
+			lastPdfEngineMode = "worker";
 			logger.info("[pdf] engine: worker (off-main-thread PDFium)");
 			return probe;
 		} catch (error) {
@@ -126,6 +136,7 @@ async function initPdfEngine(): Promise<ProbedPdfEngine> {
 			);
 		}
 	}
+	lastPdfEngineMode = "direct";
 	return createDirectPdfEngine(fontFallback);
 }
 
