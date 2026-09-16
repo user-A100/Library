@@ -336,10 +336,24 @@ function PdfViewerInner({
 	useEffect(() => {
 		layoutAnalysisProvides?.setLayoutOverlayVisible(false);
 	}, [layoutAnalysisProvides]);
+
 	const engineRef = useRef(engine);
 	engineRef.current = engine;
 	const docCapRef = useRef(docCap);
 	docCapRef.current = docCap;
+
+	// Tab close: release the engine document. EmbedPDF's registry destroy()
+	// only drops listeners — without this, the PDFium WASM document and every
+	// rendered tile bitmap stay resident in the renderer for the app lifetime.
+	useEffect(() => {
+		const closedDocId = docId;
+		return () => {
+			docCapRef.current?.closeDocument(closedDocId)?.wait(
+				() => {},
+				() => {},
+			);
+		};
+	}, [docId]);
 
 	const currentPage = scrollState.currentPage || 1;
 	const totalPages = scrollState.totalPages || 0;
