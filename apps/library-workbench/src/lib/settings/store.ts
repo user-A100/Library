@@ -638,6 +638,9 @@ function normalizeLayoutSettings(
 	if (isParserBackend(raw.parserBackend)) {
 		base.parserBackend = raw.parserBackend;
 	}
+	if (typeof raw.autoAfterImport === "boolean") {
+		base.autoAfterImport = raw.autoAfterImport;
+	}
 	base.providerConfigs = normalizeLayoutProviderConfigs(
 		(raw as { providerConfigs?: unknown }).providerConfigs,
 	);
