@@ -28,6 +28,13 @@ import { runDocumentLayoutAnalysis } from "@/lib/pdf/layout/run-analysis";
 import { clearLayoutDocumentResult } from "@/lib/pdf/layout/store";
 import { loadSystemCjkFontFallback } from "@/lib/pdf/system-font-fallback";
 
+/**
+ * Off-screen raster scale fed to PP-DocLayoutV3. 2 was needlessly expensive
+ * (CPU/memory during imports); 1.5 keeps detection quality with ~44% fewer
+ * raster pixels. Normalized region coords are unaffected.
+ */
+export const HEADLESS_LAYOUT_RENDER_SCALE = 1.5;
+
 function taskToPromise<T>(task: {
 	wait: (ok: (v: T) => void, err: (e: unknown) => void) => void;
 }): Promise<T> {
@@ -160,7 +167,7 @@ export async function analyzePaperLayoutHeadless(opts: {
 		layoutThreshold: 0.3,
 		tableStructure: false,
 		autoAnalyze: false,
-		renderScale: 2,
+		renderScale: HEADLESS_LAYOUT_RENDER_SCALE,
 	});
 
 	try {
