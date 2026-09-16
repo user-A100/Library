@@ -461,7 +461,7 @@
 		},
 		"autoAfterImport": {
 			"label": "Auto layout analysis after import",
-			"help": "When off, importing/downloading papers no longer auto-runs local ONNX layout analysis (much lower CPU during imports). Manual analysis from the figures panel and CLI is unaffected."
+			"help": "When off, opening, importing, or downloading papers no longer auto-runs local ONNX layout analysis (much lower CPU). Manual analysis from the figures panel and CLI is unaffected."
 		},
 		"providerConfig": {
 			"section": "Provider settings",

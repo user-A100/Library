@@ -22,6 +22,7 @@ import { logger } from "@/lib/core/logger";
 import { analyzePaperLayoutHeadless } from "@/lib/pdf/layout/headless-analyze";
 import { readLayoutSidecar } from "@/lib/pdf/layout/io";
 import { layoutAnalysisStore } from "@/lib/pdf/layout/store";
+import { ensureSettingsLoaded } from "@/lib/settings/store";
 import { getVaultPath } from "@/lib/vault/store";
 
 const JOB_CHANGED_EVENT = "job:changed";
@@ -140,6 +141,12 @@ export function enqueuePaperLayoutAnalysis(opts: {
 
 	void (async () => {
 		try {
+			// Gate ALL automatic analysis (paper open / import / download) behind
+			// the same setting; manual runs from the figures panel bypass this
+			// enqueue entirely. Local ONNX runs in this webview and is the app's
+			// biggest CPU draw.
+			const { layout } = await ensureSettingsLoaded();
+			if (layout.autoAfterImport !== true) return;
 			const cached = await readLayoutSidecar(paperAbsPath);
 			if (cached?.regions?.length) return;
 			await invokeApi(
