@@ -247,6 +247,7 @@ export type {
 	PdfTranslateRecord,
 	PdfTranslateRect,
 } from "@/lib/pdf/translate/types";
+export { createPdfViewportScrollScheduler } from "@/lib/pdf/viewport-scroll";
 export {
 	bindWheelZoomGesture,
 	createWheelZoomCoalescer,
