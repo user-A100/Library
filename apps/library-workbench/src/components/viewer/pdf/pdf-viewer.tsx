@@ -132,6 +132,9 @@ export type {
 	PdfViewerProps,
 } from "@/components/viewer/pdf/types";
 
+/** docId → cancel fn for deferred closeDocument calls (tab-close release). */
+const pendingDocCloses = new Map<string, () => void>();
+
 /**
  * PDF viewer built on EmbedPDF (headless, PDFium/WASM). The engine is shared
  * app-wide via {@link usePdfEngineContext}; each tab mounts its own
@@ -345,13 +348,21 @@ function PdfViewerInner({
 	// Tab close: release the engine document. EmbedPDF's registry destroy()
 	// only drops listeners — without this, the PDFium WASM document and every
 	// rendered tile bitmap stay resident in the renderer for the app lifetime.
+	// The close is deferred one task so a remount for the SAME docId
+	// (StrictMode dev double-mount, or quick close→reopen) can cancel it
+	// instead of racing the fresh open.
 	useEffect(() => {
-		const closedDocId = docId;
+		pendingDocCloses.get(docId)?.();
+		pendingDocCloses.delete(docId);
 		return () => {
-			docCapRef.current?.closeDocument(closedDocId)?.wait(
-				() => {},
-				() => {},
-			);
+			const timer = setTimeout(() => {
+				pendingDocCloses.delete(docId);
+				docCapRef.current?.closeDocument(docId)?.wait(
+					() => {},
+					() => {},
+				);
+			}, 0);
+			pendingDocCloses.set(docId, () => clearTimeout(timer));
 		};
 	}, [docId]);
 
