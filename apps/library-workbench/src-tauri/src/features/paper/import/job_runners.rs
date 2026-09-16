@@ -108,16 +108,19 @@ fn download_assets_runner(
                         center.spawn_runner(&app, started);
                     }
                 }
-                let backend = app
-                    .state::<crate::features::settings::AppSettingsStore>()
-                    .layout_backend();
+                let settings = app
+                    .state::<crate::features::settings::AppSettingsStore>();
+                let backend = settings.layout_backend();
                 center.apply_layout_backend(&backend).await;
-                let lsnap = center
-                    .enqueue_layout_analyze(&vault, &path, JobLane::Normal, false)
-                    .await;
-                emit_job_changed(&app, lsnap.clone());
-                if let StartOutcome::Started(started) = center.try_start(&lsnap.id).await {
-                    center.spawn_runner(&app, started);
+                if settings.layout_auto_after_import() {
+                    // Idle lane: yield to user-visible jobs during import storms.
+                    let lsnap = center
+                        .enqueue_layout_analyze(&vault, &path, JobLane::Idle, false)
+                        .await;
+                    emit_job_changed(&app, lsnap.clone());
+                    if let StartOutcome::Started(started) = center.try_start(&lsnap.id).await {
+                        center.spawn_runner(&app, started);
+                    }
                 }
                 RunOutcome::Succeeded
             }
@@ -232,16 +235,19 @@ fn recognize_metadata_runner(
             }
         }
         crate::features::refs::spawn_parse_after_import(Some(&app), &vault, &final_path);
-        let backend = app
-            .state::<crate::features::settings::AppSettingsStore>()
-            .layout_backend();
+        let settings = app
+            .state::<crate::features::settings::AppSettingsStore>();
+        let backend = settings.layout_backend();
         center.apply_layout_backend(&backend).await;
-        let lsnap = center
-            .enqueue_layout_analyze(&vault, &final_path, JobLane::Normal, false)
-            .await;
-        emit_job_changed(&app, lsnap.clone());
-        if let StartOutcome::Started(started) = center.try_start(&lsnap.id).await {
-            center.spawn_runner(&app, started);
+        if settings.layout_auto_after_import() {
+            // Idle lane: yield to user-visible jobs during import storms.
+            let lsnap = center
+                .enqueue_layout_analyze(&vault, &final_path, JobLane::Idle, false)
+                .await;
+            emit_job_changed(&app, lsnap.clone());
+            if let StartOutcome::Started(started) = center.try_start(&lsnap.id).await {
+                center.spawn_runner(&app, started);
+            }
         }
 
         match outcome {

@@ -244,6 +244,10 @@ pub struct LayoutSettings {
     /// PAPER.md body-parse engine: `local` | `paddle` | `mineru` | `openaiCompatible`.
     #[serde(default = "default_parser_backend")]
     pub parser_backend: String,
+    /// Whether paper import/download enqueues an automatic layout-analysis
+    /// job. `false` = only manual analysis (figures panel / CLI) runs.
+    #[serde(default = "default_true")]
+    pub auto_after_import: bool,
     #[serde(default)]
     pub provider_configs: HashMap<String, LayoutProviderConfig>,
 }
@@ -253,6 +257,7 @@ impl Default for LayoutSettings {
         Self {
             backend: default_layout_backend(),
             parser_backend: default_parser_backend(),
+            auto_after_import: true,
             provider_configs: HashMap::new(),
         }
     }
@@ -539,6 +544,15 @@ impl AppSettingsStore {
             .map(|guard| guard.layout.backend.clone())
             .filter(|backend| !backend.trim().is_empty())
             .unwrap_or_else(default_layout_backend)
+    }
+
+    /// Whether import/download should auto-enqueue layout analysis.
+    pub fn layout_auto_after_import(&self) -> bool {
+        self.inner
+            .lock()
+            .ok()
+            .map(|guard| guard.layout.auto_after_import)
+            .unwrap_or(true)
     }
 
     /// PAPER.md body-parse engine backend (`local` when unset).
@@ -1356,6 +1370,20 @@ mod tests {
             .find(|c| c.key == "authors")
             .unwrap();
         assert!(authors.visible);
+    }
+
+    #[test]
+    fn layout_settings_defaults_enable_auto_analysis() {
+        let s = AppSettings::default();
+        assert!(s.layout.auto_after_import);
+    }
+
+    #[test]
+    fn layout_settings_missing_field_defaults_true() {
+        // Old settings.json without the new key must keep current behavior.
+        let json = r#"{"backend":"local","parser_backend":"local"}"#;
+        let parsed: LayoutSettings = serde_json::from_str(json).expect("parse");
+        assert!(parsed.auto_after_import);
     }
 }
 
