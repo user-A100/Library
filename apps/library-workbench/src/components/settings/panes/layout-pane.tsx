@@ -273,6 +273,19 @@ export function LayoutPane({
 						</SelectContent>
 					</Select>
 				</SettingsRow>
+				<SettingsRow
+					label={t("layout.autoAfterImport.label")}
+					description={t("layout.autoAfterImport.help")}
+					htmlFor="layout-auto-after-import"
+				>
+					<Switch
+						id="layout-auto-after-import"
+						checked={layout.autoAfterImport}
+						onCheckedChange={(checked) =>
+							patch({ layout: { ...layout, autoAfterImport: checked === true } })
+						}
+					/>
+				</SettingsRow>
 			</SettingsGroup>
 
 			<div className="mb-5">

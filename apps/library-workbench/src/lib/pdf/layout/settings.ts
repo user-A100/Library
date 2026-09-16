@@ -85,12 +85,18 @@ export function isMineruLanguage(value: string): boolean {
 export type LayoutSettings = {
 	backend: LayoutBackend;
 	parserBackend: ParserBackend;
+	/**
+	 * Whether paper import/download auto-enqueues layout analysis. Mirrors the
+	 * Rust `LayoutSettings.auto_after_import` field (serde `autoAfterImport`).
+	 */
+	autoAfterImport: boolean;
 	providerConfigs: Partial<Record<LayoutProviderId, LayoutProviderConfig>>;
 };
 
 export const DEFAULT_LAYOUT_SETTINGS: LayoutSettings = {
 	backend: "local",
 	parserBackend: "local",
+	autoAfterImport: true,
 	providerConfigs: {},
 };
 
