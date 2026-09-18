@@ -1,6 +1,6 @@
 # Library AI 应用评测方法：标准与流程
 
-> 评测对象：Library 论文研究工作台的 AI 链路（主聊天 Agent + 广场论文发现 + 论文问答 + 自动笔记），底层为 ACP 接入的 Claude 模型，通过 `library-cli` 操作本地 Vault。
+> 评测对象：Library 论文研究工作台的 AI 链路（主聊天 Agent + 广场论文发现 + 论文问答 + 自动笔记），底层为 OpenCode 接入的 Hy3 模型，通过 `library-cli` 操作本地 Vault。
 > 评测样本 Vault：`C:\Users\111222\Desktop\paper`（11 篇论文，含 PDF + LaTeX 源码 + layout-index 块级索引）。
 
 ## 一、评测维度与可操作判定标准

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Generate evaluation answer files (simulating Library agent pipeline output)."""
+"""Write the frozen evaluation answer set to answers/ (pinned so rule-layer and judge runs are reproducible without re-calling the model)."""
 import pathlib
 
 A = pathlib.Path(__file__).resolve().parent.parent / "answers"

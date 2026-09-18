@@ -25,7 +25,7 @@
 |---|---|---|
 | 找论文 | `library-cli plaza modelscope/arxiv` | ModelScope 公开 API 只允许收录序翻页（无服务端搜索）→ 深翻页 600 条 + 本地关键词过滤 + ★ 降序逼近热门；arXiv 走 Atom API 真搜索 + 天数过滤。实测 `--query 情感计算` 5.9s，600 条命中 3 篇，CARDIO-Affect ★4.8 排第一 |
 | 导入 | `library-cli import` | 拉取 PDF + LaTeX 源码 + 生成 `layout-index.json` 块级索引（引用协议的物理基础） |
-| 提问 | ACP Agent 主聊天 | 引用协议强制页码+块 ID，规则层可逐条验证 |
+| 提问 | OpenCode Agent 主聊天（Hy3） | 引用协议强制页码+块 ID，规则层可逐条验证 |
 | 写笔记 | Agent 按技能模板写入 `papers/<id>/NOTES.md` | 格式约束（`$` 数学定界 / `[[wikilink]]` / mermaid 完整 / `## Sources` / 禁 AI 署名）由 SKILL.md（应用内嵌自动升级，v9）下发，开箱即用 |
 | 安全边界 | `agentPermissionMode` | 受限/询问/自动三档；破坏性 CLI 操作需显式批准（这是安全设计而非缺陷） |
 
