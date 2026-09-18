@@ -1,8 +1,8 @@
 [submodule "desktop/zotero"]
 	path = desktop/zotero
-	url = https://github.com/zotero/zotero.git
-	branch = main
+	url = https://github.com/user-A100/zotero.git
+	branch = library-brand
 [submodule "connector/library-connector"]
 	path = connector/library-connector
-	url = https://github.com/zotero/zotero-connectors.git
-	branch = main
+	url = https://github.com/user-A100/zotero-connectors.git
+	branch = library-brand
