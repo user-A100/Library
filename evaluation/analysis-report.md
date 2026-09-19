@@ -93,6 +93,7 @@
   | 人工 × judge-Anthropic (Claude) | 40 | 92% | **0.829** | 0.949 | 9/10 |
 
   混淆矩阵显示**不存在 support↔contradict 的极性混淆**——分歧全部落在 support↔no_evidence 边界（人工判「可从原文推出」而 judge 判「原文未提及」），是判级尺度的差异而非事实认定的分歧，与 §4.2 ②' 的模型间结论一致。人工 `fabricated` 勾选恰好命中 F04、bad-F06、cheat-term-F06 三个编造样本，与两 judge 一致判 0 相互印证。
+  标注者在**两版表**上各标一次（无证据版 `annotation-sheet.md` 与证据对照版 `annotation-sheet-evidence.md`），70/70 完全一致，可作为标注稳定性的旁证（同一标注者，两遍之间可能存在锚定，不等价于标注者间一致性）。逐条判定依据见 `annotation/annotation-rationale.md`。
   **披露**：标注者为评测设计者本人，非独立第二标注者（盲评流程成立，但缺少标注者间一致性）。
 
 **③ 对抗性**（作弊不得提分）：
