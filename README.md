@@ -41,7 +41,7 @@
 | --- | --- | --- |
 | 便捷性（找→导→问→笔记） | 全链路跑通，plaza 600 条论文 2.33s | 脚本计时 |
 | 可追溯性 | **47/47 引用 100%** 块级+页码机器可验证 | 规则层全自动 |
-| 忠实性 | 双厂商 judge（GLM-5.3 × Claude）**18/20 分数一致** · 断言级 95% · Spearman ρ **0.886** | LLM-as-judge 交叉 |
+| 忠实性 | 双厂商 judge（GLM-5.3 × Claude）**18/20 分数一致** · 断言级 95% · ρ **0.886**；人工盲标 **Cohen's κ 0.83–0.90** | LLM-as-judge 交叉 + 人工金标准 |
 | 术语正确性 | 28 份回答 0 译名漂移（18 条术语表） | 规则层全自动 |
 | 安全性 | 反例拒答 **6/6**，对抗断言 **9/9** | 规则层全自动 |
 | 规范性 | 结构化笔记 6/6 格式检查 | 规则层全自动 |
@@ -50,7 +50,7 @@
 有效性三件套：好/中/差回答严格排序（判别力 ✅）· 跨厂商 20 样本盲评一致（一致性 ✅，覆盖 9 篇论文的正式回答 + 作弊变体）· 伪引用/术语堆砌/篇幅灌水三个作弊样本全部抓住（对抗性 ✅）。两 judge 的 2 处分歧与判级口径差异逐条归因，见[一致性报告](evaluation/results/judge-consistency-v2.md)。
 
 > [!NOTE]
-> D3 的一致性结论全部来自**跨厂商模型盲评**（GLM × Claude 独立会话、独立读取原文）。人工金标准（judge-vs-human κ/ρ）的标注工具链已备好——分层抽样 70 条断言的[盲标表](evaluation/annotation/annotation-sheet.md)与 κ 计算脚本，尚未启用；本报告不将模型互评表述为人工一致性。
+> D3 一致性的两层证据：**跨厂商模型盲评**（GLM × Claude 独立会话、独立读取原文，20 样本 18/20 一致）与**人工金标准盲标**（分层抽样 70 条断言，标注时不可见任何 judge 结果）。人工 vs judge 的 Cohen's κ 为 **0.901 / 0.829**（GLM / Claude），答案级 ρ 0.803 / 0.949，混淆矩阵中**无 support↔contradict 极性混淆**——分歧只出现在 support↔no_evidence 的边界判定。标注者为评测设计者本人（非独立第二标注者），已在报告中如实披露。
 
 ## <img src="docs/assets/readme/icons/sparkles.svg" width="22" alt="" /> 为什么是 Library
 
@@ -111,7 +111,7 @@
 
 应用内 TRACE-Eval 之外，面向大赛的完整评测材料已在 [`evaluation/`](evaluation/README.md) 交付并验证：七维结果表与有效性三件套已前置至[评测结果速览](#评测结果速览)，此处不再重复。
 
-judge 交叉实验从 v1（单论文 6 样本，分数级 6/6）扩展到 v2：**20 样本 × 9 篇论文**，双厂商 judge（GLM-5.3 与 Claude）互盲评审，分数级一致 18/20、断言级 95%、Spearman ρ 0.886；协议见 [`judge-protocol-v2.md`](evaluation/judge-protocol-v2.md)，原始 runs 与分歧归因见 [`results/judge-consistency-v2.md`](evaluation/results/judge-consistency-v2.md)。
+judge 交叉实验从 v1（单论文 6 样本，分数级 6/6）扩展到 v2：**20 样本 × 9 篇论文**，双厂商 judge（GLM-5.3 与 Claude）互盲评审，分数级一致 18/20、断言级 95%、Spearman ρ 0.886；协议见 [`judge-protocol-v2.md`](evaluation/judge-protocol-v2.md)，原始 runs 与分歧归因见 [`results/judge-consistency-v2.md`](evaluation/results/judge-consistency-v2.md)。人工金标准环节对分层抽样的 70 条断言做盲标（[对照版标注表](evaluation/annotation/annotation-sheet-evidence.md)），人工与两 judge 的 κ 分别为 0.901 / 0.829，见 [`results/human-agreement.md`](evaluation/results/human-agreement.md)。
 
 > [!NOTE]
 > 当前应用内自动化只判定制品结构、引用 ID、来源范围与内容哈希是否一致。界面中的主张均标记为“候选主张 / 语义支持尚未评估”；人工“接受”只代表用户复核决定，不等价于自动证明论文证据支持模型结论。修改与重绑以追加式记录保存，原始模型回答不会被覆盖。
@@ -249,7 +249,7 @@ Library/
 | M1–M2 产品闭环 | 8/28–9/5 | Hy3 结构化生成、证据锚点、回页与纠错、广场论文发现与面板 AI 助手 | <img src="https://img.shields.io/badge/-已交付-23865f?style=flat-square" alt="已交付" /> |
 | M3–M4 评测与数据 | 9/6–9/8 | 7 维 rubric、31 用例样本集、规则层 + 双厂商 judge 评测脚本 | <img src="https://img.shields.io/badge/-已交付-23865f?style=flat-square" alt="已交付" /> |
 | M5 有效性实验 | 9/8 | 判别力（好>中>差）、跨厂商一致性（v1：6/6 极差 0）、对抗性（3 作弊样本全抓住） | <img src="https://img.shields.io/badge/-已交付-23865f?style=flat-square" alt="已交付" /> |
-| M5+ judge 扩样与人工金标 | 9/19 | judge v2 跨 9 论文 20 样本（18/20 一致、ρ=0.886）✅；人工盲标 κ/ρ 进行中 | <img src="https://img.shields.io/badge/-进行中-d97706?style=flat-square" alt="进行中" /> |
+| M5+ judge 扩样与人工金标 | 9/19 | judge v2 跨 9 论文 20 样本（18/20 一致、ρ=0.886）✅；人工盲标 70 条，κ 0.901/0.829 ✅ | <img src="https://img.shields.io/badge/-已交付-23865f?style=flat-square" alt="已交付" /> |
 | M6–M7 发布 | 9/8–9/23 | 结果报告 ✅、README ✅、90 秒 demo ✅、复现验收与最终提交通道 | <img src="https://img.shields.io/badge/-进行中-d97706?style=flat-square" alt="进行中" /> |
 
 ## <img src="docs/assets/readme/icons/book-open.svg" width="22" alt="" /> 文档

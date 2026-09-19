@@ -85,7 +85,15 @@
 - 三个编造样本（bad-F06、cheat-term-F06、F04「样本多样性更高」伪实验结论）**双 judge 一致判 0**——「编造→0 分」硬规则跨厂商完全稳定，与 v1 结论一致
 - 仅有的 2 个分歧样本均为判级口径而非事实认定：F01（「取代循环对齐方式的关键」类解释性收尾，一方 no_evidence / 一方 support）；S02（DDPM σ_t 归属表述）。两者处 rubric 阈值地带，分数分歧只出现在 1↔2 之间，**无 0↔2 极性反转**
 - v1（6/6）→ v2（18/20）的对照说明小样本满分会高估稳定性；90% + ρ 0.886 是更可信的估计。原始 runs、逐样本分数与分歧断言归因见 `results/judge-run-glm-v2.json` / `judge-run-anthropic-v2.json` / `judge-consistency-v2.md`
-- **judge-vs-human κ/ρ（工具链已备好，尚未启用）**：`annotation/annotation-sheet.md` 为分层抽样的 70 条断言盲标表（10 样本，覆盖 judge 共识分数的 0/1/2 三档与两个分歧样本；抽样方案见 `annotation/annotation-sample.json`），标注完成后由 `scripts/kappa.py` 计算 Cohen's κ（断言级三分类）与 Spearman ρ（答案级）。**本报告的一致性结论全部来自跨厂商模型盲评，未使用人工标注，也不将其表述为人工一致性**——这是与"评估结果与人工标注的一致程度"这一要求之间的已知差距，如实标注。
+- **judge-vs-human κ/ρ（已完成）**：对分层抽样的 **70 条断言**做人工盲标——10 样本，覆盖 judge 共识分数的 0/1/2 三档与两个分歧样本（抽样方案见 `annotation/annotation-sample.json`）；标注时不可见任何 judge 结果，标注表附论文原文检索证据（`annotation/annotation-sheet-evidence.md`）。结果（`results/human-agreement.md`）：
+
+  | 对比 | claim 级配对 | 原始一致率 | **Cohen's κ** | 答案级 ρ | 分数完全一致 |
+  |---|---|---|---|---|---|
+  | 人工 × judge-GLM (GLM-5.3) | 43 | 95% | **0.901** | 0.803 | 7/10 |
+  | 人工 × judge-Anthropic (Claude) | 40 | 92% | **0.829** | 0.949 | 9/10 |
+
+  混淆矩阵显示**不存在 support↔contradict 的极性混淆**——分歧全部落在 support↔no_evidence 边界（人工判「可从原文推出」而 judge 判「原文未提及」），是判级尺度的差异而非事实认定的分歧，与 §4.2 ②' 的模型间结论一致。人工 `fabricated` 勾选恰好命中 F04、bad-F06、cheat-term-F06 三个编造样本，与两 judge 一致判 0 相互印证。
+  **披露**：标注者为评测设计者本人，非独立第二标注者（盲评流程成立，但缺少标注者间一致性）。
 
 **③ 对抗性**（作弊不得提分）：
 
@@ -145,7 +153,7 @@
 ## 6. 实际测评挖掘到的典型模式
 
 - **P1 协议优先模式**：把「忠实性」分解为「引用可验证性」（规则层）+「断言可推出性」（judge 层）后，最难防的伪引用作弊从无解变为必被抓。评测设计比换更强的 judge 更有效。
-- **P2 分数稳健、过程敏感模式**：跨厂商 judge 在分数级一致（v1 6/6；v2 扩样 18/20、ρ=0.886），但断言级忠实率可差 2 倍以上（padding 0.8 vs 0.36）。对外只报分数级结论，过程指标内部使用。
+- **P2 分数稳健、过程敏感模式**：跨厂商 judge 在分数级一致（v1 6/6；v2 扩样 18/20、ρ=0.886），人工盲标亦复现该格局（κ 0.901/0.829，分歧仅在 support↔no_evidence 边界），但断言级忠实率可差 2 倍以上（padding 0.8 vs 0.36）。对外只报分数级结论，过程指标内部使用。
 - **P3 流利性欺骗模式**：术语密度与事实正确性零相关（cheat-term 术语全对、数字全编）。任何依赖「看起来专业」的人工评审都会被此样本欺骗——这正是需要原子断言拆解的原因。
 - **P4 基线污染模式**：评测对象若包含「非 AI 产物」（导入占位笔记），必须先剥离，否则 D6 结论反转。
 - **P5 环境即能力模式**：外部 API 的约束（ModelScope 无搜索、arXiv 429、代理拦截）会直接表现为「AI 能力缺陷」。评测报告必须区分模型能力边界与系统工程边界——本项目通过深翻页+本地过滤把「找不到 CARDIO-Affect」从能力问题降级为 5.9 秒的延迟问题。
@@ -172,4 +180,4 @@
 | `judge-protocol-v2.md` | judge 协议 v2（20 样本 × 9 论文，2026-09-19） |
 | `results/judge-run-glm-v2.json` / `judge-run-anthropic-v2.json` | v2 双 judge 原始判定（GLM-5.3 / Claude Opus 4.8，互盲） |
 | `results/judge-consistency-v2.md` | v2 一致性报告（18/20、断言级 95%、ρ=0.886、分歧归因） |
-| `annotation/annotation-sheet.md` + `scripts/make_sheet.py` + `scripts/kappa.py` | 人工盲标 judge-vs-human κ/ρ 工具链（分层抽样 70 条；尚未启用，见 §4.2 ②'） |
+| `annotation/annotation-sheet-evidence.md` + `scripts/make_sheet.py` / `make_evidence_sheet.py` / `kappa.py` | 人工盲标（70 条分层抽样 + 论文原文检索证据）；κ 结果见 `results/human-agreement.md` |
