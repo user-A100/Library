@@ -1,0 +1,20 @@
+{
+  "sampled": true,
+  "full_samples": 20,
+  "full_claims": 277,
+  "samples": [
+    "F01",
+    "F03",
+    "F04",
+    "F08",
+    "S02",
+    "S03",
+    "bad-F06",
+    "cheat-padding-F06",
+    "cheat-term-F06",
+    "medium-F06"
+  ],
+  "max_claims_per_sample": 7,
+  "claims": 70,
+  "method": "按样本分层（覆盖 judge 共识分数的 0/1/2 三档与作弊样本），样本内等距取断言"
+}

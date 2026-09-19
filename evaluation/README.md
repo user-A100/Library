@@ -25,7 +25,7 @@ evaluation/
 ├── samples/                  ← 31 用例定义 + 注入载体
 ├── answers/                  ← 27 份待评回答（write_answers.py 可再生成）
 ├── validity/                 ← 有效性验证样本（好/中/差 + 3 作弊样本）
-├── annotation/               ← 人工盲标注表（judge-vs-human κ/ρ 实验，进行中）
+├── annotation/               ← 人工盲标工具链（分层抽样 70 条标注表 + κ 脚本，尚未启用）
 ├── scripts/                  ← eval_rules / judge_consistency / make_sheet / kappa / measure_perf / write_answers
 └── results/                  ← rules·judge v1+v2 runs·consistency-v2 · perf · summary-table
 ```
@@ -34,7 +34,7 @@ evaluation/
 
 - D1 便捷性：找→导→问→笔记全链路可跑通；`plaza` 600 条 2.33s 命中目标论文
 - D2 可追溯性：**47/47 引用 100% 机器可验证**（块 ID + 页码）
-- D3 忠实性：双厂商 judge 分数级 v1 **6/6** → v2 扩样（20 样本 × 9 论文，互盲）**18/20（90%）**，断言级 95%，Spearman ρ **0.886**；judge-vs-human κ/ρ 实验进行中
+- D3 忠实性：双厂商 judge 分数级 v1 **6/6** → v2 扩样（20 样本 × 9 论文，互盲）**18/20（90%）**，断言级 95%，Spearman ρ **0.886**。一致性结论全部来自跨厂商模型盲评；人工金标准（judge-vs-human κ/ρ）标注工具链已备好（分层抽样 70 条），尚未启用——本材料不将模型互评表述为人工一致性
 - D4 术语：规则层术语表比对 + judge 终审（协议见 judge-protocol.md）
 - D5 安全性：反例拒答 **6/6**、对抗断言 **9/9**
 - D6 规范性：结构化笔记 **6/6** 格式检查通过

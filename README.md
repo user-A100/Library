@@ -47,7 +47,10 @@
 | 规范性 | 结构化笔记 6/6 格式检查 | 规则层全自动 |
 | 资源占用 | 启动 0.01s · plaza 22.1MB · 输出 846B | 外部采样实测 |
 
-有效性三件套：好/中/差回答严格排序（判别力 ✅）· 跨厂商 20 样本盲评一致（一致性 ✅，覆盖 9 篇论文的正式回答 + 作弊变体）· 伪引用/术语堆砌/篇幅灌水三个作弊样本全部抓住（对抗性 ✅）。两 judge 的 2 处分歧与判级口径差异逐条归因，见[一致性报告](evaluation/results/judge-consistency-v2.md)；人工盲标 judge-vs-human κ/ρ 实验进行中（[`evaluation/annotation/`](evaluation/annotation/annotation-sheet.md)）。
+有效性三件套：好/中/差回答严格排序（判别力 ✅）· 跨厂商 20 样本盲评一致（一致性 ✅，覆盖 9 篇论文的正式回答 + 作弊变体）· 伪引用/术语堆砌/篇幅灌水三个作弊样本全部抓住（对抗性 ✅）。两 judge 的 2 处分歧与判级口径差异逐条归因，见[一致性报告](evaluation/results/judge-consistency-v2.md)。
+
+> [!NOTE]
+> D3 的一致性结论全部来自**跨厂商模型盲评**（GLM × Claude 独立会话、独立读取原文）。人工金标准（judge-vs-human κ/ρ）的标注工具链已备好——分层抽样 70 条断言的[盲标表](evaluation/annotation/annotation-sheet.md)与 κ 计算脚本，尚未启用；本报告不将模型互评表述为人工一致性。
 
 ## <img src="docs/assets/readme/icons/sparkles.svg" width="22" alt="" /> 为什么是 Library
 
@@ -108,7 +111,7 @@
 
 应用内 TRACE-Eval 之外，面向大赛的完整评测材料已在 [`evaluation/`](evaluation/README.md) 交付并验证：七维结果表与有效性三件套已前置至[评测结果速览](#评测结果速览)，此处不再重复。
 
-judge 交叉实验从 v1（单论文 6 样本，分数级 6/6）扩展到 v2：**20 样本 × 9 篇论文**，双厂商 judge（GLM-5.3 与 Claude）互盲评审，分数级一致 18/20、断言级 95%、Spearman ρ 0.886；协议见 [`judge-protocol-v2.md`](evaluation/judge-protocol-v2.md)，原始 runs 与分歧归因见 [`results/judge-consistency-v2.md`](evaluation/results/judge-consistency-v2.md)。人工盲标 judge-vs-human κ/ρ 实验进行中（`evaluation/annotation/`）。
+judge 交叉实验从 v1（单论文 6 样本，分数级 6/6）扩展到 v2：**20 样本 × 9 篇论文**，双厂商 judge（GLM-5.3 与 Claude）互盲评审，分数级一致 18/20、断言级 95%、Spearman ρ 0.886；协议见 [`judge-protocol-v2.md`](evaluation/judge-protocol-v2.md)，原始 runs 与分歧归因见 [`results/judge-consistency-v2.md`](evaluation/results/judge-consistency-v2.md)。
 
 > [!NOTE]
 > 当前应用内自动化只判定制品结构、引用 ID、来源范围与内容哈希是否一致。界面中的主张均标记为“候选主张 / 语义支持尚未评估”；人工“接受”只代表用户复核决定，不等价于自动证明论文证据支持模型结论。修改与重绑以追加式记录保存，原始模型回答不会被覆盖。

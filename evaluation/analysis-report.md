@@ -85,7 +85,7 @@
 - 三个编造样本（bad-F06、cheat-term-F06、F04「样本多样性更高」伪实验结论）**双 judge 一致判 0**——「编造→0 分」硬规则跨厂商完全稳定，与 v1 结论一致
 - 仅有的 2 个分歧样本均为判级口径而非事实认定：F01（「取代循环对齐方式的关键」类解释性收尾，一方 no_evidence / 一方 support）；S02（DDPM σ_t 归属表述）。两者处 rubric 阈值地带，分数分歧只出现在 1↔2 之间，**无 0↔2 极性反转**
 - v1（6/6）→ v2（18/20）的对照说明小样本满分会高估稳定性；90% + ρ 0.886 是更可信的估计。原始 runs、逐样本分数与分歧断言归因见 `results/judge-run-glm-v2.json` / `judge-run-anthropic-v2.json` / `judge-consistency-v2.md`
-- **judge-vs-human κ/ρ**（进行中）：`annotation/annotation-sheet.md`（20 样本 277 断言盲标表，标注者=评测设计者本人、盲评）完成后由 `scripts/kappa.py` 计算 Cohen's κ（断言级三分类）与 Spearman ρ（答案级）
+- **judge-vs-human κ/ρ（工具链已备好，尚未启用）**：`annotation/annotation-sheet.md` 为分层抽样的 70 条断言盲标表（10 样本，覆盖 judge 共识分数的 0/1/2 三档与两个分歧样本；抽样方案见 `annotation/annotation-sample.json`），标注完成后由 `scripts/kappa.py` 计算 Cohen's κ（断言级三分类）与 Spearman ρ（答案级）。**本报告的一致性结论全部来自跨厂商模型盲评，未使用人工标注，也不将其表述为人工一致性**——这是与"评估结果与人工标注的一致程度"这一要求之间的已知差距，如实标注。
 
 **③ 对抗性**（作弊不得提分）：
 
@@ -172,4 +172,4 @@
 | `judge-protocol-v2.md` | judge 协议 v2（20 样本 × 9 论文，2026-09-19） |
 | `results/judge-run-glm-v2.json` / `judge-run-anthropic-v2.json` | v2 双 judge 原始判定（GLM-5.3 / Claude Opus 4.8，互盲） |
 | `results/judge-consistency-v2.md` | v2 一致性报告（18/20、断言级 95%、ρ=0.886、分歧归因） |
-| `annotation/annotation-sheet.md` + `scripts/make_sheet.py` + `scripts/kappa.py` | 人工盲标 judge-vs-human κ/ρ 实验（进行中） |
+| `annotation/annotation-sheet.md` + `scripts/make_sheet.py` + `scripts/kappa.py` | 人工盲标 judge-vs-human κ/ρ 工具链（分层抽样 70 条；尚未启用，见 §4.2 ②'） |
