@@ -19,7 +19,8 @@
 </p>
 
 <p align="center">
-  <strong><a href="#为什么是-library">为什么是 Library</a></strong> ·
+  <strong><a href="#评测结果速览">评测结果</a></strong> ·
+  <a href="#为什么是-library">为什么是 Library</a> ·
   <a href="#核心能力">核心能力</a> ·
   <a href="#演示-demo">演示 Demo</a> ·
   <a href="#不只做应用也验证评测方法">评测方法</a> ·
@@ -31,6 +32,22 @@
 
 > [!IMPORTANT]
 > 本项目是腾讯犀牛鸟开源实践任务的个人 / 活动作品，不是腾讯的官方产品。当前仓库已接通桌面 Hy3 对话主链路，并为每次运行持久化 `library.trace/v1` 研究制品、候选主张、证据定位与哈希校验；候选主张已支持接受、驳回、修改、证据重绑及追加式决策记录。**面向大赛的 7 维评测与有效性验证已交付**（判别力、跨厂商 judge 一致性、对抗性实验均完成），完整材料见 [`evaluation/`](evaluation/README.md)。
+
+## <img src="docs/assets/readme/icons/flask-conical.svg" width="22" alt="" /> 评测结果速览
+
+面向大赛的 D1–D7 七维评测全部实测交付（[材料索引](evaluation/README.md) · [分析报告](evaluation/analysis-report.md)）：
+
+| 维度 | 结果 | 判定层 |
+| --- | --- | --- |
+| 便捷性（找→导→问→笔记） | 全链路跑通，plaza 600 条论文 2.33s | 脚本计时 |
+| 可追溯性 | **47/47 引用 100%** 块级+页码机器可验证 | 规则层全自动 |
+| 忠实性 | 双厂商 judge（GLM-5.3 × Claude）**18/20 分数一致** · 断言级 95% · Spearman ρ **0.886** | LLM-as-judge 交叉 |
+| 术语正确性 | 28 份回答 0 译名漂移（18 条术语表） | 规则层全自动 |
+| 安全性 | 反例拒答 **6/6**，对抗断言 **9/9** | 规则层全自动 |
+| 规范性 | 结构化笔记 6/6 格式检查 | 规则层全自动 |
+| 资源占用 | 启动 0.01s · plaza 22.1MB · 输出 846B | 外部采样实测 |
+
+有效性三件套：好/中/差回答严格排序（判别力 ✅）· 跨厂商 20 样本盲评一致（一致性 ✅，覆盖 9 篇论文的正式回答 + 作弊变体）· 伪引用/术语堆砌/篇幅灌水三个作弊样本全部抓住（对抗性 ✅）。两 judge 的 2 处分歧与判级口径差异逐条归因，见[一致性报告](evaluation/results/judge-consistency-v2.md)；人工盲标 judge-vs-human κ/ρ 实验进行中（[`evaluation/annotation/`](evaluation/annotation/annotation-sheet.md)）。
 
 ## <img src="docs/assets/readme/icons/sparkles.svg" width="22" alt="" /> 为什么是 Library
 
@@ -89,19 +106,9 @@
 
 ### 已交付的评测与有效性验证
 
-应用内 TRACE-Eval 之外，面向大赛的完整评测材料已在 [`evaluation/`](evaluation/README.md) 交付并验证：
+应用内 TRACE-Eval 之外，面向大赛的完整评测材料已在 [`evaluation/`](evaluation/README.md) 交付并验证：七维结果表与有效性三件套已前置至[评测结果速览](#评测结果速览)，此处不再重复。
 
-| 维度 | 结果 | 判定层 |
-| --- | --- | --- |
-| 便捷性（找→导→问→笔记） | 全链路跑通，plaza 600 条论文 2.33s | 脚本计时 |
-| 可追溯性 | **47/47 引用 100%** 块级+页码机器可验证 | 规则层全自动 |
-| 忠实性 | 双厂商 judge 分数级 **6/6 一致**（极差 0） | LLM-as-judge 交叉 |
-| 术语正确性 | 28 份回答 0 译名漂移（18 条术语表） | 规则层全自动 |
-| 安全性 | 反例拒答 **6/6**，对抗断言 **9/9** | 规则层全自动 |
-| 规范性 | 结构化笔记 6/6 格式检查 | 规则层全自动 |
-| 资源占用 | 启动 0.01s · plaza 22.1MB · 输出 846B | 外部采样实测 |
-
-有效性实验：好/中/差回答严格排序（判别力 ✅）、跨厂商独立评审 6/6 分数一致（一致性 ✅）、伪引用/术语堆砌/篇幅灌水三个作弊样本全部被抓住（对抗性 ✅）。失败模式与能力边界分析见[分析报告](evaluation/analysis-report.md)。
+judge 交叉实验从 v1（单论文 6 样本，分数级 6/6）扩展到 v2：**20 样本 × 9 篇论文**，双厂商 judge（GLM-5.3 与 Claude）互盲评审，分数级一致 18/20、断言级 95%、Spearman ρ 0.886；协议见 [`judge-protocol-v2.md`](evaluation/judge-protocol-v2.md)，原始 runs 与分歧归因见 [`results/judge-consistency-v2.md`](evaluation/results/judge-consistency-v2.md)。人工盲标 judge-vs-human κ/ρ 实验进行中（`evaluation/annotation/`）。
 
 > [!NOTE]
 > 当前应用内自动化只判定制品结构、引用 ID、来源范围与内容哈希是否一致。界面中的主张均标记为“候选主张 / 语义支持尚未评估”；人工“接受”只代表用户复核决定，不等价于自动证明论文证据支持模型结论。修改与重绑以追加式记录保存，原始模型回答不会被覆盖。
@@ -238,7 +245,8 @@ Library/
 | M0 方案冻结 | 8/27 | 场景、架构、rubric、数据规范 | <img src="https://img.shields.io/badge/-已冻结-64748b?style=flat-square" alt="已冻结" /> |
 | M1–M2 产品闭环 | 8/28–9/5 | Hy3 结构化生成、证据锚点、回页与纠错、广场论文发现与面板 AI 助手 | <img src="https://img.shields.io/badge/-已交付-23865f?style=flat-square" alt="已交付" /> |
 | M3–M4 评测与数据 | 9/6–9/8 | 7 维 rubric、31 用例样本集、规则层 + 双厂商 judge 评测脚本 | <img src="https://img.shields.io/badge/-已交付-23865f?style=flat-square" alt="已交付" /> |
-| M5 有效性实验 | 9/8 | 判别力（好>中>差）、跨厂商一致性（6/6 极差 0）、对抗性（3 作弊样本全抓住） | <img src="https://img.shields.io/badge/-已交付-23865f?style=flat-square" alt="已交付" /> |
+| M5 有效性实验 | 9/8 | 判别力（好>中>差）、跨厂商一致性（v1：6/6 极差 0）、对抗性（3 作弊样本全抓住） | <img src="https://img.shields.io/badge/-已交付-23865f?style=flat-square" alt="已交付" /> |
+| M5+ judge 扩样与人工金标 | 9/19 | judge v2 跨 9 论文 20 样本（18/20 一致、ρ=0.886）✅；人工盲标 κ/ρ 进行中 | <img src="https://img.shields.io/badge/-进行中-d97706?style=flat-square" alt="进行中" /> |
 | M6–M7 发布 | 9/8–9/23 | 结果报告 ✅、README ✅、90 秒 demo ✅、复现验收与最终提交通道 | <img src="https://img.shields.io/badge/-进行中-d97706?style=flat-square" alt="进行中" /> |
 
 ## <img src="docs/assets/readme/icons/book-open.svg" width="22" alt="" /> 文档

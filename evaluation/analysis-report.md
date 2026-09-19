@@ -79,6 +79,14 @@
 - 断言级忠实率存在**拆解粒度分歧**：good 1.0 vs 0.89（judge-3 更严格地把「标准提示失败原因」判为 no_evidence）；padding 0.8 vs 0.36（双方都认定灌水，但拆解出的断言数量不同）
 - 结论：**分数级 rubric（含硬规则）跨厂商稳定，可直接采信；断言级忠实率只应作为过程指标呈现，不宜直接对外比较**
 
+**②' 一致性扩样 v2（2026-09-19，`judge-protocol-v2.md`）**：judge 交叉从 6 个单论文有效性样本扩展到 **20 样本 × 9 篇论文**（15 份正式 F/S 回答 + 5 个有效性/作弊样本；`answers/F06.md` 与 `validity/good-F06.md` 内容相同，已去重）。双 judge 互盲：judge-glm-v2（GLM-5.3）与 judge-anthropic-v2（Claude Opus 4.8），各自独立读 9 篇论文 LaTeX 源、互不可见对方结果：
+
+- **分数级 18/20（90%）一致**；断言级（两 judge 均拆出的 65 条断言，按前 40 字配对）**95% 一致**；样本级 Spearman ρ **0.886**（并列取平均秩）
+- 三个编造样本（bad-F06、cheat-term-F06、F04「样本多样性更高」伪实验结论）**双 judge 一致判 0**——「编造→0 分」硬规则跨厂商完全稳定，与 v1 结论一致
+- 仅有的 2 个分歧样本均为判级口径而非事实认定：F01（「取代循环对齐方式的关键」类解释性收尾，一方 no_evidence / 一方 support）；S02（DDPM σ_t 归属表述）。两者处 rubric 阈值地带，分数分歧只出现在 1↔2 之间，**无 0↔2 极性反转**
+- v1（6/6）→ v2（18/20）的对照说明小样本满分会高估稳定性；90% + ρ 0.886 是更可信的估计。原始 runs、逐样本分数与分歧断言归因见 `results/judge-run-glm-v2.json` / `judge-run-anthropic-v2.json` / `judge-consistency-v2.md`
+- **judge-vs-human κ/ρ**（进行中）：`annotation/annotation-sheet.md`（20 样本 277 断言盲标表，标注者=评测设计者本人、盲评）完成后由 `scripts/kappa.py` 计算 Cohen's κ（断言级三分类）与 Spearman ρ（答案级）
+
 **③ 对抗性**（作弊不得提分）：
 
 | 作弊样本 | 手法 | 结果 |
@@ -137,7 +145,7 @@
 ## 6. 实际测评挖掘到的典型模式
 
 - **P1 协议优先模式**：把「忠实性」分解为「引用可验证性」（规则层）+「断言可推出性」（judge 层）后，最难防的伪引用作弊从无解变为必被抓。评测设计比换更强的 judge 更有效。
-- **P2 分数稳健、过程敏感模式**：跨厂商 judge 在分数级 6/6 一致，但断言级忠实率可差 2 倍以上（padding 0.8 vs 0.36）。对外只报分数级结论，过程指标内部使用。
+- **P2 分数稳健、过程敏感模式**：跨厂商 judge 在分数级一致（v1 6/6；v2 扩样 18/20、ρ=0.886），但断言级忠实率可差 2 倍以上（padding 0.8 vs 0.36）。对外只报分数级结论，过程指标内部使用。
 - **P3 流利性欺骗模式**：术语密度与事实正确性零相关（cheat-term 术语全对、数字全编）。任何依赖「看起来专业」的人工评审都会被此样本欺骗——这正是需要原子断言拆解的原因。
 - **P4 基线污染模式**：评测对象若包含「非 AI 产物」（导入占位笔记），必须先剥离，否则 D6 结论反转。
 - **P5 环境即能力模式**：外部 API 的约束（ModelScope 无搜索、arXiv 429、代理拦截）会直接表现为「AI 能力缺陷」。评测报告必须区分模型能力边界与系统工程边界——本项目通过深翻页+本地过滤把「找不到 CARDIO-Affect」从能力问题降级为 5.9 秒的延迟问题。
@@ -161,3 +169,7 @@
 | `results/rules-results.json` + `results/summary-table.md` | 规则层完整结果 |
 | `results/judge-run1.json` / `results/judge-run3.json` | 双厂商 judge 判定（GLM / Anthropic，含逐断言原文证据） |
 | `judge-protocol.md` | judge 独立评审协议（防 judge 自由发挥） |
+| `judge-protocol-v2.md` | judge 协议 v2（20 样本 × 9 论文，2026-09-19） |
+| `results/judge-run-glm-v2.json` / `judge-run-anthropic-v2.json` | v2 双 judge 原始判定（GLM-5.3 / Claude Opus 4.8，互盲） |
+| `results/judge-consistency-v2.md` | v2 一致性报告（18/20、断言级 95%、ρ=0.886、分歧归因） |
+| `annotation/annotation-sheet.md` + `scripts/make_sheet.py` + `scripts/kappa.py` | 人工盲标 judge-vs-human κ/ρ 实验（进行中） |

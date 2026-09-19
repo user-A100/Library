@@ -21,3 +21,5 @@ demo.mp4
 # 本地环境产物与私有材料
 /pnpm-lock.yaml
 犀牛鸟开源-实战任务-混元大语言模型项目.pdf
+__pycache__/
+*.pyc

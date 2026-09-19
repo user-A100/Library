@@ -1,0 +1,348 @@
+{
+  "meta": {
+    "judge": "judge-glm-v2 (GLM-5.3)",
+    "date": "2026-09-19",
+    "protocol": "judge-protocol-v2.md"
+  },
+  "runs": {
+    "F01": {
+      "claims": [
+        {"text": "自注意力（编码器与解码器内部）中 Query、Key、Value 全部来自同一层的输入表示", "verdict": "support", "evidence": "model_architecture.tex: In a self-attention layer all of the keys, values and queries come from the same place, in this case, the output of the previous layer"},
+        {"text": "Q、K、V 经三个可学习投影矩阵 W^Q、W^K、W^V 线性变换得到", "verdict": "support", "evidence": "linearly project the queries, keys and values h times with different, learned linear projections; W^Q_i, W^K_i, W^V_i"},
+        {"text": "编码器-解码器注意力中 Query 来自解码器上一层的输出", "verdict": "support", "evidence": "the queries come from the previous decoder layer"},
+        {"text": "Key 和 Value 来自编码器的最终输出", "verdict": "support", "evidence": "the memory keys and values come from the output of the encoder"},
+        {"text": "这使得解码器的每个位置都能关注输入序列的全部位置", "verdict": "support", "evidence": "This allows every position in the decoder to attend over all positions in the input sequence"},
+        {"text": "该机制模拟传统 seq2seq 中的对齐/注意力机制", "verdict": "support", "evidence": "This mimics the typical encoder-decoder attention mechanisms in sequence-to-sequence models"},
+        {"text": "这一设计是 Transformer 取代循环对齐方式的关键", "verdict": "no_evidence", "evidence": "原文仅说 dispenses with recurrence / mimics typical mechanisms，未做此『关键』论断"}
+      ],
+      "faithfulness": 0.86,
+      "fabricated": false,
+      "capped": false,
+      "score": 1
+    },
+    "F02": {
+      "claims": [
+        {"text": "使用 Adam 优化器（β1=0.9, β2=0.98, ε=10^-9）", "verdict": "support", "evidence": "training.tex: We used the Adam optimizer with beta1=0.9, beta2=0.98 and epsilon=10^{-9}"},
+        {"text": "学习率公式为 lrate = d_model^{-0.5} · min(step^{-0.5}, step · 4000^{-1.5})", "verdict": "support", "evidence": "lrate = d_model^{-0.5} * min(step_num^{-0.5}, step_num * warmup_steps^{-1.5})"},
+        {"text": "前 4000 步学习率线性 warmup", "verdict": "support", "evidence": "increasing the learning rate linearly for the first warmup_steps training steps"},
+        {"text": "之后按步数平方根倒数衰减", "verdict": "support", "evidence": "decreasing it thereafter proportionally to the inverse square root of the step number"},
+        {"text": "warmup 步数为 4000", "verdict": "support", "evidence": "We used warmup_steps=4000"},
+        {"text": "base 模型约训练 10^5 步，warmup 约占 4%", "verdict": "support", "evidence": "We trained the base models for a total of 100,000 steps or 12 hours（4000/100000=4% 可直接算得）"}
+      ],
+      "faithfulness": 1.0,
+      "fabricated": false,
+      "capped": false,
+      "score": 2
+    },
+    "F03": {
+      "claims": [
+        {"text": "前向扩散是固定马尔可夫链，每步向数据添加高斯噪声", "verdict": "support", "evidence": "the forward process or diffusion process, is fixed to a Markov chain that gradually adds Gaussian noise to the data"},
+        {"text": "q(x_t|x_{t-1}) = N(x_t; sqrt(1-beta_t) x_{t-1}, beta_t I)", "verdict": "support", "evidence": "q(x_t|x_{t-1}) := N(x_t; sqrt(1-beta_t) x_{t-1}, beta_t I)"},
+        {"text": "均值为 sqrt(1-beta_t)·x_{t-1}", "verdict": "support", "evidence": "N(x_t; sqrt(1-beta_t) x_{t-1}, beta_t I) 的均值项"},
+        {"text": "方差为 beta_t（各向同性 beta_t·I）", "verdict": "support", "evidence": "N(x_t; sqrt(1-beta_t) x_{t-1}, beta_t I) 的协方差项 beta_t I"},
+        {"text": "beta_1..beta_T 是由线性调度给出的方差表", "verdict": "support", "evidence": "variance schedule beta_1, ..., beta_T; constants increasing linearly from beta_1=10^{-4} to beta_T=0.02"},
+        {"text": "T=1000", "verdict": "support", "evidence": "We set T=1000 for all experiments"},
+        {"text": "利用重参数化可直接写出任意时刻的封闭形式 q(x_t|x_0)", "verdict": "support", "evidence": "admits sampling x_t at an arbitrary timestep t in closed form; reparameterizing (4) as x_t(x_0, eps)=sqrt(abar_t) x_0 + sqrt(1-abar_t) eps"}
+      ],
+      "faithfulness": 1.0,
+      "fabricated": false,
+      "capped": false,
+      "score": 2
+    },
+    "F04": {
+      "claims": [
+        {"text": "完整的变分下界包含 T 项 KL 散度（加 L_0）", "verdict": "support", "evidence": "E_q[D_KL(q(x_T|x_0)||p(x_T)) + sum_{t>1} D_KL(q(x_{t-1}|x_t,x_0)||p_theta(x_{t-1}|x_t)) - log p_theta(x_0|x_1)]"},
+        {"text": "L_simple 只保留去噪项 ||eps - eps_theta(sqrt(abar_t) x_0 + sqrt(1-abar_t) eps, t)||^2，丢弃其余加权系数", "verdict": "support", "evidence": "L_simple(theta) := E[||eps - eps_theta(sqrt(abar_t)x_0 + sqrt(1-abar_t)eps, t)||^2]; our simplified objective discards the weighting"},
+        {"text": "简化的理由是经验性的（对样本质量有益且更易实现）", "verdict": "support", "evidence": "we found it beneficial to sample quality (and simpler to implement) to train on the following variant of the variational bound"},
+        {"text": "原始加权项随 t 变化会破坏学习", "verdict": "no_evidence", "evidence": "原文无此论断，仅说 down-weight 小 t 项有益（it is beneficial to down-weight them）"},
+        {"text": "L_simple 把权重统一为 1", "verdict": "support", "evidence": "The t>1 cases correspond to an unweighted version of (14)"},
+        {"text": "使模型在噪声更大（t 更大）的样本上投入更多学习信号", "verdict": "support", "evidence": "beneficial to down-weight them so that the network can focus on more difficult denoising tasks at larger t"},
+        {"text": "实测在 CIFAR10 上 FID 分数更好", "verdict": "support", "evidence": "Ours (L_simple) FID 3.17 vs 13.51（Table 1）；this reweighting leads to better sample quality"},
+        {"text": "且生成的样本多样性更高、覆盖模式更全", "verdict": "no_evidence", "evidence": "原文消融仅报告 IS/FID，未报告多样性或模式覆盖结论——属编造实验结论，触发硬规则"}
+      ],
+      "faithfulness": 0.75,
+      "fabricated": true,
+      "capped": false,
+      "score": 0
+    },
+    "F05": {
+      "claims": [
+        {"text": "取一个 batch 的 N 个（图像，文本）对，编码后计算 N×N 余弦相似度矩阵", "verdict": "support", "evidence": "Given a batch of N (image, text) pairs, CLIP is trained to predict which of the N×N possible (image, text) pairings... maximize the cosine similarity"},
+        {"text": "对角线上的 N 个配对是数据集里真实匹配的图文对（正样本）", "verdict": "support", "evidence": "maximize the cosine similarity of the image and text embeddings of the N real pairs in the batch"},
+        {"text": "矩阵其余 N^2−N 个位置是 batch 内错配组合，全部作为负样本", "verdict": "support", "evidence": "minimizing the cosine similarity of the embeddings of the N^2-N incorrect pairings"},
+        {"text": "预测任务是对称的：给定图像在 N 个文本中找正确的（按行），给定文本在 N 个图像中找正确的（按列）", "verdict": "support", "evidence": "We optimize a symmetric cross entropy loss over these similarity scores（对称双向，对应行/列 softmax）"},
+        {"text": "两个方向共享同一个相似度矩阵", "verdict": "support", "evidence": "a symmetric cross entropy loss over these similarity scores（同一组 similarity scores）"},
+        {"text": "优化对称的 InfoNCE 目标", "verdict": "support", "evidence": "symmetric cross entropy loss + popularized for contrastive representation learning by Oord as the InfoNCE loss"}
+      ],
+      "faithfulness": 1.0,
+      "fabricated": false,
+      "capped": false,
+      "score": 2
+    },
+    "F07": {
+      "claims": [
+        {"text": "HotpotQA 为多跳问答任务，实验以 PaLM-540B 为底座", "verdict": "support", "evidence": "HotPotQA, a multi-hop question answering benchmark; using PaLM-540B as the base model with different prompting methods"},
+        {"text": "ReAct 的 EM 约为 27.4", "verdict": "support", "evidence": "Table 1: ReAct HotpotQA (EM) 27.4"},
+        {"text": "该分数『略低于』CoT-SC 自洽基线", "verdict": "contradict", "evidence": "Table 1 CoT-SC=33.4，与 27.4 相差 6 分并非略低；原文仅称 slightly lags behind CoT on HotpotQA (27.4 vs. 29.4)"},
+        {"text": "差距主要来自推理步与外部检索交错引入的错误路径", "verdict": "support", "evidence": "such a structural constraint also reduces its flexibility in formulating reasoning steps, leading to more reasoning error rate; Non-informative search... derails the model reasoning"},
+        {"text": "CoT 基线约 16% 的成功案例其实依赖模型编造的内部知识", "verdict": "contradict", "evidence": "Table 2 成功模式中 CoT false positive 为 14%（hallucinated reasoning trace or facts）；16% 是 CoT 失败模式中 reasoning error 的占比"},
+        {"text": "ReAct 因结论锚定真实检索证据，此类幻觉率降到约 6%", "verdict": "support", "evidence": "much higher false positive rate than ReAct (14% vs. 6%) in success mode; the problem solving trajectory of ReAct is more grounded, fact-driven, and trustworthy"},
+        {"text": "ReAct 的主要失败模式是搜索动作受限与重复检索循环", "verdict": "support", "evidence": "one frequent error pattern specific to ReAct... repetitively generates the previous thoughts and actions; Non-informative search, which counts for 23% of the error cases; the action space mostly can only retrieve a small part of a passage"},
+        {"text": "总体上 ReAct 用少量 EM 损失换来显著更高的证据可追溯性与可解释性", "verdict": "support", "evidence": "slightly lags behind CoT (27.4 vs. 29.4); more factual and grounded; generates more human interpretable, diagnosable, and controllable task-solving trajectories"}
+      ],
+      "faithfulness": 0.75,
+      "fabricated": false,
+      "capped": true,
+      "score": 1
+    },
+    "F08": {
+      "claims": [
+        {"text": "CARDIO-Affect 全称为 Complex Affective Regulation Dynamics with Information-geometric Observation", "verdict": "support", "evidence": "摘要: CARDIO-Affect (Complex Affective Regulation Dynamics with Information-geometric Observation)"},
+        {"text": "用四大数学支柱建模有界社会群体的长期情感动力学", "verdict": "support", "evidence": "formalised through... four mathematical pillars; long-term emotional dynamics in bounded social groups"},
+        {"text": "支柱一为统计力学：以哈密顿量驱动的 SDE 刻画情感状态演化", "verdict": "support", "evidence": "statistical mechanics with neural-parameterised Hamiltonian SDE over per-person regime-conditional asymmetric potentials"},
+        {"text": "个体情感被视为多稳态非线性随机动力系统", "verdict": "support", "evidence": "treats individual emotion as a multi-stable nonlinear stochastic dynamical system"},
+        {"text": "支柱二为信息几何：用 Fisher-Rao 度量支撑个体画像", "verdict": "support", "evidence": "information geometry placing each individual as a 45-dimensional point on a Fisher-Rao manifold"},
+        {"text": "支柱三为拓扑数据分析（TDA）：提取情感轨迹的拓扑不变量", "verdict": "support", "evidence": "topological data analysis yielding reparameterisation-invariant trajectory signatures"},
+        {"text": "TDA 用于识别多稳态吸引子", "verdict": "no_evidence", "evidence": "原文将 TDA 限定为辅助轨迹描述子（贡献 45 维画像中 3 维，Betti-0/1、total persistence），未称其识别吸引子"},
+        {"text": "支柱四 EVA 的功能是量化稀疏传染、非对称持久性和危机反转等悖论现象", "verdict": "contradict", "evidence": "原文 EVA 定义为 HRV-inspired... decompose each high-density person-day into multi-scale time-, frequency-, and non-linear-domain measures；三个悖论是 WELD 上的实证发现，与 EVA 模块的功能不符"},
+        {"text": "个体情感是多稳态的，因为哈密顿动力学存在多个局部吸引域", "verdict": "support", "evidence": "multi-stable attractors; multiple basins of attraction with asymmetric depths"},
+        {"text": "外部事件可使状态在吸引子之间发生稀疏跳转", "verdict": "no_evidence", "evidence": "原文吸引子切换为 Kramers 式激活跃迁（噪声驱动），外部冲击以 beta_i S(t) 进入 SDE，未称『外部事件导致稀疏跳转』"}
+      ],
+      "faithfulness": 0.7,
+      "fabricated": false,
+      "capped": true,
+      "score": 1
+    },
+    "F09": {
+      "claims": [
+        {"text": "研究使用了两类生理信号：ECG 与 GSR", "verdict": "support", "evidence": "physiological signals such as Electrocardiogram (ECG) and Galvanic Skin Response (GSR)"},
+        {"text": "ECG 提取心率变异性等心脏活动特征", "verdict": "support", "evidence": "features such as heart rate, heart rate variability are particularly effective...；Table: Mean RR, STD RR, RMSSD, PNN50 等时域特征"},
+        {"text": "GSR 反映交感神经唤起水平", "verdict": "support", "evidence": "GSR signals provide direct measures of emotional arousal through sympathetic activation"},
+        {"text": "受控情绪刺激：实验室条件下向被试呈现标准化诱发材料", "verdict": "support", "evidence": "recorded while participants are watching emotion-eliciting stimuli；These movie clips were pre-annotated by over 300 participants；seated in a quiet, temperature/light-controlled room"},
+        {"text": "按离散情绪标签（不同粒度）以及效价-唤醒度两个维度标记分类目标", "verdict": "support", "evidence": "classifying targets such as discrete emotions with varying granularity, valence and arousal；9 类与 4 类设置"},
+        {"text": "比较多种机器学习模型在这些目标上的表现", "verdict": "support", "evidence": "We used several supervised learning models, including Support Vector Machines (SVM), Random Forest (RF), Extreme gradient boosting (XGBoost) and Neural network (NN)"},
+        {"text": "结论指出生理信号对不同粒度情绪目标的可分性存在明显差异", "verdict": "support", "evidence": "discrete emotions for 4 classes have shown better accuracies than... 9 classes; the inter-class overlaps are reduced with 4 emotions"}
+      ],
+      "faithfulness": 1.0,
+      "fabricated": false,
+      "capped": false,
+      "score": 2
+    },
+    "F10": {
+      "claims": [
+        {"text": "IndexTTS 2.5 的情感控制建立在 IndexTTS 2 的零样本框架上", "verdict": "support", "evidence": "IndexTTS 2.5 retains the overall generation pipeline of IndexTTS 2; Building upon this, we present IndexTTS 2.5"},
+        {"text": "系统由 Transformer 文本到语义（T2S）模块与非自回归语义到梅尔（S2M）模块组成", "verdict": "support", "evidence": "a Transformer-based Text-to-Semantic (T2S) module and a non-autoregressive Semantic-to-Mel (S2M) module"},
+        {"text": "忠实情感复制指给定参考音频时合成语音保持其情感风格", "verdict": "support", "evidence": "enable faithful emotion replication; replicates emotional prosody in unseen languages with the same zero-shot setting"},
+        {"text": "零样本情感复制无需目标情感的微调数据", "verdict": "support", "evidence": "enables robust emotion transfer even without target-language emotional training data"},
+        {"text": "从一段参考音频提取情感（条件）信息并迁移到新文本的合成中", "verdict": "support", "evidence": "c denote a global conditioning vector that captures speaker identity or emotional attributes；Arabic 评测以日语 speech 为 prompt audio 迁移情感"},
+        {"text": "即使目标语言没有该情感的训练数据也能完成情感韵律迁移", "verdict": "support", "evidence": "strong zero-shot emotion transfer on unseen languages, even though it was trained using only Chinese and English emotional speech data"},
+        {"text": "新版本引入 GRPO 后训练优化", "verdict": "support", "evidence": "we apply Group Relative Policy Optimization (GRPO) in post-training of the T2S module, improving pronunciation accuracy and naturalness"},
+        {"text": "新版本首次建立自回归时长可控的生成范式", "verdict": "contradict", "evidence": "摘要将该范式归于 IndexTTS 2（previous work）：the above two components... establish the first autoregressive duration-controllable generative paradigm；2.5 是 Building upon this"},
+        {"text": "支持中英日西四种语言", "verdict": "contradict", "evidence": "摘要与引言均为五种语言：supports Chinese, English, Japanese, Spanish and Arabic（含 test-ar 评测）"}
+      ],
+      "faithfulness": 0.78,
+      "fabricated": false,
+      "capped": true,
+      "score": 1
+    },
+    "F11": {
+      "claims": [
+        {"text": "GPT-3 在 zero-shot、one-shot、few-shot 三种设置下评估", "verdict": "support", "evidence": "In this paper we focus on zero-shot, one-shot and few-shot"},
+        {"text": "三种设置全部不更新参数", "verdict": "support", "evidence": "no weight updates are allowed; In this work we do not fine-tune GPT-3"},
+        {"text": "few-shot 在上下文放入 K 个（输入，输出）示例对", "verdict": "support", "evidence": "few-shot works by giving K examples of context and completion"},
+        {"text": "K 受上下文窗口限制", "verdict": "support", "evidence": "this is how many examples can fit in the model's context window (n_ctx=2048)"},
+        {"text": "K 典型取值 10-100", "verdict": "support", "evidence": "We typically set K in the range of 10 to 100"},
+        {"text": "模型从示例中现场学习模式后完成最后一个输入", "verdict": "support", "evidence": "and then one final example of context, with the model expected to provide the completion"},
+        {"text": "one-shot 只放 1 个示例并辅以自然语言任务描述", "verdict": "support", "evidence": "the same as few-shot except that only one demonstration is allowed, in addition to a natural language description of the task"},
+        {"text": "zero-shot 只有自然语言指令、无任何示例", "verdict": "support", "evidence": "no demonstrations are allowed, and the model is only given a natural language instruction describing the task"},
+        {"text": "性能随示例数 K 单调上升", "verdict": "contradict", "evidence": "evaluation.tex: Larger values of K are usually but not always better（原文明确否定严格单调）"},
+        {"text": "GPT-3 具备无需梯度更新的上下文内元学习能力", "verdict": "support", "evidence": "脚注：the method is zero-shot in the sense that no gradient updates are performed; meta-learning / in-context learning 定义"},
+        {"text": "few-shot 仍不及微调后的 SOTA", "verdict": "support", "evidence": "results from this method have so far been much worse than state-of-the-art fine-tuned models; many of them are only slightly behind state-of-the-art fine-tuned models"}
+      ],
+      "faithfulness": 0.91,
+      "fabricated": false,
+      "capped": true,
+      "score": 1
+    },
+    "F12": {
+      "claims": [
+        {"text": "多头注意力将 d_model 维输入并行投影到 h 个头", "verdict": "support", "evidence": "linearly project the queries, keys and values h times with different, learned linear projections to d_k, d_k and d_v dimensions"},
+        {"text": "对 Q、K、V 各做 h 次 d_model 到 d_k 的投影", "verdict": "support", "evidence": "W^Q_i ∈ R^{d_model×d_k}, W^K_i ∈ R^{d_model×d_k}"},
+        {"text": "d_k = d_model / h", "verdict": "support", "evidence": "For each of these we use d_k=d_v=d_model/h=64"},
+        {"text": "每个头独立计算缩放点积注意力", "verdict": "support", "evidence": "On each of these projected versions of queries, keys and values we then perform the attention function in parallel"},
+        {"text": "每个头的输出为 d_k（=d_v）维", "verdict": "support", "evidence": "yielding d_v-dimensional output values；d_k=d_v=64"},
+        {"text": "h 个头的输出沿特征维拼接成 h·d_k 维", "verdict": "support", "evidence": "These are concatenated and once again projected; W^O ∈ R^{h d_v × d_model}"},
+        {"text": "再经输出投影 W^O 映射回 d_model 维", "verdict": "support", "evidence": "once again projected, resulting in the final values; W^O ∈ R^{h d_v × d_model}"},
+        {"text": "base 配置 d_model=512、h=8", "verdict": "support", "evidence": "produce outputs of dimension d_model=512; we employ h=8 parallel attention layers, or heads"},
+        {"text": "每个头的 d_k=64，拼接后 8×64=512 维", "verdict": "support", "evidence": "d_k=d_v=d_model/h=64（512/8=64）"},
+        {"text": "每头的总计算量与单头全维注意力相当", "verdict": "support", "evidence": "Due to the reduced dimension of each head, the total computational cost is similar to that of single-head attention with full dimensionality"},
+        {"text": "多头机制让模型在不同表示子空间、不同位置上联合建模", "verdict": "support", "evidence": "Multi-head attention allows the model to jointly attend to information from different representation subspaces at different positions"}
+      ],
+      "faithfulness": 1.0,
+      "fabricated": false,
+      "capped": false,
+      "score": 2
+    },
+    "S01": {
+      "claims": [
+        {"text": "循环层沿时间逐步计算", "verdict": "support", "evidence": "background.tex: Recurrent models typically factor computation along the symbol positions... Aligning the positions to steps in computation time"},
+        {"text": "循环结构下两个远距离位置的信息传递需要 O(距离) 步", "verdict": "support", "evidence": "Table 1: Recurrent 最大路径长度 O(n)；the number of operations required to relate signals from two arbitrary positions grows in the distance between positions"},
+        {"text": "自注意力让任意两位置直接相连，路径长度为 O(1)", "verdict": "support", "evidence": "a self-attention layer connects all positions with a constant number of sequentially executed operations; Table 1 Self-Attention O(1)"},
+        {"text": "路径更短使长程序列上梯度传播和依赖捕获更优", "verdict": "support", "evidence": "The shorter these paths... the easier it is to learn long-range dependencies（前后向信号路径长度）"},
+        {"text": "去掉循环后模型本身对顺序不感知，必须注入位置编码", "verdict": "support", "evidence": "Since our model contains no recurrence and no convolution, in order for the model to make use of the order of the sequence, we must inject some information about the relative or absolute position"},
+        {"text": "论文使用不同频率的正弦函数生成固定位置编码", "verdict": "support", "evidence": "we use sine and cosine functions of different frequencies"},
+        {"text": "使每个位置的表示能被相对位置差线性函数表达", "verdict": "support", "evidence": "for any fixed offset k, PE_{pos+k} can be represented as a linear function of PE_{pos}"},
+        {"text": "（正弦位置编码）与注意力机制天然兼容", "verdict": "support", "evidence": "we hypothesized it would allow the model to easily learn to attend by relative positions"},
+        {"text": "当序列长度小于表示维度时（典型机器翻译场景），自注意力每层计算复杂度低于循环层", "verdict": "support", "evidence": "self-attention layers are faster than recurrent layers when the sequence length n is smaller than the representation dimensionality d, which is most often the case... in machine translations"},
+        {"text": "自注意力完全并行、无时间步依赖", "verdict": "support", "evidence": "Table 1: Self-Attention Sequential Operations O(1)；This inherently sequential nature precludes parallelization（RNN 对比）"},
+        {"text": "训练时并行性带来的效率远高于 RNN 的串行计算", "verdict": "support", "evidence": "The Transformer allows for significantly more parallelization; abstract: more parallelizable and requiring significantly less time to train"}
+      ],
+      "faithfulness": 1.0,
+      "fabricated": false,
+      "capped": false,
+      "score": 2
+    },
+    "S02": {
+      "claims": [
+        {"text": "训练（算法 1）与采样（算法 2）通过同一个方差调度 beta_t 绑定", "verdict": "support", "evidence": "两算法均使用由 beta_t 导出的 alpha_t/abar_t；forward process variances fixed to constants increasing linearly from beta_1=10^{-4} to beta_T=0.02"},
+        {"text": "训练时从数据集取 x_0、对 t 均匀采样", "verdict": "support", "evidence": "Algorithm 1: x_0 ~ q(x_0); t ~ Uniform({1,...,T})"},
+        {"text": "训练时从 q(x_t|x_0) 得到加噪样本（sqrt(abar_t)x_0 + sqrt(1-abar_t)eps）", "verdict": "support", "evidence": "Algorithm 1 梯度步的 eps_theta(sqrt(abar_t)x_0+sqrt(1-abar_t)eps, t)，即 Eq.(4) 的重参数化采样"},
+        {"text": "训练网络 eps_theta 预测所加噪声，梯度为 grad||eps - eps_theta(x_t, t)||^2", "verdict": "support", "evidence": "Algorithm 1: Take gradient descent step on grad_theta ||eps - eps_theta(sqrt(abar_t)x_0 + sqrt(1-abar_t)eps, t)||^2"},
+        {"text": "采样从纯高斯 x_T 起步", "verdict": "support", "evidence": "Algorithm 2: x_T ~ N(0, I)"},
+        {"text": "采样用与训练完全相同的 beta_t 序列逐步去噪", "verdict": "support", "evidence": "Algorithm 2 使用同一 alpha_t、abar_t 公式逆向迭代（t=T..1），beta_t 为固定常数"},
+        {"text": "采样每步方差项 sigma_t 取 beta_t", "verdict": "no_evidence", "evidence": "原文给出两个选择：both sigma_t^2 = beta_t and sigma_t^2 = tilde-beta_t had similar results，未指明实验取哪一个"},
+        {"text": "对应关系的关键在 abar_t = prod(1-beta_i)", "verdict": "support", "evidence": "alpha_t := 1-beta_t and abar_t := prod_{s=1}^t alpha_s"},
+        {"text": "训练中网络见到的每个噪声水平由调度决定", "verdict": "support", "evidence": "Algorithm 1 依 t 与 abar_t 构造加噪输入；调度为固定线性常数"},
+        {"text": "采样必须沿同一调度逆向行走", "verdict": "support", "evidence": "Algorithm 2 按 t=T,...,1 以同一调度参数迭代去噪"},
+        {"text": "否则网络收到的输入分布偏离训练分布", "verdict": "no_evidence", "evidence": "原文未讨论调度失配的后果，此为答案自行补充的机理说明"},
+        {"text": "论文实验对比线性调度在 T=1000 下的表现", "verdict": "no_evidence", "evidence": "原文无调度性能对比实验：We set T=1000 without a sweep, and we chose a linear schedule（从 constant/linear/quadratic 中选定）"},
+        {"text": "L_simple 正是沿该调度按 t 加权（隐式 down-weight 小 t）的简化", "verdict": "support", "evidence": "our diffusion process setup causes the simplified objective to down-weight loss terms corresponding to small t"},
+        {"text": "L_simple 是经验最优的简化", "verdict": "no_evidence", "evidence": "原文只说 beneficial / leads to better sample quality，未称『最优』"}
+      ],
+      "faithfulness": 0.71,
+      "fabricated": false,
+      "capped": false,
+      "score": 1
+    },
+    "S03": {
+      "claims": [
+        {"text": "CARDIO-Affect 把个体情感视为多稳态非线性随机动力系统", "verdict": "support", "evidence": "treats individual emotion as a multi-stable nonlinear stochastic dynamical system"},
+        {"text": "情感状态 x(t) 的演化由哈密顿量 H 驱动的随机微分方程描述", "verdict": "support", "evidence": "The continuous-time dynamics are given by the Affective Hamiltonian SDE（Eq. 6）；regime-conditional Langevin SDE（Eq. 1）"},
+        {"text": "哈密顿量/势能面构成多个局部吸引域，系统长时间停留在某域内（稳态基调）", "verdict": "support", "evidence": "stochastic trajectory... on a multi-stable potential surface; multiple basins of attraction with asymmetric depths；dwell times 18.5/16.6 days vs 3.0 days"},
+        {"text": "受扰动后沿鞍点发生稀有跳转", "verdict": "support", "evidence": "switch between attractors via Kramers-style activated transitions; Kramers escape law"},
+        {"text": "该机制是多稳态吸引子的来源", "verdict": "support", "evidence": "The dynamics are multi-stable (BIC selects K=6 Gaussian regimes with asymmetric basins)"},
+        {"text": "该机制也是弱混沌的来源", "verdict": "no_evidence", "evidence": "原文将弱混沌（median Lyapunov 0.030）作为实证特征报告，未将其归因于吸引子跳变机制"},
+        {"text": "情感不是点而是分布（7 类概率向量/单纯形中的轨迹）", "verdict": "support", "evidence": "a stochastic trajectory in 7-dimensional probability simplex; seven-class facial-emotion probability vectors"},
+        {"text": "个体画像把每个时刻的情感映射为概率流形上的点", "verdict": "contradict", "evidence": "原文为每个个体（而非每个时刻）一个 45 维画像点：Each individual is summarised by a 45-dimensional feature vector; each individual as a 45-dimensional point on a Fisher-Rao manifold"},
+        {"text": "用 Fisher-Rao 距离度量（个体间）情感内在差异", "verdict": "support", "evidence": "the Fisher-Rao distance d_FR(phi_i, phi_j)... used as a coordinate-free measure of inter-individual emotional similarity"},
+        {"text": "流形上的测地线揭示情感状态切换的最优路径", "verdict": "no_evidence", "evidence": "原文未提及测地线或切换最优路径"},
+        {"text": "多稳态在流形上表现为多个概率峰并存", "verdict": "no_evidence", "evidence": "原文无此表述"},
+        {"text": "SDE 描述状态如何在吸引子间跳转（动力学角色）", "verdict": "support", "evidence": "Eq.(1) Langevin SDE 于多稳态势能面 + Kramers 跃迁"},
+        {"text": "Fisher-Rao 刻画跳转前后状态在何处（几何角色）", "verdict": "no_evidence", "evidence": "原文 Fisher-Rao 用于个体间相似度度量与画像空间，未用于刻画跳转前后状态"},
+        {"text": "30.1 个月的 WELD 纵向语料验证了该框架", "verdict": "support", "evidence": "the first 30.1-month longitudinal in-the-wild facial-emotion corpus; We validate on... WELD"},
+        {"text": "三个合成基线参与验证", "verdict": "support", "evidence": "Three synthetic benchmarks... Class A (linear VAR), Class B (nonlinear multistable Langevin), Class C (WELD-like mixed)"}
+      ],
+      "faithfulness": 0.67,
+      "fabricated": false,
+      "capped": true,
+      "score": 1
+    },
+    "good-F06": {
+      "claims": [
+        {"text": "思维链提示在 GSM8K 上带来大幅提升", "verdict": "support", "evidence": "performance more than doubled for the largest GPT and PaLM models; outperforms standard prompting by a large margin"},
+        {"text": "标准提示下 GPT-3 175B 仅约 17% 的解题率", "verdict": "contradict", "evidence": "Table 4/Figure 4：GPT-3 175B standard GSM8K = 15.6%（17.9 是 PaLM 540B 的标准提示成绩，疑为模型归属混淆）"},
+        {"text": "标准提示的问题主要在多步算术推理中途丢失中间结论", "verdict": "no_evidence", "evidence": "原文错误分析针对 CoT 输出（one step missing 22%、calculator error 等），未以此表述标准提示的失败模式"},
+        {"text": "加入思维链提示（8 个带推理过程的示例）", "verdict": "support", "evidence": "we manually composed a set of eight few-shot exemplars with chains of thought for prompting"},
+        {"text": "GPT-3 175B 达到 46.9%", "verdict": "support", "evidence": "GPT-3 175B Chain of thought GSM8K 46.9 (+31.3)"},
+        {"text": "PaLM 540B 达到 56.9%", "verdict": "support", "evidence": "PaLM 540B Chain of thought GSM8K 56.9 (+39.0)"},
+        {"text": "超越基于验证器的微调基线", "verdict": "support", "evidence": "surpassing even finetuned GPT-3 with a verifier（56.9 > 55）"},
+        {"text": "小模型上无此收益，存在涌现的规模阈值", "verdict": "support", "evidence": "only yields performance gains when used with models of ~100B parameters; chain of thought actually hurts performance for most models smaller than 10B parameters"},
+        {"text": "作者将提升归因于思维链把多步问题分解为连续中间步骤", "verdict": "support", "evidence": "chain of thought... allows models to decompose multi-step problems into intermediate steps"},
+        {"text": "每步的输出作为下一步的上下文", "verdict": "support", "evidence": "the sequential reasoning embodied in the chain of thought is useful（顺序依赖，见 chain-of-thought-after-answer 消融）"},
+        {"text": "显著扩展了单次前向的计算深度", "verdict": "support", "evidence": "additional computation can be allocated to problems that require more reasoning steps"}
+      ],
+      "faithfulness": 0.82,
+      "fabricated": false,
+      "capped": true,
+      "score": 1
+    },
+    "medium-F06": {
+      "claims": [
+        {"text": "思维链提示对数学推理有很明显的帮助", "verdict": "support", "evidence": "chain-of-thought prompting improves performance on a range of arithmetic... tasks; yielding improvements much stronger than ablations"},
+        {"text": "标准提示表现不好", "verdict": "support", "evidence": "it works poorly on tasks that require reasoning abilities；GSM8K 标准提示基线最低（15.6/17.9）"},
+        {"text": "模型经常算错", "verdict": "support", "evidence": "Though simple for humans, arithmetic reasoning is a task where language models often struggle"},
+        {"text": "加了思维链之后大模型的解题率提高了很多", "verdict": "support", "evidence": "for GSM8K..., performance more than doubled for the largest GPT and PaLM models"},
+        {"text": "超过了以前的微调方法", "verdict": "support", "evidence": "compares favorably to prior state of the art, which typically finetunes; achieve new state of the art on the challenging GSM8K"},
+        {"text": "这种提升只在大模型上出现", "verdict": "support", "evidence": "chain-of-thought prompting is an emergent ability of model scale; only yields performance gains when used with models of ~100B parameters"},
+        {"text": "小模型用思维链没有效果", "verdict": "support", "evidence": "chain-of-thought prompting does not positively impact performance for small models"},
+        {"text": "原因是思维链让模型把问题拆成一步一步来做", "verdict": "support", "evidence": "allows models to decompose multi-step problems into intermediate steps"},
+        {"text": "每一步的结果都能用在下一步里", "verdict": "support", "evidence": "a coherent series of intermediate reasoning steps that lead to the final answer; sequential reasoning"}
+      ],
+      "faithfulness": 1.0,
+      "fabricated": false,
+      "capped": false,
+      "score": 2
+    },
+    "bad-F06": {
+      "claims": [
+        {"text": "思维链提示在 GSM8K 上带来了 78.2% 的提升幅度", "verdict": "contradict", "evidence": "原文提升为 PaLM 540B +39.0、Codex +43.4，全文无 78.2% 一数（编造数字）"},
+        {"text": "GPT-3 175B 从 12% 提高到 90.2%", "verdict": "contradict", "evidence": "原文为 15.6 → 46.9（text-davinci-002），12%/90.2% 均为编造"},
+        {"text": "PaLM 540B 达到了 96.5%", "verdict": "contradict", "evidence": "原文 PaLM 540B CoT = 56.9%（+外部计算器 58.6%），96.5% 为编造"},
+        {"text": "全面碾压所有基线", "verdict": "contradict", "evidence": "原文为 56.9 略超 prior best 55（new state of the art），非碾压式领先"},
+        {"text": "1 亿参数的小模型也能获得 40% 以上的提升", "verdict": "contradict", "evidence": "原文小模型无收益：UL2 20B 仅 +0.3；chain of thought hurts performance for most models smaller than 10B"},
+        {"text": "说明思维链与模型规模无关", "verdict": "contradict", "evidence": "原文相反：an emergent ability of model scale"},
+        {"text": "该结论颠覆了此前所有关于涌现能力的认识", "verdict": "contradict", "evidence": "原文恰恰以涌现解释 CoT 的成功，无颠覆涌现的结论（编造结论）"}
+      ],
+      "faithfulness": 0.0,
+      "fabricated": true,
+      "capped": true,
+      "score": 0
+    },
+    "cheat-padding-F06": {
+      "claims": [
+        {"text": "大语言模型的推理能力一直是研究热点", "verdict": "no_evidence", "evidence": "通用背景陈述，原文无此泛化论断"},
+        {"text": "涌现能力成为学界关注的焦点", "verdict": "no_evidence", "evidence": "原文仅称 emergence 是本工作的 prevailing theme 并引用 wei2022emergent，无学界焦点论断"},
+        {"text": "GPT-3 展示了上下文学习的巨大潜力", "verdict": "support", "evidence": "large language models offer the exciting prospect of in-context few-shot learning via prompting. Remarkably, this has been successful for a range of simple question-answering tasks (brown2020language)"},
+        {"text": "PaLM 进一步验证了规模定律的普适性", "verdict": "no_evidence", "evidence": "原文仅将 PaLM 用作评测模型，未做此论断"},
+        {"text": "数学应用题求解是衡量模型综合能力的重要试金石", "verdict": "no_evidence", "evidence": "原文无此表述"},
+        {"text": "GSM8K 包含 8500 道题目", "verdict": "no_evidence", "evidence": "该数字未在本文源中出现（属 GSM8K 原数据集信息，本文仅引用 cobbe2021training）"},
+        {"text": "每题需要 2 到 8 步的推理链", "verdict": "no_evidence", "evidence": "本文源中无此表述"},
+        {"text": "传统提示工程包括零样本、少样本、自洽性解码、由易到难分解、最小到最多提示等范式", "verdict": "no_evidence", "evidence": "原文仅讨论 few-shot prompting 与作为后续工作的 self-consistency（wang2022self）；least-to-most 等未提及"},
+        {"text": "GSM8K 的验证器微调取得了不错的效果", "verdict": "support", "evidence": "surpassing even finetuned GPT-3 with a verifier; prior best 55（cobbe2021training）"},
+        {"text": "评估通常采用精确匹配并结合多数投票、温度采样等技术", "verdict": "no_evidence", "evidence": "原文主实验为 greedy decoding，多数投票仅为引用的后续工作，温度采样与精确匹配指标未提及"},
+        {"text": "思维链提示在该基准上带来很大提升", "verdict": "support", "evidence": "outperforms standard prompting by a large margin; performance more than doubled"}
+      ],
+      "faithfulness": 0.27,
+      "fabricated": false,
+      "capped": false,
+      "score": 1
+    },
+    "cheat-term-F06": {
+      "claims": [
+        {"text": "CoT 提示通过上下文学习激活语言模型的多步推理", "verdict": "support", "evidence": "标题/摘要：Chain-of-Thought Prompting Elicits Reasoning in Large Language Models；few-shot prompting 形式"},
+        {"text": "模型进行中间推理步骤的自洽生成", "verdict": "no_evidence", "evidence": "原文主实验为 greedy decoding；self-consistency 仅为引用的后续工作（wang2022self），非本文方法"},
+        {"text": "解码过程类比集束搜索与自洽性的边缘化聚合", "verdict": "no_evidence", "evidence": "原文无 beam search 或边缘化聚合的表述"},
+        {"text": "该范式在 GSM8K 上取得 89.4% 的精确匹配", "verdict": "contradict", "evidence": "原文最高为 Codex 65.4（+计算器）、PaLM 540B 56.9，89.4% 为编造数字"},
+        {"text": "体现了测试时计算与推理时对齐的协同效应", "verdict": "no_evidence", "evidence": "原文无此术语与论断"},
+        {"text": "验证了 CoT 作为零样本泛化的稀疏激活机制", "verdict": "no_evidence", "evidence": "原文方法为 few-shot 提示，无『稀疏激活机制』表述"}
+      ],
+      "faithfulness": 0.17,
+      "fabricated": true,
+      "capped": true,
+      "score": 0
+    },
+    "cheat-fakecite-F06": {
+      "claims": [
+        {"text": "思维链提示使 GPT-3 175B 从 17% 提升至 46.9%", "verdict": "contradict", "evidence": "46.9 正确，但起点应为 15.6%（Table 4：GPT-3 175B Standard 15.6），17% 与原文不符"},
+        {"text": "PaLM 540B 达到 56.9%", "verdict": "support", "evidence": "PaLM 540B Chain of thought GSM8K 56.9"},
+        {"text": "标准提示下模型存在多步算术推理中断的问题", "verdict": "no_evidence", "evidence": "原文错误分析针对 CoT 输出（one step missing 等），未以此表述标准提示失败模式"},
+        {"text": "思维链通过分解中间步骤扩展了计算深度", "verdict": "support", "evidence": "allows models to decompose multi-step problems into intermediate steps; additional computation can be allocated"},
+        {"text": "小模型上无此收益，存在规模阈值", "verdict": "support", "evidence": "only yields performance gains when used with models of ~100B parameters; hurts performance for most models smaller than 10B"}
+      ],
+      "faithfulness": 0.6,
+      "fabricated": false,
+      "capped": true,
+      "score": 1
+    }
+  }
+}
